@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Veridoc — NP & PA License Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f5f8fb;--white:#fff;--ink:#0a0f1e;--ink2:#1e2a3a;--ink3:#3a4a5c;
+  --muted:#6b7f96;--wire:#d4dde8;--wire2:#eaf0f7;
+  --blue:#1a5cff;--blue2:#0040cc;--blue-t:#eef3ff;--blue-t2:#dce8ff;
+  --green:#0fa360;--green-t:#e6f7f0;
+  --amber:#e07000;--amber-t:#fff4e5;
+  --red:#d42b2b;--red-t:#fef0f0;
+  --purple:#7c3aed;--purple-t:#f5f3ff;
+  --r:10px;--rl:14px;
+  --shadow:0 1px 4px rgba(10,15,30,.08);
+  --shadow-md:0 4px 16px rgba(10,15,30,.10);
+  --shadow-lg:0 8px 32px rgba(10,15,30,.13);
+}
+html{-webkit-font-smoothing:antialiased;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;}
+input,select,button,textarea{font-family:'DM Sans',sans-serif;}
+button{cursor:pointer;}
+::-webkit-scrollbar{width:5px;height:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--wire);border-radius:3px;}
+
+/* ── AUTH ────────────────────────────────────────────────── */
+#auth-screen{display:flex;min-height:100vh;}
+.auth-left{flex:1;background:var(--ink);display:flex;align-items:center;justify-content:center;padding:60px;position:relative;overflow:hidden;}
+.auth-left::before{content:'';position:absolute;top:-150px;left:-100px;width:500px;height:500px;border-radius:50%;background:rgba(26,92,255,.12);pointer-events:none;}
+.auth-brand{position:relative;z-index:1;}
+.auth-logo{font-family:'Instrument Serif',serif;font-size:40px;color:#fff;letter-spacing:-.04em;margin-bottom:10px;}
+.auth-logo span{color:var(--blue);}
+.auth-tagline{font-size:17px;color:rgba(255,255,255,.5);line-height:1.65;max-width:380px;margin-bottom:48px;}
+.auth-feats{display:flex;flex-direction:column;gap:14px;}
+.auth-feat{display:flex;gap:12px;align-items:flex-start;}
+.auth-feat-dot{width:7px;height:7px;border-radius:50%;background:var(--blue);margin-top:7px;flex-shrink:0;}
+.auth-feat p{font-size:14px;color:rgba(255,255,255,.5);line-height:1.6;}
+.auth-right{flex:1;display:flex;align-items:center;justify-content:center;padding:40px;}
+.auth-box{width:100%;max-width:420px;}
+.auth-box h2{font-family:'Instrument Serif',serif;font-size:30px;color:var(--ink);margin-bottom:6px;font-weight:400;letter-spacing:-.02em;}
+.auth-box .auth-sub{font-size:14px;color:var(--muted);margin-bottom:28px;}
+.form-group{margin-bottom:14px;}
+.form-group label{display:block;font-size:11px;font-weight:700;color:var(--ink3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px;}
+.form-group input,.form-group select{width:100%;padding:11px 14px;border:1.5px solid var(--wire);border-radius:var(--r);font-size:14px;color:var(--ink);background:var(--white);outline:none;transition:border-color .15s;}
+.form-group input:focus,.form-group select:focus{border-color:var(--blue);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.auth-btn{width:100%;padding:13px;background:var(--blue);color:#fff;border:none;border-radius:var(--r);font-size:15px;font-weight:700;margin-top:6px;transition:all .2s;letter-spacing:.01em;}
+.auth-btn:hover{background:var(--blue2);transform:translateY(-1px);}
+.auth-btn:disabled{opacity:.6;transform:none;cursor:not-allowed;}
+.auth-switch{text-align:center;margin-top:18px;font-size:14px;color:var(--muted);}
+.auth-switch a{color:var(--blue);font-weight:600;cursor:pointer;text-decoration:none;}
+.auth-switch a:hover{text-decoration:underline;}
+.auth-err{background:var(--red-t);border:1px solid #fecaca;color:var(--red);border-radius:var(--r);padding:10px 14px;font-size:13px;margin-bottom:16px;display:none;}
+.auth-err.show{display:block;}
+.divider{display:flex;align-items:center;gap:12px;margin:16px 0;color:var(--muted);font-size:12px;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--wire);}
+
+/* ── APP ─────────────────────────────────────────────────── */
+#app-screen{display:none;flex-direction:column;min-height:100vh;}
+#app-screen.active{display:flex;}
+.topbar{background:var(--white);border-bottom:1px solid var(--wire);height:56px;display:flex;align-items:center;padding:0 24px;gap:16px;position:sticky;top:0;z-index:50;box-shadow:var(--shadow);}
+.t-logo{font-family:'Instrument Serif',serif;font-size:24px;color:var(--ink);letter-spacing:-.03em;}
+.t-logo span{color:var(--blue);}
+.t-badge{font-size:10px;font-weight:700;background:var(--blue-t);color:var(--blue);padding:3px 8px;border-radius:20px;letter-spacing:.05em;text-transform:uppercase;}
+.t-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.t-user{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink3);}
+.t-av{width:32px;height:32px;border-radius:50%;background:var(--blue-t);color:var(--blue);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;}
+.t-signout{padding:7px 13px;background:transparent;border:1px solid var(--wire);border-radius:var(--r);font-size:12px;font-weight:600;color:var(--muted);transition:all .15s;}
+.t-signout:hover{border-color:var(--red);color:var(--red);}
+.body-wrap{display:flex;flex:1;}
+.sidebar{width:210px;background:var(--white);border-right:1px solid var(--wire);padding:16px 10px;flex-shrink:0;position:sticky;top:56px;height:calc(100vh - 56px);overflow-y:auto;display:flex;flex-direction:column;}
+.nav-section{font-size:10px;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;padding:4px 10px;margin:12px 0 4px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:var(--r);font-size:13px;font-weight:500;color:var(--muted);border:none;background:transparent;width:100%;text-align:left;transition:all .15s;margin-bottom:2px;}
+.nav-item:hover{color:var(--ink);background:var(--bg);}
+.nav-item.active{color:var(--blue);background:var(--blue-t);font-weight:600;}
+.nav-item i{font-size:16px;width:20px;text-align:center;}
+.nav-badge{margin-left:auto;background:var(--red);color:#fff;border-radius:20px;padding:1px 7px;font-size:10px;font-weight:700;}
+.nav-foot{margin-top:auto;padding:16px 10px 0;border-top:1px solid var(--wire2);}
+.nav-foot p{font-size:11px;color:var(--muted);line-height:1.6;}
+.main{flex:1;padding:28px 32px;min-width:0;}
+.page{display:none;}
+.page.active{display:block;animation:fadeUp .2s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+
+/* ── COMPONENTS ──────────────────────────────────────────── */
+.page-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;}
+.page-header h1{font-family:'Instrument Serif',serif;font-size:26px;font-weight:400;color:var(--ink);letter-spacing:-.02em;}
+.page-header p{font-size:13px;color:var(--muted);margin-top:3px;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:var(--r);font-size:13px;font-weight:600;border:none;transition:all .15s;cursor:pointer;}
+.btn-primary{background:var(--blue);color:#fff;}
+.btn-primary:hover{background:var(--blue2);transform:translateY(-1px);}
+.btn-ghost{background:var(--white);color:var(--ink3);border:1px solid var(--wire);}
+.btn-ghost:hover{border-color:var(--blue);color:var(--blue);}
+.btn-sm{padding:6px 12px;font-size:12px;}
+.card{background:var(--white);border:1px solid var(--wire);border-radius:var(--rl);padding:20px;}
+.card-title{font-size:14px;font-weight:600;color:var(--ink);margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;}
+.card-title span{font-size:12px;font-weight:400;color:var(--muted);}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:3px 9px;border-radius:20px;font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;}
+.bg{background:var(--green-t);color:var(--green);}
+.ba{background:var(--amber-t);color:var(--amber);}
+.br{background:var(--red-t);color:var(--red);}
+.bs{background:var(--wire2);color:var(--muted);}
+.days-chip{font-size:11px;font-weight:600;}
+.dc-g{color:var(--green);}
+.dc-a{color:var(--amber);}
+.dc-r{color:var(--red);}
+.tbl-wrap{overflow-x:auto;border-radius:var(--rl);border:1px solid var(--wire);}
+table{width:100%;border-collapse:collapse;table-layout:fixed;}
+thead tr{background:var(--bg);}
+th{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;padding:10px 14px;text-align:left;border-bottom:1px solid var(--wire);white-space:nowrap;}
+td{font-size:12px;color:var(--ink3);padding:11px 14px;border-bottom:1px solid var(--wire2);vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:var(--bg);}
+.td-mono{font-family:monospace;font-size:11px;color:var(--muted);}
+.state-chip{display:inline-block;background:var(--blue-t);color:var(--blue);border-radius:5px;padding:2px 8px;font-size:11px;font-weight:700;}
+.type-chip{display:inline-block;background:var(--wire2);color:var(--ink3);border-radius:5px;padding:2px 8px;font-size:11px;font-weight:600;border:1px solid var(--wire);}
+.renew-cell{display:flex;flex-direction:column;gap:2px;}
+.renew-btn{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:var(--r);font-size:11px;font-weight:600;text-decoration:none;border:1px solid;transition:opacity .15s;}
+.rb-open{border-color:var(--green);color:var(--green);background:var(--green-t);}
+.rb-open:hover{opacity:.8;}
+.rb-urg{border-color:var(--amber);color:var(--amber);background:var(--amber-t);}
+.rb-urg:hover{opacity:.8;}
+.rb-exp{border-color:var(--red);color:var(--red);background:var(--red-t);}
+.rb-exp:hover{opacity:.8;}
+.rb-lock{border-color:var(--wire);color:var(--muted);background:var(--wire2);cursor:default;}
+.renew-note{font-size:10px;color:var(--muted);}
+.action-cell{display:flex;gap:6px;}
+.icon-btn{background:transparent;border:none;padding:5px;border-radius:6px;color:var(--muted);font-size:15px;transition:all .15s;}
+.icon-btn:hover{background:var(--bg);color:var(--ink);}
+.icon-btn.del:hover{color:var(--red);}
+.filters{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
+.filter-label{font-size:11px;font-weight:600;color:var(--muted);}
+.fchip{padding:5px 13px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid var(--wire);background:transparent;color:var(--muted);transition:all .15s;}
+.fchip.active{background:var(--blue-t);border-color:var(--blue-t2);color:var(--blue);}
+.fchip:hover:not(.active){background:var(--bg);}
+.cred-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--wire2);}
+.cred-row:last-child{border-bottom:none;}
+.cr-info h4{font-size:13px;font-weight:600;color:var(--ink);}
+.cr-info p{font-size:11px;color:var(--muted);margin-top:2px;}
+.cr-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted);}
+.empty-state i{font-size:32px;display:block;margin-bottom:10px;opacity:.35;}
+.empty-state h3{font-size:15px;font-weight:600;color:var(--ink);margin-bottom:6px;}
+.health-score{display:flex;align-items:center;gap:20px;padding:20px;background:var(--white);border:1px solid var(--wire);border-radius:var(--rl);margin-bottom:20px;}
+.hs-num{font-family:'Instrument Serif',serif;font-size:52px;line-height:1;letter-spacing:-.03em;}
+.hs-info h3{font-size:16px;font-weight:600;color:var(--ink);margin-bottom:4px;}
+.hs-info p{font-size:13px;color:var(--muted);}
+.hs-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-left:auto;}
+.hs-mini{text-align:center;padding:10px 12px;border-radius:var(--r);border:1px solid var(--wire);}
+.hs-mini .n{font-size:20px;font-weight:700;line-height:1;margin-bottom:2px;}
+.hs-mini .l{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;}
+.dash-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.dash-grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-top:16px;}
+.alert-item{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-radius:var(--r);margin-bottom:10px;border:1px solid;}
+.alert-exp{background:var(--red-t);border-color:#fecaca;}
+.alert-warn{background:var(--amber-t);border-color:#fde68a;}
+.ai-left h4{font-size:13px;font-weight:600;color:var(--ink);}
+.ai-left p{font-size:11px;color:var(--muted);margin-top:3px;}
+.ai-right .big{font-family:'Instrument Serif',serif;font-size:24px;line-height:1;text-align:right;}
+.ai-right .sm{font-size:10px;color:var(--muted);text-align:right;}
+.dea-banner{background:var(--amber-t);border:1px solid #fde68a;border-radius:var(--r);padding:12px 16px;margin-bottom:18px;font-size:13px;color:var(--amber);display:flex;gap:10px;align-items:flex-start;}
+.loading-screen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:60vh;gap:16px;color:var(--muted);}
+.spinner{width:32px;height:32px;border:3px solid var(--wire);border-top-color:var(--blue);border-radius:50%;animation:spin .7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* ── MODAL ───────────────────────────────────────────────── */
+.modal-overlay{position:fixed;inset:0;background:rgba(10,15,30,.45);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;}
+.modal{background:var(--white);border-radius:var(--rl);padding:28px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);}
+.modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px;}
+.modal-header h2{font-family:'Instrument Serif',serif;font-size:22px;color:var(--ink);font-weight:400;letter-spacing:-.02em;}
+.modal-close{background:none;border:none;font-size:20px;color:var(--muted);padding:4px;border-radius:6px;}
+.modal-close:hover{color:var(--ink);}
+.fg{margin-bottom:14px;}
+.fg label{display:block;font-size:11px;font-weight:700;color:var(--ink3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px;}
+.fg input,.fg select,.fg textarea{width:100%;padding:10px 13px;border:1.5px solid var(--wire);border-radius:var(--r);font-size:13px;color:var(--ink);background:var(--white);outline:none;transition:border-color .15s;}
+.fg input:focus,.fg select:focus{border-color:var(--blue);}
+.fr2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.fr3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.state-info-box{background:var(--bg);border:1px solid var(--wire);border-radius:var(--r);padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--muted);display:none;}
+.state-info-box.show{display:block;}
+.state-info-box strong{color:var(--ink3);font-size:12px;display:block;margin-bottom:3px;}
+.dea-warn-box{background:var(--amber-t);border:1px solid #fde68a;border-radius:var(--r);padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--amber);}
+.field-err{font-size:11px;color:var(--red);margin-top:4px;display:none;}
+.field-err.show{display:block;}
+.modal-actions{display:flex;gap:10px;margin-top:20px;}
+.modal-actions .btn{flex:1;justify-content:center;}
+
+/* ── TOAST ───────────────────────────────────────────────── */
+.toast-wrap{position:fixed;bottom:24px;right:24px;z-index:999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:var(--ink);color:#fff;padding:10px 18px;border-radius:var(--r);font-size:13px;font-weight:500;animation:slideIn .2s ease;box-shadow:var(--shadow-md);}
+.toast.success{background:var(--green);}
+.toast.error{background:var(--red);}
+@keyframes slideIn{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+
+@media(max-width:768px){
+  .auth-left{display:none;}
+  .sidebar{display:none;}
+  .main{padding:20px 16px;}
+  .hs-grid{grid-template-columns:repeat(2,1fr);}
+  .dash-grid,.dash-grid-3{grid-template-columns:1fr;}
+  .health-score{flex-wrap:wrap;}
+  .fr2,.fr3{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- ── AUTH SCREEN ─────────────────────────────────────── -->
+<div id="auth-screen">
+  <div class="auth-left">
+    <div class="auth-brand">
+      <div class="auth-logo">Veridoc<span>.</span></div>
+      <p class="auth-tagline">Track every NP & PA license, DEA registration, and certification — automatically.</p>
+      <div class="auth-feats">
+        <div class="auth-feat"><div class="auth-feat-dot"></div><p>All 50 states · state-specific renewal windows</p></div>
+        <div class="auth-feat"><div class="auth-feat-dot"></div><p>DEA registration alerts — never miss the $888 renewal</p></div>
+        <div class="auth-feat"><div class="auth-feat-dot"></div><p>Automated 90/60/30-day email reminders</p></div>
+        <div class="auth-feat"><div class="auth-feat-dot"></div><p>ANCC, AANP, NCCPA, BLS, ACLS, PALS and more</p></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-right">
+    <!-- LOGIN -->
+    <div id="login-panel" class="auth-box">
+      <h2>Welcome back.</h2>
+      <p class="auth-sub">Sign in to your Veridoc account.</p>
+      <div class="auth-err" id="login-err"></div>
+      <div class="form-group"><label>Email</label><input type="email" id="login-email" placeholder="you@example.com" autocomplete="email"/></div>
+      <div class="form-group"><label>Password</label><input type="password" id="login-password" placeholder="••••••••"/></div>
+      <button class="auth-btn" id="login-btn" onclick="doLogin()">Sign in →</button>
+      <div class="auth-switch">No account? <a onclick="showPanel('signup')">Create one free →</a></div>
+      <div class="auth-switch" style="margin-top:8px"><a onclick="showPanel('forgot')" style="font-size:13px;color:var(--muted)">Forgot password?</a></div>
+    </div>
+
+    <!-- SIGNUP -->
+    <div id="signup-panel" class="auth-box" style="display:none">
+      <h2>Create your account.</h2>
+      <p class="auth-sub">Free beta access for NPs and PAs.</p>
+      <div class="auth-err" id="signup-err"></div>
+      <div class="form-row">
+        <div class="form-group"><label>First name</label><input type="text" id="su-first" placeholder="Jane"/></div>
+        <div class="form-group"><label>Last name</label><input type="text" id="su-last" placeholder="Smith"/></div>
+      </div>
+      <div class="form-group"><label>Email</label><input type="email" id="su-email" placeholder="you@example.com"/></div>
+      <div class="form-group"><label>Password</label><input type="password" id="su-password" placeholder="At least 8 characters"/></div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Your role</label>
+          <select id="su-role">
+            <option value="NP">Nurse Practitioner (NP)</option>
+            <option value="PA">Physician Assistant (PA)</option>
+            <option value="CRNA">CRNA</option>
+            <option value="CNM">CNM</option>
+            <option value="RN">RN</option>
+            <option value="MD">MD</option>
+            <option value="DO">DO</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Account type</label>
+          <select id="su-type">
+            <option value="individual">Solo / Individual</option>
+            <option value="telehealth">Telehealth company</option>
+            <option value="staffing">Staffing agency</option>
+            <option value="clinic">Clinic / Practice</option>
+          </select>
+        </div>
+      </div>
+      <button class="auth-btn" id="signup-btn" onclick="doSignup()">Create account →</button>
+      <div class="auth-switch">Already have an account? <a onclick="showPanel('login')">Sign in →</a></div>
+    </div>
+
+    <!-- FORGOT PASSWORD -->
+    <div id="forgot-panel" class="auth-box" style="display:none">
+      <h2>Reset your password.</h2>
+      <p class="auth-sub">We'll send a reset link to your email.</p>
+      <div class="auth-err" id="forgot-err"></div>
+      <div id="forgot-success" style="background:var(--green-t);border:1px solid var(--green);color:var(--green);border-radius:var(--r);padding:10px 14px;font-size:13px;margin-bottom:16px;display:none">Check your email for a reset link.</div>
+      <div class="form-group"><label>Email</label><input type="email" id="forgot-email" placeholder="you@example.com"/></div>
+      <button class="auth-btn" id="forgot-btn" onclick="doForgot()">Send reset link →</button>
+      <div class="auth-switch"><a onclick="showPanel('login')">← Back to sign in</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── APP SCREEN ───────────────────────────────────────── -->
+<div id="app-screen">
+  <div class="topbar">
+    <div class="t-logo">Veridoc<span>.</span></div>
+    <span class="t-badge">Beta</span>
+    <div class="t-right">
+      <div class="t-user">
+        <div class="t-av" id="top-av">--</div>
+        <span id="top-name">Loading...</span>
+      </div>
+      <button class="t-signout" onclick="doSignout()"><i class="ti ti-logout" style="font-size:13px;vertical-align:-2px;margin-right:3px"></i>Sign out</button>
+    </div>
+  </div>
+
+  <div class="body-wrap">
+    <div class="sidebar">
+      <div class="nav-section">Main</div>
+      <button class="nav-item active" onclick="showPage('dashboard',this)"><i class="ti ti-layout-dashboard"></i>Dashboard</button>
+      <button class="nav-item" onclick="showPage('licenses',this)"><i class="ti ti-map"></i>State licenses</button>
+      <button class="nav-item" onclick="showPage('dea',this)"><i class="ti ti-pill"></i>DEA registry</button>
+      <button class="nav-item" onclick="showPage('certifications',this)"><i class="ti ti-certificate"></i>Certifications</button>
+      <div class="nav-section">Notifications</div>
+      <button class="nav-item" onclick="showPage('alerts',this)" id="nav-alerts">
+        <i class="ti ti-bell"></i>Alerts
+        <span class="nav-badge" id="alert-badge" style="display:none">0</span>
+      </button>
+      <div class="nav-foot">
+        <p>This is a beta prototype. Your data is saved securely. Share feedback with Nagib.</p>
+      </div>
+    </div>
+
+    <div class="main">
+      <div class="page active" id="page-dashboard"><div class="loading-screen"><div class="spinner"></div><span>Loading your credentials...</span></div></div>
+      <div class="page" id="page-licenses"></div>
+      <div class="page" id="page-dea"></div>
+      <div class="page" id="page-certifications"></div>
+      <div class="page" id="page-alerts"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── MODAL ────────────────────────────────────────────── -->
+<div class="modal-overlay" id="modal-overlay" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-title">Add</h2>
+      <button class="modal-close" onclick="closeModal()"><i class="ti ti-x"></i></button>
+    </div>
+    <div id="modal-body"></div>
+    <div class="modal-actions">
+      <button class="btn btn-primary" id="modal-save-btn" onclick="saveModal()">Save</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script>
+// ─── CONFIG ──────────────────────────────────────────────────────────────────
+// Your Supabase project URL and anon key go here
+// NEVER share these in a chat — put them directly in this file on your computer
+const SUPABASE_URL = 'https://lfpjmsjafgkzlidvoivk.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_BVHvJba7eJQl4YGPDDYTVA_pttMKhjY';
+
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// ─── STATE ───────────────────────────────────────────────────────────────────
+const STATES=['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'];
+const LIC_TYPES=['NP','PA','RN','APRN','MD','DO','LPN'];
+const CERT_TYPES=['ANCC','AANP','NCCPA','BLS','ACLS','PALS','TNCC','ATLS','NIHSS','NRP','CCRN','CEN','Other'];
+const STATE_RULES={CA:{w:90,url:'https://www.rn.ca.gov/licensees/lic-renewal.shtml',note:'Renew up to 90 days before expiration via BreEZe. Requires 30 CE hours.'},TX:{w:60,url:'https://www.bon.texas.gov/licensure_renewal.asp.html',note:'Must renew within 60 days. License lapses immediately after — reinstatement required.'},FL:{w:60,url:'https://floridasnursing.gov/',note:'Renew up to 60 days before expiration. Requires 24 CE hours per cycle.'},NY:{w:90,url:'https://www.op.nysed.gov/',note:'Renew up to 90 days before expiration. NY runs on 3-year cycles.'},IL:{w:60,url:'https://idfpr.illinois.gov/',note:'Renew up to 60 days before expiration.'},OH:{w:90,url:'https://nursing.ohio.gov/',note:'Renew up to 90 days before expiration.'},WA:{w:90,url:'https://nursing.wa.gov/',note:'Renew up to 90 days before expiration via HELMS.'},OR:{w:90,url:'https://www.oregon.gov/osbn/',note:'Renew up to 90 days before expiration.'},AZ:{w:60,url:'https://azbn.gov/',note:'Renew up to 60 days before expiration.'},MA:{w:90,url:'https://www.mass.gov/how-to/renew-your-nursing-license',note:'Renew starting 90 days before expiration. Requires 15 CE hours.'},NC:{w:90,url:'https://www.ncbon.com/',note:'NP approval renewal opens 90 days before expiration.'},GA:{w:60,url:'https://sos.ga.gov/index.php/licensing/plb/45',note:'Renew up to 60 days before expiration. 30-day grace period with late fee.'},MI:{w:60,url:'https://www.michigan.gov/lara/',note:'Renew up to 60 days before expiration.'},PA:{w:60,url:'https://www.dos.pa.gov/',note:'Renew up to 60 days before expiration. Requires child abuse CE.'},IA:{w:60,url:'https://dial.iowa.gov/',note:'Renew up to 60 days before expiration. 3-year renewal cycle.'},MO:{w:3,url:'https://pr.mo.gov/nursing-renewal.asp',note:'Must renew at least 3 business days before expiration. No grace period.'},VA:{w:90,url:'https://www.dhp.virginia.gov/nursing/',note:'Renew up to 90 days before expiration.'},CO:{w:90,url:'https://dpo.colorado.gov/Nursing',note:'Renew up to 90 days before expiration.'},NJ:{w:60,url:'https://www.njconsumeraffairs.gov/nur',note:'Renew up to 60 days before expiration.'},SC:{w:90,url:'https://llr.sc.gov/nurse/',note:'Renew up to 90 days before expiration.'},TN:{w:60,url:'https://www.tn.gov/health/',note:'Renew up to 60 days before expiration.'},MD:{w:90,url:'https://mbon.maryland.gov/',note:'Renew up to 90 days before expiration.'},MN:{w:90,url:'https://mn.gov/boards/nursing/',note:'Renew up to 90 days before expiration.'},WI:{w:90,url:'https://dsps.wi.gov/',note:'Renew up to 90 days before expiration.'},IN:{w:60,url:'https://www.in.gov/pla/',note:'Renew up to 60 days before expiration.'},KY:{w:90,url:'https://kbn.ky.gov/',note:'Renew up to 90 days before expiration.'},LA:{w:60,url:'https://www.lsbn.state.la.us/',note:'Renew up to 60 days before expiration.'}};
+const DEF_RULE={w:90,url:'https://www.ncsbn.org/',note:'Check your state board. Typically 60–90 days before expiration.'};
+const CERT_RULES={ANCC:{days:365,body:'American Nurses Credentialing Center',cycle:'5 years'},AANP:{days:180,body:'AANP Certification Program',cycle:'5 years'},NCCPA:{days:365,body:'National Commission on Certification of PAs',cycle:'10 years'},BLS:{days:60,body:'American Heart Association',cycle:'2 years'},ACLS:{days:60,body:'American Heart Association',cycle:'2 years'},PALS:{days:60,body:'American Heart Association',cycle:'2 years'},TNCC:{days:90,body:'Emergency Nurses Association',cycle:'4 years'},ATLS:{days:90,body:'American College of Surgeons',cycle:'5 years'},NIHSS:{days:90,body:'NIH Stroke Scale Program',cycle:'1 year'},NRP:{days:60,body:'American Academy of Pediatrics',cycle:'2 years'},CCRN:{days:180,body:'AACN Certification',cycle:'3 years'},CEN:{days:180,body:'BCEN',cycle:'4 years'}};
+
+function getRule(s){return STATE_RULES[s]||DEF_RULE;}
+let currentUser=null,profile=null,activeModal=null,editId=null;
+let licenses=[],dea=[],certs=[];
+let licF='all',licTF='all',deaF='all',certF='all';
+
+// ─── UTILS ───────────────────────────────────────────────────────────────────
+const today=()=>{const d=new Date();d.setHours(0,0,0,0);return d;};
+const daysUntil=s=>Math.round((new Date(s+'T00:00:00')-today())/86400000);
+const fmt=s=>{if(!s)return '—';return new Date(s+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});};
+
+function getLS(l){const n=daysUntil(l.expiry_date);return n<0?'expired':n<=30?'expiring':n<=90?'warning':'active';}
+function getRS(l){const r=getRule(l.state);const n=daysUntil(l.expiry_date);return n<0?'expired':n<=r.w?'open':n<=r.w+30?'soon':'locked';}
+function getDS(d){const n=daysUntil(d.expiry_date);return n<0?'expired':n<=30?'expiring':n<=90?'warning':'active';}
+function getCS(c){const n=daysUntil(c.expiry_date);return n<0?'expired':n<=30?'expiring':n<=90?'warning':'active';}
+
+function sBadge(status){
+  if(status==='expired') return `<span class="badge br"><i class="ti ti-alert-circle" style="font-size:10px"></i>Expired</span>`;
+  if(status==='expiring') return `<span class="badge ba"><i class="ti ti-clock" style="font-size:10px"></i>Expiring</span>`;
+  if(status==='warning') return `<span class="badge ba" style="opacity:.75">Due soon</span>`;
+  return `<span class="badge bg"><i class="ti ti-circle-check" style="font-size:10px"></i>Active</span>`;
+}
+
+function dChip(expiry){
+  const n=daysUntil(expiry);
+  const cls=n<0?'dc-r':n<=90?'dc-a':'dc-g';
+  return `<span class="days-chip ${cls}">${n<0?Math.abs(n)+'d overdue':n+'d left'}</span>`;
+}
+
+function renewCell(l){
+  const rs=getRS(l),r=getRule(l.state),n=daysUntil(l.expiry_date);
+  if(rs==='expired') return `<div class="renew-cell"><a href="${r.url}" target="_blank" class="renew-btn rb-exp"><i class="ti ti-external-link" style="font-size:10px"></i>Renew now</a><div class="renew-note">Reinstatement may apply</div></div>`;
+  if(rs==='open'){const cls=n<=30?'rb-urg':'rb-open';return `<div class="renew-cell"><a href="${r.url}" target="_blank" class="renew-btn ${cls}"><i class="ti ti-external-link" style="font-size:10px"></i>Renew now</a><div class="renew-note">Window open · ${r.w}d rule</div></div>`;}
+  if(rs==='soon') return `<div class="renew-cell"><span class="renew-btn rb-lock"><i class="ti ti-clock" style="font-size:10px"></i>Opens ~${n-r.w}d</span><div class="renew-note">${r.w}d rule · coming soon</div></div>`;
+  return `<div class="renew-cell"><span class="renew-btn rb-lock"><i class="ti ti-lock" style="font-size:10px"></i>Not open yet</span><div class="renew-note">Opens ${n-r.w}d from now</div></div>`;
+}
+
+function certRenewBadge(c){
+  const cr=CERT_RULES[c.cert_type];const n=daysUntil(c.expiry_date);const s=getCS(c);
+  if(s==='expired') return `<span class="badge br" style="font-size:9px">Reinstate</span>`;
+  if(!cr) return `<span class="badge bs" style="font-size:9px">Check issuer</span>`;
+  if(n<=cr.days) return `<span class="badge ${n<=30?'ba':'bg'}" style="font-size:9px">${n<=30?'Renew now':'Window open'}</span>`;
+  return `<span class="badge bs" style="font-size:9px">Opens in ${n-cr.days}d</span>`;
+}
+
+function allUrgent(){
+  const out=[];
+  licenses.forEach(l=>{const s=getLS(l);if(s!=='active')out.push({...l,_s:s,_kind:'license',_label:`${l.state} ${l.license_type} license`,_sub:l.license_number,_expiry:l.expiry_date});});
+  dea.forEach(d=>{const s=getDS(d);if(s!=='active')out.push({...d,_s:s,_kind:'dea',_label:`DEA ${d.dea_number} (${d.state})`,_sub:`Schedule ${d.schedule} · $888 renewal`,_expiry:d.expiry_date});});
+  certs.forEach(c=>{const s=getCS(c);if(s!=='active')out.push({...c,_s:s,_kind:'cert',_label:`${c.cert_type} certification`,_sub:c.cert_number||c.issuer||'',_expiry:c.expiry_date});});
+  return out.sort((a,b)=>daysUntil(a._expiry)-daysUntil(b._expiry));
+}
+
+// ─── AUTH ────────────────────────────────────────────────────────────────────
+function showPanel(id){
+  document.querySelectorAll('.auth-box').forEach(b=>b.style.display='none');
+  document.getElementById(id+'-panel').style.display='block';
+}
+
+async function doLogin(){
+  const btn=document.getElementById('login-btn');
+  const err=document.getElementById('login-err');
+  const email=document.getElementById('login-email').value.trim();
+  const pass=document.getElementById('login-password').value;
+  err.classList.remove('show');
+  if(!email||!pass){err.textContent='Please enter email and password.';err.classList.add('show');return;}
+  btn.disabled=true;btn.textContent='Signing in...';
+  const{error}=await sb.auth.signInWithPassword({email,password:pass});
+  btn.disabled=false;btn.textContent='Sign in →';
+  if(error){err.textContent=error.message==='Invalid login credentials'?'Incorrect email or password.':error.message;err.classList.add('show');}
+}
+
+async function doSignup(){
+  const btn=document.getElementById('signup-btn');
+  const err=document.getElementById('signup-err');
+  const first=document.getElementById('su-first').value.trim();
+  const last=document.getElementById('su-last').value.trim();
+  const email=document.getElementById('su-email').value.trim();
+  const pass=document.getElementById('su-password').value;
+  const role=document.getElementById('su-role').value;
+  const acct=document.getElementById('su-type').value;
+  err.classList.remove('show');
+  if(!first||!last||!email||!pass){err.textContent='Please fill in all fields.';err.classList.add('show');return;}
+  if(pass.length<8){err.textContent='Password must be at least 8 characters.';err.classList.add('show');return;}
+  btn.disabled=true;btn.textContent='Creating account...';
+  const{error}=await sb.auth.signUp({
+    email,password:pass,
+    options:{data:{first_name:first,last_name:last,role,account_type:acct}}
+  });
+  btn.disabled=false;btn.textContent='Create account →';
+  if(error){err.textContent=error.message;err.classList.add('show');}
+  else{err.style.background='var(--green-t)';err.style.borderColor='var(--green)';err.style.color='var(--green)';err.textContent='Account created! Check your email to confirm, then sign in.';err.classList.add('show');}
+}
+
+async function doForgot(){
+  const btn=document.getElementById('forgot-btn');
+  const err=document.getElementById('forgot-err');
+  const email=document.getElementById('forgot-email').value.trim();
+  err.classList.remove('show');
+  if(!email){err.textContent='Please enter your email.';err.classList.add('show');return;}
+  btn.disabled=true;btn.textContent='Sending...';
+  await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin});
+  btn.disabled=false;btn.textContent='Send reset link →';
+  document.getElementById('forgot-success').style.display='block';
+}
+
+async function doSignout(){
+  await sb.auth.signOut();
+  currentUser=null;profile=null;licenses=[];dea=[];certs=[];
+  document.getElementById('app-screen').classList.remove('active');
+  document.getElementById('auth-screen').style.display='flex';
+}
+
+// ─── DATA LOADING ────────────────────────────────────────────────────────────
+async function loadAllData(){
+  const[lRes,dRes,cRes,pRes]=await Promise.all([
+    sb.from('licenses').select('*').order('expiry_date'),
+    sb.from('dea_registrations').select('*').order('expiry_date'),
+    sb.from('certifications').select('*').order('expiry_date'),
+    sb.from('profiles').select('*').eq('id',currentUser.id).single()
+  ]);
+  licenses=lRes.data||[];
+  dea=dRes.data||[];
+  certs=cRes.data||[];
+  profile=pRes.data;
+  renderAll();
+}
+
+// ─── DASHBOARD ───────────────────────────────────────────────────────────────
+function renderDashboard(){
+  const urgent=allUrgent();
+  const allItems=[...licenses,...dea,...certs];
+  const totalExp=allItems.filter(x=>daysUntil(x.expiry_date)<0).length;
+  const totalWarn=allItems.filter(x=>{const n=daysUntil(x.expiry_date);return n>=0&&n<=90;}).length;
+  const total=allItems.length;
+  const pct=total>0?Math.round(((total-totalExp)/total)*100):100;
+  const scoreColor=pct>=80?'var(--green)':pct>=50?'var(--amber)':'var(--red)';
+  const renewOpen=licenses.filter(l=>getRS(l)==='open').length;
+
+  document.getElementById('alert-badge').style.display=urgent.length?'inline':'none';
+  document.getElementById('alert-badge').textContent=urgent.length;
+
+  document.getElementById('page-dashboard').innerHTML=`
+  <div class="page-header"><div>
+    <h1>Dashboard</h1>
+    <p>${total} credentials tracked · ${totalExp} expired · ${renewOpen} renewal${renewOpen!==1?'s':''} open now</p>
+  </div></div>
+  <div class="health-score">
+    <div style="min-width:80px;text-align:center">
+      <div class="hs-num" style="color:${scoreColor}">${pct}%</div>
+      <div style="font-size:11px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.05em">compliant</div>
+    </div>
+    <div class="hs-info">
+      <h3>${pct>=80?'Looking good':'Action needed'}</h3>
+      <p>${totalExp>0?totalExp+' expired, ':''} ${totalWarn} expiring within 90 days · ${renewOpen} renewal window${renewOpen!==1?'s':''} open</p>
+    </div>
+    <div class="hs-grid">
+      <div class="hs-mini"><div class="n" style="color:var(--blue)">${licenses.length}</div><div class="l">Licenses</div></div>
+      <div class="hs-mini"><div class="n" style="color:var(--blue)">${dea.length}</div><div class="l">DEA</div></div>
+      <div class="hs-mini"><div class="n" style="color:var(--blue)">${certs.length}</div><div class="l">Certs</div></div>
+      <div class="hs-mini"><div class="n" style="color:${urgent.length?'var(--red)':'var(--green)'}">${urgent.length}</div><div class="l">Issues</div></div>
+    </div>
+  </div>
+  <div class="dash-grid">
+    <div class="card">
+      <div class="card-title">Needs attention <span>${urgent.length} item${urgent.length!==1?'s':''}</span></div>
+      ${urgent.length===0?`<div class="empty-state"><i class="ti ti-circle-check"></i><h3>All clear</h3><p>Every credential is current.</p></div>`:urgent.slice(0,6).map(u=>`<div class="cred-row"><div class="cr-info"><h4>${u._label}</h4><p>${u._sub}</p></div><div class="cr-right">${dChip(u._expiry)}${sBadge(u._s)}</div></div>`).join('')}
+      ${urgent.length>6?`<div style="font-size:12px;color:var(--muted);padding-top:8px">+${urgent.length-6} more — see Alerts</div>`:''}
+    </div>
+    <div class="card">
+      <div class="card-title">Renewals open now <span>${renewOpen} available</span></div>
+      ${renewOpen===0?`<div class="empty-state"><i class="ti ti-lock"></i><h3>No windows open yet</h3><p>Nothing is currently in its renewal window.</p></div>`:licenses.filter(l=>getRS(l)==='open').map(l=>`<div class="cred-row"><div class="cr-info"><h4>${l.state} ${l.license_type} — ${l.license_number}</h4><p>Expires ${fmt(l.expiry_date)} · ${getRule(l.state).w}d rule</p></div><div class="cr-right"><a href="${getRule(l.state).url}" target="_blank" class="renew-btn ${daysUntil(l.expiry_date)<=30?'rb-urg':'rb-open'}" style="font-size:11px"><i class="ti ti-external-link" style="font-size:10px"></i>Renew</a></div></div>`).join('')}
+    </div>
+  </div>
+  <div class="dash-grid-3">
+    <div class="card">
+      <div class="card-title">DEA registrations</div>
+      ${dea.length===0?`<div class="empty-state"><i class="ti ti-pill"></i><h3>No DEA added yet</h3><p>Add your DEA registrations to track the $888 renewal.</p></div>`:dea.map(d=>`<div class="cred-row"><div class="cr-info"><h4 style="font-family:monospace">${d.dea_number}</h4><p>${d.state} · Sched. ${d.schedule}</p></div><div class="cr-right">${dChip(d.expiry_date)}${sBadge(getDS(d))}</div></div>`).join('')}
+    </div>
+    <div class="card">
+      <div class="card-title">Certifications</div>
+      ${certs.length===0?`<div class="empty-state"><i class="ti ti-certificate"></i><h3>No certs added yet</h3><p>Add ANCC, BLS, ACLS, and more.</p></div>`:certs.map(c=>`<div class="cred-row"><div class="cr-info"><h4>${c.cert_type}${c.cert_number?' · '+c.cert_number:''}</h4><p>Expires ${fmt(c.expiry_date)}</p></div><div class="cr-right">${dChip(c.expiry_date)}${sBadge(getCS(c))}</div></div>`).join('')}
+    </div>
+    <div class="card">
+      <div class="card-title">Upcoming (90 days)</div>
+      ${[...licenses,...dea,...certs].filter(x=>{const n=daysUntil(x.expiry_date);return n>=0&&n<=90;}).sort((a,b)=>daysUntil(a.expiry_date)-daysUntil(b.expiry_date)).slice(0,5).map(x=>{
+        const label=x.license_type?`${x.state} ${x.license_type}`:x.dea_number?`DEA ${x.dea_number}`:x.cert_type;
+        return `<div class="cred-row"><div class="cr-info"><h4>${label}</h4><p>Expires ${fmt(x.expiry_date)}</p></div><div class="cr-right">${dChip(x.expiry_date)}</div></div>`;
+      }).join('')||`<div class="empty-state"><i class="ti ti-calendar-check"></i><h3>Nothing due soon</h3></div>`}
+    </div>
+  </div>`;
+}
+
+// ─── LICENSES ────────────────────────────────────────────────────────────────
+function renderLicenses(){
+  const rows=licenses.filter(l=>{
+    if(licF==='open')return getRS(l)==='open';
+    if(licF==='expiring'){const s=getLS(l);return s==='expiring'||s==='warning';}
+    if(licF==='expired')return getLS(l)==='expired';
+    return true;
+  }).filter(l=>licTF==='all'||l.license_type===licTF);
+
+  document.getElementById('page-licenses').innerHTML=`
+  <div class="page-header">
+    <div><h1>State licenses</h1><p>${licenses.length} license${licenses.length!==1?'s':''} tracked</p></div>
+    <button class="btn btn-primary" onclick="openModal('license')"><i class="ti ti-plus"></i>Add license</button>
+  </div>
+  <div class="filters">
+    <span class="filter-label">Status:</span>
+    <button class="fchip ${licF==='all'?'active':''}" onclick="setF('lic','all',this)">All</button>
+    <button class="fchip ${licF==='open'?'active':''}" onclick="setF('lic','open',this)">Renewal open</button>
+    <button class="fchip ${licF==='expiring'?'active':''}" onclick="setF('lic','expiring',this)">Expiring</button>
+    <button class="fchip ${licF==='expired'?'active':''}" onclick="setF('lic','expired',this)">Expired</button>
+    <span class="filter-label" style="margin-left:8px">Type:</span>
+    <button class="fchip ${licTF==='all'?'active':''}" onclick="setF('licT','all',this)">All</button>
+    <button class="fchip ${licTF==='NP'?'active':''}" onclick="setF('licT','NP',this)">NP</button>
+    <button class="fchip ${licTF==='PA'?'active':''}" onclick="setF('licT','PA',this)">PA</button>
+    <button class="fchip ${licTF==='RN'?'active':''}" onclick="setF('licT','RN',this)">RN</button>
+  </div>
+  <div class="tbl-wrap"><table>
+    <colgroup><col style="width:68px"><col style="width:65px"><col style="width:128px"><col style="width:98px"><col style="width:98px"><col style="width:98px"><col style="width:108px"><col style="width:143px"><col style="width:72px"></colgroup>
+    <thead><tr><th>State</th><th>Type</th><th>License #</th><th>Issue date</th><th>Effective</th><th>Expiration</th><th>Status</th><th>Renewal</th><th></th></tr></thead>
+    <tbody>${rows.length===0?`<tr><td colspan="9" style="text-align:center;padding:32px;color:var(--muted)">No licenses match your filters</td></tr>`:rows.map(l=>`<tr>
+      <td><span class="state-chip">${l.state}</span></td>
+      <td><span class="type-chip">${l.license_type}</span></td>
+      <td><span class="td-mono">${l.license_number}</span></td>
+      <td style="color:var(--muted);font-size:11px">${fmt(l.issue_date)}</td>
+      <td style="color:var(--muted);font-size:11px">${fmt(l.effective_date)}</td>
+      <td style="font-weight:600;font-size:12px">${fmt(l.expiry_date)}</td>
+      <td>${sBadge(getLS(l))}</td>
+      <td>${renewCell(l)}</td>
+      <td><div class="action-cell">
+        <button class="icon-btn" onclick="openModal('license','${l.id}')" aria-label="Edit"><i class="ti ti-edit"></i></button>
+        <button class="icon-btn del" onclick="deleteItem('licenses','${l.id}')" aria-label="Delete"><i class="ti ti-trash"></i></button>
+      </div></td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+// ─── DEA ─────────────────────────────────────────────────────────────────────
+function renderDEA(){
+  const rows=dea.filter(d=>{
+    if(deaF==='expiring'){const s=getDS(d);return s==='expiring'||s==='warning';}
+    if(deaF==='expired')return getDS(d)==='expired';
+    return true;
+  });
+  document.getElementById('page-dea').innerHTML=`
+  <div class="page-header">
+    <div><h1>DEA registry</h1><p>${dea.length} registration${dea.length!==1?'s':''} · $888 renewal each</p></div>
+    <button class="btn btn-primary" onclick="openModal('dea')"><i class="ti ti-plus"></i>Add DEA</button>
+  </div>
+  <div class="dea-banner"><i class="ti ti-alert-triangle" style="font-size:18px;flex-shrink:0"></i><span>DEA registrations expire every 3 years and cost <strong>$888</strong> to renew. A lapsed DEA means immediate loss of all controlled substance prescribing authority — including ADHD, anxiety, and pain medications.</span></div>
+  <div class="filters">
+    <span class="filter-label">Status:</span>
+    <button class="fchip ${deaF==='all'?'active':''}" onclick="setF('dea','all',this)">All</button>
+    <button class="fchip ${deaF==='expiring'?'active':''}" onclick="setF('dea','expiring',this)">Expiring</button>
+    <button class="fchip ${deaF==='expired'?'active':''}" onclick="setF('dea','expired',this)">Expired</button>
+  </div>
+  <div class="tbl-wrap"><table>
+    <colgroup><col style="width:128px"><col style="width:68px"><col style="width:98px"><col style="width:108px"><col style="width:98px"><col style="width:108px"><col style="width:72px"></colgroup>
+    <thead><tr><th>DEA number</th><th>State</th><th>Schedule</th><th>Expiration</th><th>Renewal cost</th><th>Status</th><th></th></tr></thead>
+    <tbody>${rows.length===0?`<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--muted)">No DEA registrations match filter</td></tr>`:rows.map(d=>`<tr>
+      <td><span style="font-family:monospace;font-size:12px;font-weight:700;color:var(--blue)">${d.dea_number}</span></td>
+      <td><span class="state-chip">${d.state}</span></td>
+      <td>Sched. ${d.schedule}</td>
+      <td style="font-weight:600;font-size:12px">${fmt(d.expiry_date)}</td>
+      <td style="color:var(--amber);font-weight:600">$888</td>
+      <td>${sBadge(getDS(d))}</td>
+      <td><div class="action-cell">
+        <button class="icon-btn" onclick="openModal('dea','${d.id}')" aria-label="Edit"><i class="ti ti-edit"></i></button>
+        <button class="icon-btn del" onclick="deleteItem('dea','${d.id}')" aria-label="Delete"><i class="ti ti-trash"></i></button>
+      </div></td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+// ─── CERTIFICATIONS ───────────────────────────────────────────────────────────
+function renderCerts(){
+  const rows=certs.filter(c=>{
+    if(certF==='expiring'){const s=getCS(c);return s==='expiring'||s==='warning';}
+    if(certF==='expired')return getCS(c)==='expired';
+    return true;
+  });
+  document.getElementById('page-certifications').innerHTML=`
+  <div class="page-header">
+    <div><h1>Certifications</h1><p>${certs.length} certification${certs.length!==1?'s':''} tracked</p></div>
+    <button class="btn btn-primary" onclick="openModal('cert')"><i class="ti ti-plus"></i>Add certification</button>
+  </div>
+  <div class="filters">
+    <span class="filter-label">Status:</span>
+    <button class="fchip ${certF==='all'?'active':''}" onclick="setF('cert','all',this)">All</button>
+    <button class="fchip ${certF==='expiring'?'active':''}" onclick="setF('cert','expiring',this)">Expiring</button>
+    <button class="fchip ${certF==='expired'?'active':''}" onclick="setF('cert','expired',this)">Expired</button>
+  </div>
+  <div class="tbl-wrap"><table>
+    <colgroup><col style="width:78px"><col style="width:128px"><col style="width:138px"><col style="width:108px"><col style="width:108px"><col style="width:108px"><col style="width:72px"></colgroup>
+    <thead><tr><th>Type</th><th>Cert number</th><th>Issuing body</th><th>Expiration</th><th>Renew window</th><th>Status</th><th></th></tr></thead>
+    <tbody>${rows.length===0?`<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--muted)">No certifications match filter</td></tr>`:rows.map(c=>{
+      const cr=CERT_RULES[c.cert_type];
+      return `<tr>
+        <td><span style="font-weight:700;color:var(--blue);font-size:12px">${c.cert_type}</span></td>
+        <td><span class="td-mono">${c.cert_number||'—'}</span></td>
+        <td style="color:var(--muted);font-size:12px">${c.issuer||cr?.body||'—'}</td>
+        <td style="font-weight:600;font-size:12px">${fmt(c.expiry_date)}</td>
+        <td>${certRenewBadge(c)}</td>
+        <td>${sBadge(getCS(c))}</td>
+        <td><div class="action-cell">
+          <button class="icon-btn" onclick="openModal('cert','${c.id}')" aria-label="Edit"><i class="ti ti-edit"></i></button>
+          <button class="icon-btn del" onclick="deleteItem('certs','${c.id}')" aria-label="Delete"><i class="ti ti-trash"></i></button>
+        </div></td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table></div>`;
+}
+
+// ─── ALERTS ───────────────────────────────────────────────────────────────────
+function renderAlerts(){
+  const urgent=allUrgent();
+  document.getElementById('page-alerts').innerHTML=`
+  <div class="page-header"><div><h1>Alerts</h1><p>${urgent.length} item${urgent.length!==1?'s':''} require attention</p></div></div>
+  ${urgent.length===0?`<div class="card"><div class="empty-state" style="padding:56px"><i class="ti ti-circle-check" style="font-size:40px"></i><h3>All clear</h3><p>Every credential is current.</p></div></div>`:urgent.map(u=>{
+    const n=daysUntil(u._expiry),s=u._s;
+    return `<div class="alert-item ${s==='expired'?'alert-exp':'alert-warn'}">
+      <div class="ai-left"><h4>${u._label}</h4><p>${u._sub} · ${n<0?'Expired':'Expires'} ${fmt(u._expiry)}</p></div>
+      <div class="ai-right"><div class="big" style="color:${s==='expired'?'var(--red)':'var(--amber)'}">${n<0?'+'+Math.abs(n)+'d':n+'d'}</div><div class="sm">${n<0?'past due':'remaining'}</div></div>
+    </div>`;
+  }).join('')}`;
+}
+
+function renderAll(){renderDashboard();renderLicenses();renderDEA();renderCerts();renderAlerts();}
+
+// ─── FILTERS ─────────────────────────────────────────────────────────────────
+function setF(type,val,btn){
+  if(type==='lic')licF=val;
+  else if(type==='licT')licTF=val;
+  else if(type==='dea')deaF=val;
+  else if(type==='cert')certF=val;
+  if(type==='lic'||type==='licT') renderLicenses();
+  else if(type==='dea') renderDEA();
+  else if(type==='cert') renderCerts();
+}
+
+// ─── PAGE NAV ────────────────────────────────────────────────────────────────
+function showPage(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+
+// ─── MODAL ───────────────────────────────────────────────────────────────────
+function openModal(type,id){
+  activeModal=type;editId=id||null;
+  const existing=id?(type==='license'?licenses:type==='dea'?dea:certs).find(x=>x.id===id):null;
+  document.getElementById('modal-title').textContent=id?`Edit ${type==='license'?'license':type==='dea'?'DEA registration':'certification'}`:`Add ${type==='license'?'state license':type==='dea'?'DEA registration':'certification'}`;
+  document.getElementById('modal-body').innerHTML=buildForm(type,existing);
+  document.getElementById('modal-overlay').style.display='flex';
+  if(type==='license')setTimeout(updateStateInfo,0);
+  if(type==='cert')setTimeout(updateCertInfo,0);
+}
+
+function buildForm(type,d){
+  const stOpts=STATES.map(s=>`<option${d&&d.state===s?' selected':''}>${s}</option>`).join('');
+  if(type==='license'){
+    const ltOpts=LIC_TYPES.map(t=>`<option${d&&d.license_type===t?' selected':''}>${t}</option>`).join('');
+    return `
+    <div class="fr2">
+      <div class="fg"><label>State *</label><select id="f-state" onchange="updateStateInfo()">${stOpts}</select></div>
+      <div class="fg"><label>Type *</label><select id="f-ltype">${ltOpts}</select></div>
+    </div>
+    <div class="state-info-box" id="state-info-box"></div>
+    <div class="fg"><label>License number *</label><input id="f-num" value="${d?d.license_number:''}" placeholder="e.g. NP-CA-284711"><div class="field-err" id="err-num">Required</div></div>
+    <div class="fr3">
+      <div class="fg"><label>Issue date</label><input type="date" id="f-issue" value="${d?d.issue_date||'':''}"></div>
+      <div class="fg"><label>Effective date</label><input type="date" id="f-eff" value="${d?d.effective_date||'':''}"></div>
+      <div class="fg"><label>Expiration *</label><input type="date" id="f-exp" value="${d?d.expiry_date:''}"><div class="field-err" id="err-exp">Required</div></div>
+    </div>
+    <div class="fg"><label>Notes</label><input id="f-notes" value="${d?d.notes||'':''}" placeholder="Optional"></div>`;
+  }
+  if(type==='dea'){
+    return `
+    <div class="dea-warn-box"><i class="ti ti-alert-triangle" style="margin-right:6px"></i>Expires every 3 years · $888 renewal · Lapse = no controlled substance prescribing</div>
+    <div class="fg"><label>DEA number *</label><input id="f-dnum" value="${d?d.dea_number:''}" placeholder="e.g. BC1234563" oninput="this.value=this.value.toUpperCase()"><div class="field-err" id="err-dnum">Required</div></div>
+    <div class="fr2">
+      <div class="fg"><label>State *</label><select id="f-dstate">${stOpts}</select></div>
+      <div class="fg"><label>Schedule</label><select id="f-dsched"><option${d&&d.schedule==='II-V'?' selected':''}>II-V</option><option${d&&d.schedule==='III-V'?' selected':''}>III-V</option><option${d&&d.schedule==='IV-V'?' selected':''}>IV-V</option><option${d&&d.schedule==='V only'?' selected':''}>V only</option></select></div>
+    </div>
+    <div class="fg"><label>Expiration *</label><input type="date" id="f-dexp" value="${d?d.expiry_date:''}"><div class="field-err" id="err-dexp">Required</div></div>
+    <div class="fg"><label>Notes</label><input id="f-dnotes" value="${d?d.notes||'':''}" placeholder="Optional"></div>`;
+  }
+  if(type==='cert'){
+    const ctOpts=CERT_TYPES.map(t=>`<option${d&&d.cert_type===t?' selected':''}>${t}</option>`).join('');
+    return `
+    <div class="fg"><label>Certification type *</label><select id="f-ctype" onchange="updateCertInfo()">${ctOpts}</select></div>
+    <div class="state-info-box" id="cert-info-box"></div>
+    <div class="fg"><label>Certificate number</label><input id="f-cnum" value="${d?d.cert_number||'':''}" placeholder="Optional"></div>
+    <div class="fg"><label>Issuing body</label><input id="f-cissuer" value="${d?d.issuer||'':''}" placeholder="e.g. American Heart Association"></div>
+    <div class="fg"><label>Expiration *</label><input type="date" id="f-cexp" value="${d?d.expiry_date:''}"><div class="field-err" id="err-cexp">Required</div></div>
+    <div class="fg"><label>Notes</label><input id="f-cnotes" value="${d?d.notes||'':''}" placeholder="Optional"></div>`;
+  }
+}
+
+function updateStateInfo(){
+  const s=document.getElementById('f-state')?.value;const box=document.getElementById('state-info-box');if(!box)return;
+  const r=STATE_RULES[s];
+  box.classList.add('show');
+  box.innerHTML=r?`<strong>${s} — Renewal rule</strong>${r.note}`:`<strong>${s}</strong>Check your state board. Typically 60–90 days before expiration.`;
+}
+function updateCertInfo(){
+  const t=document.getElementById('f-ctype')?.value;const box=document.getElementById('cert-info-box');if(!box)return;
+  const cr=CERT_RULES[t];
+  if(cr){box.classList.add('show');box.innerHTML=`<strong>${t} — ${cr.body}</strong>Renewal cycle: ${cr.cycle} · Window opens ${cr.days} days before expiration.`;}
+  else box.classList.remove('show');
+}
+
+function closeModal(){document.getElementById('modal-overlay').style.display='none';activeModal=null;editId=null;}
+
+async function saveModal(){
+  const btn=document.getElementById('modal-save-btn');
+  btn.disabled=true;btn.textContent='Saving...';
+  try{
+    if(activeModal==='license'){
+      const num=document.getElementById('f-num').value.trim();
+      const exp=document.getElementById('f-exp').value;
+      let ok=true;
+      if(!num){document.getElementById('err-num').classList.add('show');ok=false;}else document.getElementById('err-num').classList.remove('show');
+      if(!exp){document.getElementById('err-exp').classList.add('show');ok=false;}else document.getElementById('err-exp').classList.remove('show');
+      if(!ok){btn.disabled=false;btn.textContent='Save';return;}
+      const payload={state:document.getElementById('f-state').value,license_type:document.getElementById('f-ltype').value,license_number:num,issue_date:document.getElementById('f-issue').value||null,effective_date:document.getElementById('f-eff').value||null,expiry_date:exp,notes:document.getElementById('f-notes').value.trim(),user_id:currentUser.id};
+      const{error}=editId?await sb.from('licenses').update(payload).eq('id',editId):await sb.from('licenses').insert(payload);
+      if(error)throw error;
+      toast(editId?'License updated':'License added','success');
+    }
+    else if(activeModal==='dea'){
+      const num=document.getElementById('f-dnum').value.trim().toUpperCase();
+      const exp=document.getElementById('f-dexp').value;
+      let ok=true;
+      if(!num){document.getElementById('err-dnum').classList.add('show');ok=false;}else document.getElementById('err-dnum').classList.remove('show');
+      if(!exp){document.getElementById('err-dexp').classList.add('show');ok=false;}else document.getElementById('err-dexp').classList.remove('show');
+      if(!ok){btn.disabled=false;btn.textContent='Save';return;}
+      const payload={dea_number:num,state:document.getElementById('f-dstate').value,schedule:document.getElementById('f-dsched').value,expiry_date:exp,notes:document.getElementById('f-dnotes').value.trim(),user_id:currentUser.id};
+      const{error}=editId?await sb.from('dea_registrations').update(payload).eq('id',editId):await sb.from('dea_registrations').insert(payload);
+      if(error)throw error;
+      toast(editId?'DEA updated':'DEA registration added','success');
+    }
+    else if(activeModal==='cert'){
+      const exp=document.getElementById('f-cexp').value;
+      if(!exp){document.getElementById('err-cexp').classList.add('show');btn.disabled=false;btn.textContent='Save';return;}
+      document.getElementById('err-cexp').classList.remove('show');
+      const payload={cert_type:document.getElementById('f-ctype').value,cert_number:document.getElementById('f-cnum').value.trim(),issuer:document.getElementById('f-cissuer').value.trim(),expiry_date:exp,notes:document.getElementById('f-cnotes').value.trim(),user_id:currentUser.id};
+      const{error}=editId?await sb.from('certifications').update(payload).eq('id',editId):await sb.from('certifications').insert(payload);
+      if(error)throw error;
+      toast(editId?'Certification updated':'Certification added','success');
+    }
+    closeModal();
+    await loadAllData();
+  }catch(err){
+    toast(err.message,'error');
+  }finally{
+    btn.disabled=false;btn.textContent='Save';
+  }
+}
+
+async function deleteItem(table,id){
+  if(!confirm('Remove this item? This cannot be undone.'))return;
+  const tbl=table==='licenses'?'licenses':table==='dea'?'dea_registrations':'certifications';
+  const{error}=await sb.from(tbl).delete().eq('id',id);
+  if(error){toast(error.message,'error');return;}
+  toast('Removed');
+  await loadAllData();
+}
+
+// ─── TOAST ───────────────────────────────────────────────────────────────────
+function toast(msg,type=''){
+  const c=document.getElementById('toast-wrap');
+  const t=document.createElement('div');
+  t.className=`toast ${type}`;t.textContent=msg;
+  c.appendChild(t);setTimeout(()=>t.remove(),2500);
+}
+
+// ─── KEYBOARD ────────────────────────────────────────────────────────────────
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&document.getElementById('modal-overlay').style.display!=='none')closeModal();
+  if((e.metaKey||e.ctrlKey)&&e.key==='Enter'&&document.getElementById('modal-overlay').style.display!=='none')saveModal();
+});
+
+// ─── AUTH LISTENER ───────────────────────────────────────────────────────────
+// This fires whenever the auth state changes (login, logout, session restore)
+sb.auth.onAuthStateChange(async(event,session)=>{
+  if(session?.user){
+    currentUser=session.user;
+    // Update topbar
+    const meta=session.user.user_metadata||{};
+    const first=meta.first_name||session.user.email.split('@')[0];
+    const last=meta.last_name||'';
+    document.getElementById('top-name').textContent=`${first} ${last}`.trim();
+    document.getElementById('top-av').textContent=`${(first[0]||'').toUpperCase()}${(last[0]||'').toUpperCase()}`;
+    // Show app
+    document.getElementById('auth-screen').style.display='none';
+    document.getElementById('app-screen').classList.add('active');
+    await loadAllData();
+  } else {
+    document.getElementById('auth-screen').style.display='flex';
+    document.getElementById('app-screen').classList.remove('active');
+  }
+});
+</script>
+</body>
+</html>
