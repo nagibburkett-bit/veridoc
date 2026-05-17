@@ -355,7 +355,7 @@ tr:hover td{background:var(--bg);}
 // Your Supabase project URL and anon key go here
 // NEVER share these in a chat — put them directly in this file on your computer
 const SUPABASE_URL = 'https://lfpjmsjafgkzlidvoivk.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxmcGptc2phZmdremxpZHZvaXZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2OTE5MTgsImV4cCI6MjA5NDI2NzkxOH0.dUYYpsmr2dMNKgjgxv92iim7HmUF5lBMaWTLgJaPDq0';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxmcGptc2phZmdremxpZHZvaXZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2OTE5MTgsImV4cCI6MjA5NDI2NzkxOH0.dUYYpsmr2dMNKgjgxv92iim7HmUF5lBMaWTLgJaPDq0';  // <-- REPLACE THIS LINE
 
 const { createClient } = supabase;
 const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -482,17 +482,32 @@ async function doSignout(){
 
 // ─── DATA LOADING ────────────────────────────────────────────────────────────
 async function loadAllData(){
-  const[lRes,dRes,cRes,pRes]=await Promise.all([
-    sb.from('licenses').select('*').order('expiry_date'),
-    sb.from('dea_registrations').select('*').order('expiry_date'),
-    sb.from('certifications').select('*').order('expiry_date'),
-    sb.from('profiles').select('*').eq('id',currentUser.id).single()
-  ]);
-  licenses=lRes.data||[];
-  dea=dRes.data||[];
-  certs=cRes.data||[];
-  profile=pRes.data;
-  renderAll();
+  try {
+    document.getElementById('page-dashboard').innerHTML='<div class="loading-screen"><div class="spinner"></div><span>Connecting to database...</span></div>';
+    const[lRes,dRes,cRes,pRes]=await Promise.all([
+      sb.from('licenses').select('*').order('expiry_date'),
+      sb.from('dea_registrations').select('*').order('expiry_date'),
+      sb.from('certifications').select('*').order('expiry_date'),
+      sb.from('profiles').select('*').eq('id',currentUser.id).single()
+    ]);
+    if(lRes.error){console.error('licenses:',lRes.error.message);}
+    if(dRes.error){console.error('dea:',dRes.error.message);}
+    if(cRes.error){console.error('certs:',cRes.error.message);}
+    if(pRes.error){console.error('profile:',pRes.error.message);}
+    const fatal=lRes.error||dRes.error||cRes.error;
+    if(fatal){
+      document.getElementById('page-dashboard').innerHTML='<div style="padding:40px;text-align:center"><p style="color:var(--red);font-size:14px;margin-bottom:12px">Database error: '+fatal.message+'</p><p style="color:var(--muted);font-size:12px">Check your anon key in index.html and RLS policies in Supabase.</p><button onclick="loadAllData()" style="margin-top:16px;padding:10px 20px;background:var(--blue);color:#fff;border:none;border-radius:8px;cursor:pointer">Retry</button></div>';
+      return;
+    }
+    licenses=lRes.data||[];
+    dea=dRes.data||[];
+    certs=cRes.data||[];
+    profile=pRes.data||{};
+    renderAll();
+  } catch(err){
+    console.error('loadAllData error:',err);
+    document.getElementById('page-dashboard').innerHTML='<div style="padding:40px;text-align:center"><p style="color:var(--red);font-size:14px;margin-bottom:12px">Error: '+err.message+'</p><p style="color:var(--muted);font-size:12px">Open browser console (F12) for details.</p><button onclick="loadAllData()" style="margin-top:16px;padding:10px 20px;background:var(--blue);color:#fff;border:none;border-radius:8px;cursor:pointer">Retry</button></div>';
+  }
 }
 
 // ─── DASHBOARD ───────────────────────────────────────────────────────────────
