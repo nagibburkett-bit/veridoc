@@ -870,24 +870,50 @@ document.addEventListener('keydown',e=>{
 
 // ─── AUTH LISTENER ───────────────────────────────────────────────────────────
 // This fires whenever the auth state changes (login, logout, session restore)
+// Check for existing session immediately on page load
+async function initApp(){
+  try {
+    const { data: { session } } = await sb.auth.getSession();
+    if(session?.user){
+      await enterApp(session.user);
+    } else {
+      document.getElementById('auth-screen').style.display='flex';
+      document.getElementById('app-screen').classList.remove('active');
+    }
+  } catch(err){
+    console.error('Session check failed:',err);
+    document.getElementById('auth-screen').style.display='flex';
+  }
+}
+
+async function enterApp(user){
+  currentUser=user;
+  const meta=user.user_metadata||{};
+  const first=meta.first_name||user.email.split('@')[0];
+  const last=meta.last_name||'';
+  document.getElementById('top-name').textContent=`${first} ${last}`.trim();
+  document.getElementById('top-av').textContent=`${(first[0]||'').toUpperCase()}${(last[0]||'').toUpperCase()}`;
+  document.getElementById('auth-screen').style.display='none';
+  document.getElementById('app-screen').classList.add('active');
+  await loadAllData();
+}
+
+// Listen for auth changes (login/logout)
 sb.auth.onAuthStateChange(async(event,session)=>{
-  if(session?.user){
-    currentUser=session.user;
-    // Update topbar
-    const meta=session.user.user_metadata||{};
-    const first=meta.first_name||session.user.email.split('@')[0];
-    const last=meta.last_name||'';
-    document.getElementById('top-name').textContent=`${first} ${last}`.trim();
-    document.getElementById('top-av').textContent=`${(first[0]||'').toUpperCase()}${(last[0]||'').toUpperCase()}`;
-    // Show app
-    document.getElementById('auth-screen').style.display='none';
-    document.getElementById('app-screen').classList.add('active');
-    await loadAllData();
-  } else {
+  console.log('Auth event:',event);
+  if(event==='SIGNED_IN' && session?.user){
+    await enterApp(session.user);
+  }
+  if(event==='SIGNED_OUT'){
+    currentUser=null;
+    licenses=[];dea=[];certs=[];
     document.getElementById('auth-screen').style.display='flex';
     document.getElementById('app-screen').classList.remove('active');
   }
 });
+
+// Initialize on page load
+initApp();
 </script>
 </body>
 </html>
