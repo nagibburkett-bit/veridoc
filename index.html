@@ -358,7 +358,15 @@ const SUPABASE_URL = 'https://lfpjmsjafgkzlidvoivk.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxmcGptc2phZmdremxpZHZvaXZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2OTE5MTgsImV4cCI6MjA5NDI2NzkxOH0.dUYYpsmr2dMNKgjgxv92iim7HmUF5lBMaWTLgJaPDq0';  // <-- REPLACE THIS LINE
 
 const { createClient } = supabase;
-const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+  auth: {
+    persistSession: true,
+    storageKey: 'veridoc-auth',
+    storage: window.localStorage,
+    autoRefreshToken: true,
+    detectSessionInUrl: true,
+  }
+});
 
 // ─── STATE ───────────────────────────────────────────────────────────────────
 const STATES=['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'];
