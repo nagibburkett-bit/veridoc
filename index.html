@@ -978,7 +978,7 @@ async function initApp(){
 // Listen for auth events
 sb.auth.onAuthStateChange(async(event, session)=>{
   console.log('Veridoc auth event:', event);
-  if(event === 'SIGNED_IN' && session?.user){
+  if(event === 'SIGNED_IN' && session?.user && !currentUser){
     saveSession(session);
     await enterApp(session.user);
   }
