@@ -461,52 +461,166 @@ async function loadAll(){
 
 function renderSettings(){
   const user = getUser();
-  const email = user?.email || 'your account';
+  const email = user?.email || '';
   document.getElementById('pg-settings').innerHTML = `
-  <div class="ph"><div><h1>Settings</h1><p>Manage your account and data</p></div></div>
+  <div class="ph"><div><h1>Settings</h1><p>Manage your account, security, and data</p></div></div>
 
   <div class="card" style="margin-bottom:16px">
-    <div class="card-title">Account</div>
-    <div class="cred-row"><div class="cr-info"><h4>Email</h4><p>${email}</p></div></div>
-    <div class="cred-row"><div class="cr-info"><h4>Data stored</h4><p>${licenses.length} license${licenses.length!==1?'s':''} · ${dea.length} DEA registration${dea.length!==1?'s':''} · ${certs.length} certification${certs.length!==1?'s':''}</p></div></div>
+    <div class="card-title">👤 Profile</div>
+    <div class="cred-row">
+      <div class="cr-info"><h4>Email address</h4><p>${email}</p></div>
+    </div>
+    <div class="cred-row">
+      <div class="cr-info"><h4>Data stored</h4><p>${licenses.length} license${licenses.length!==1?'s':''} · ${dea.length} DEA registration${dea.length!==1?'s':''} · ${certs.length} certification${certs.length!==1?'s':''}</p></div>
+    </div>
   </div>
 
   <div class="card" style="margin-bottom:16px">
-    <div class="card-title">Export your data</div>
-    <p style="font-size:13px;color:#6b7f96;margin-bottom:14px">Download all your credentials as a CSV file. Do this before deleting your account.</p>
+    <div class="card-title">🔐 Change password</div>
+    <p style="font-size:13px;color:#6b7f96;margin-bottom:14px">Update your password. You will need to know your current password.</p>
+    <div style="max-width:360px;display:flex;flex-direction:column;gap:12px">
+      <div class="fg" style="margin-bottom:0"><label>Current password</label><input type="password" id="pw-current" placeholder="••••••••"/></div>
+      <div class="fg" style="margin-bottom:0"><label>New password</label><input type="password" id="pw-new" placeholder="At least 8 characters"/></div>
+      <div class="fg" style="margin-bottom:0"><label>Confirm new password</label><input type="password" id="pw-confirm" placeholder="Re-enter new password"/></div>
+      <div id="pw-err" style="font-size:12px;color:#d42b2b;display:none"></div>
+      <button class="btn btn-blue btn-sm" style="width:fit-content" onclick="changePassword()">Update password</button>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-title">📧 Email notifications</div>
+    <p style="font-size:13px;color:#6b7f96;margin-bottom:14px">Choose when Veridoc sends you expiration alerts.</p>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer">
+        <input type="checkbox" id="notif-90" checked onchange="saveNotifPrefs()" style="width:16px;height:16px"> Alert me 90 days before expiration
+      </label>
+      <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer">
+        <input type="checkbox" id="notif-60" checked onchange="saveNotifPrefs()" style="width:16px;height:16px"> Alert me 60 days before expiration
+      </label>
+      <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer">
+        <input type="checkbox" id="notif-30" checked onchange="saveNotifPrefs()" style="width:16px;height:16px"> Alert me 30 days before expiration
+      </label>
+      <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer">
+        <input type="checkbox" id="notif-7" onchange="saveNotifPrefs()" style="width:16px;height:16px"> Alert me 7 days before expiration
+      </label>
+    </div>
+    <p style="font-size:11px;color:#6b7f96;margin-top:12px">Note: Email alerts are coming in a future update. These preferences will be applied when alerts launch.</p>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-title">📥 Export your data</div>
+    <p style="font-size:13px;color:#6b7f96;margin-bottom:14px">Download all your credentials as a CSV file. Keep a copy for your own records.</p>
     <button class="btn btn-ghost btn-sm" onclick="exportData()">📥 Download my data (CSV)</button>
   </div>
 
-  <div class="card" style="border:1px solid #fecaca;background:#fef2f2;margin-bottom:16px">
-    <div class="card-title" style="color:#d42b2b">⚠️ Delete credentials</div>
+  <div class="card" style="margin-bottom:16px;border:1px solid #fecaca;background:#fef2f2">
+    <div class="card-title" style="color:#d42b2b">🗑 Delete all credentials</div>
     <p style="font-size:13px;color:#6b7f96;margin-bottom:14px">Permanently deletes all your licenses, DEA registrations, and certifications. Your account stays active. This cannot be undone.</p>
-    <button class="btn btn-sm" style="background:#fef2f2;color:#d42b2b;border:1px solid #fecaca" onclick="deleteAllData()">🗑 Delete all my credentials</button>
+    <button class="btn btn-sm" style="background:#fef2f2;color:#d42b2b;border:1px solid #fecaca" onclick="deleteAllData()">Delete all my credentials</button>
   </div>
 
-  <div class="card" style="border:1px solid #d42b2b;background:#fef2f2">
+  <div class="card" style="border:2px solid #d42b2b;background:#fef2f2">
     <div class="card-title" style="color:#d42b2b">❌ Delete account</div>
     <p style="font-size:13px;color:#6b7f96;margin-bottom:14px">Permanently deletes your account and ALL data. You will be signed out immediately. <strong style="color:#0a0f1e">This cannot be undone.</strong></p>
     <button class="btn btn-sm" style="background:#d42b2b;color:#fff;border:none" onclick="deleteAccount()">Delete my account permanently</button>
   </div>`;
+
+  // Restore saved notification preferences
+  const prefs = JSON.parse(localStorage.getItem('vd_notif_prefs') || '{"90":true,"60":true,"30":true,"7":false}');
+  document.getElementById('notif-90').checked = prefs['90'] !== false;
+  document.getElementById('notif-60').checked = prefs['60'] !== false;
+  document.getElementById('notif-30').checked = prefs['30'] !== false;
+  document.getElementById('notif-7').checked = prefs['7'] === true;
+}
+
+function saveNotifPrefs(){
+  const prefs = {
+    '90': document.getElementById('notif-90').checked,
+    '60': document.getElementById('notif-60').checked,
+    '30': document.getElementById('notif-30').checked,
+    '7':  document.getElementById('notif-7').checked,
+  };
+  localStorage.setItem('vd_notif_prefs', JSON.stringify(prefs));
+  toast('Notification preferences saved', 'ok');
+}
+
+async function changePassword(){
+  const current = document.getElementById('pw-current').value;
+  const newPw = document.getElementById('pw-new').value;
+  const confirm = document.getElementById('pw-confirm').value;
+  const errEl = document.getElementById('pw-err');
+  errEl.style.display = 'none';
+
+  if(!current || !newPw || !confirm){ errEl.textContent = 'Please fill in all fields.'; errEl.style.display = 'block'; return; }
+  if(newPw.length < 8){ errEl.textContent = 'New password must be at least 8 characters.'; errEl.style.display = 'block'; return; }
+  if(newPw !== confirm){ errEl.textContent = 'New passwords do not match.'; errEl.style.display = 'block'; return; }
+  if(current === newPw){ errEl.textContent = 'New password must be different from current password.'; errEl.style.display = 'block'; return; }
+
+  const user = getUser();
+  // First verify current password by re-authenticating
+  try {
+    const verifyRes = await fetch(`${SURL}/auth/v1/token?grant_type=password`, {
+      method: 'POST',
+      headers: { 'apikey': SKEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: user.email, password: current })
+    });
+    if(!verifyRes.ok){ errEl.textContent = 'Current password is incorrect.'; errEl.style.display = 'block'; return; }
+    const verifyData = await verifyRes.json();
+
+    // Now update the password
+    const updateRes = await fetch(`${SURL}/auth/v1/user`, {
+      method: 'PUT',
+      headers: {
+        'apikey': SKEY,
+        'Authorization': `Bearer ${verifyData.access_token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ password: newPw })
+    });
+
+    if(!updateRes.ok){
+      const err = await updateRes.json();
+      errEl.textContent = err.msg || 'Failed to update password.';
+      errEl.style.display = 'block';
+      return;
+    }
+
+    // Update stored token with fresh one
+    localStorage.setItem('vd_token', verifyData.access_token);
+    document.getElementById('pw-current').value = '';
+    document.getElementById('pw-new').value = '';
+    document.getElementById('pw-confirm').value = '';
+    toast('Password updated successfully ✓', 'ok');
+
+  } catch(e){
+    errEl.textContent = 'Something went wrong. Try again.';
+    errEl.style.display = 'block';
+  }
 }
 
 async function exportData(){
-  let csv = 'Type,State,License Type,Number,Issue Date,Effective Date,Expiry Date,Notes\n';
-  licenses.forEach(l => csv += `License,${l.state},${l.license_type},${l.license_number},${l.issue_date||''},${l.effective_date||''},${l.expiry_date},"${(l.notes||'').replace(/"/g,'')}"\n`);
-  dea.forEach(d => csv += `DEA,${d.state},DEA,${d.dea_number},,,${d.expiry_date},"Schedule ${d.schedule}"\n`);
-  certs.forEach(c => csv += `Certification,,${c.cert_type},${c.cert_number||''},,,${c.expiry_date},"${(c.issuer||'').replace(/"/g,'')}"\n`);
+  let csv = 'Type,State,License Type,Number,Issue Date,Effective Date,Expiry Date,Notes
+';
+  licenses.forEach(l => csv += `License,${l.state},${l.license_type},${l.license_number},${l.issue_date||''},${l.effective_date||''},${l.expiry_date},"${(l.notes||'').replace(/"/g,'')}"
+`);
+  dea.forEach(d => csv += `DEA,${d.state},DEA,${d.dea_number},,,${d.expiry_date},"Schedule ${d.schedule}"
+`);
+  certs.forEach(c => csv += `Certification,,${c.cert_type},${c.cert_number||''},,,${c.expiry_date},"${(c.issuer||'').replace(/"/g,'')}"
+`);
   const blob = new Blob([csv], {type:'text/csv'});
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
   a.download = 'veridoc-my-data.csv';
   a.click();
   URL.revokeObjectURL(a.href);
-  toast('Data exported ✓','ok');
+  toast('Data exported ✓', 'ok');
 }
 
 async function deleteAllData(){
-  if(!confirm('This will permanently delete ALL your licenses, DEA registrations, and certifications.\n\nThis cannot be undone. Continue?')) return;
-  if(!confirm('Last chance — are you absolutely sure?')) return;
+  if(!confirm('This will permanently delete ALL your licenses, DEA registrations, and certifications.
+
+Your account will stay active but all credential data will be gone. This cannot be undone.')) return;
+  if(!confirm('Are you absolutely sure? This cannot be reversed.')) return;
   const token = getToken();
   const user = getUser();
   if(!token||!user) return;
@@ -516,13 +630,15 @@ async function deleteAllData(){
     fetch(`${SURL}/rest/v1/dea_registrations?user_id=eq.${user.id}`,{method:'DELETE',headers:h}),
     fetch(`${SURL}/rest/v1/certifications?user_id=eq.${user.id}`,{method:'DELETE',headers:h}),
   ]);
-  toast('All credentials deleted','ok');
+  toast('All credentials deleted', 'ok');
   await loadAll();
   renderSettings();
 }
 
 async function deleteAccount(){
-  if(!confirm('This permanently deletes your ENTIRE account including all data.\n\nThis CANNOT be undone. Continue?')) return;
+  if(!confirm('This permanently deletes your ENTIRE account including all data.
+
+This CANNOT be undone. Continue?')) return;
   const typed = prompt('Type DELETE to confirm permanent account deletion:');
   if(typed !== 'DELETE'){ toast('Cancelled — nothing was deleted'); return; }
   const token = getToken();
@@ -545,8 +661,8 @@ async function deleteAccount(){
     <div style="text-align:center;padding:40px 20px">
       <div style="font-size:48px;margin-bottom:16px">✅</div>
       <h2 style="font-size:26px;font-weight:700;margin-bottom:10px">Account deleted</h2>
-      <p style="color:#6b7f96;font-size:14px;line-height:1.7">Your account and all data has been permanently deleted.<br>We are sorry to see you go.</p>
-      <button onclick="location.reload()" style="margin-top:20px;padding:10px 24px;background:#3b82f6;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer">Back to sign in</button>
+      <p style="color:#6b7f96;font-size:14px;line-height:1.7;margin-bottom:20px">Your account and all data has been permanently deleted.<br>We are sorry to see you go.</p>
+      <button onclick="location.reload()" style="padding:10px 24px;background:#3b82f6;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer">Back to sign in</button>
     </div>`;
 }
 
