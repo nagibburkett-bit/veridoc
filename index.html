@@ -461,34 +461,112 @@ async function loadAll(){
 
 function renderSettings(){
   const user = getUser();
-  const email = user?.email || 'your account';
+  const email = user?.email || '';
   document.getElementById('pg-settings').innerHTML = `
-  <div class="ph"><div><h1>Settings</h1><p>Manage your account and data</p></div></div>
+  <div class="ph"><div><h1>Settings</h1><p>Manage your account, security, and data</p></div></div>
 
   <div class="card" style="margin-bottom:16px">
-    <div class="card-title">Account</div>
-    <div class="cred-row"><div class="cr-info"><h4>Email</h4><p>${email}</p></div></div>
+    <div class="card-title">👤 Profile</div>
+    <div class="cred-row"><div class="cr-info"><h4>Email address</h4><p>${email}</p></div></div>
     <div class="cred-row"><div class="cr-info"><h4>Data stored</h4><p>${licenses.length} license${licenses.length!==1?'s':''} · ${dea.length} DEA registration${dea.length!==1?'s':''} · ${certs.length} certification${certs.length!==1?'s':''}</p></div></div>
   </div>
 
   <div class="card" style="margin-bottom:16px">
-    <div class="card-title">Export your data</div>
-    <p style="font-size:13px;color:#6b7f96;margin-bottom:14px">Download all your credentials as a CSV file. Do this before deleting your account.</p>
+    <div class="card-title">🔐 Change password</div>
+    <p style="font-size:13px;color:#6b7f96;margin-bottom:14px">Update your password. You will need your current password to make changes.</p>
+    <div style="max-width:360px;display:flex;flex-direction:column;gap:12px">
+      <div class="fg" style="margin-bottom:0"><label>Current password</label><input type="password" id="pw-current" placeholder="••••••••"/></div>
+      <div class="fg" style="margin-bottom:0"><label>New password</label><input type="password" id="pw-new" placeholder="At least 8 characters"/></div>
+      <div class="fg" style="margin-bottom:0"><label>Confirm new password</label><input type="password" id="pw-confirm" placeholder="Re-enter new password"/></div>
+      <div id="pw-err" style="font-size:12px;color:#d42b2b;display:none"></div>
+      <button class="btn btn-blue btn-sm" style="width:fit-content" onclick="changePassword()">Update password</button>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-title">📧 Email notification preferences</div>
+    <p style="font-size:13px;color:#6b7f96;margin-bottom:14px">Choose when Veridoc alerts you about expiring credentials.</p>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer"><input type="checkbox" id="notif-90" onchange="saveNotifPrefs()" style="width:16px;height:16px"> Alert me 90 days before expiration</label>
+      <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer"><input type="checkbox" id="notif-60" onchange="saveNotifPrefs()" style="width:16px;height:16px"> Alert me 60 days before expiration</label>
+      <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer"><input type="checkbox" id="notif-30" onchange="saveNotifPrefs()" style="width:16px;height:16px"> Alert me 30 days before expiration</label>
+      <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer"><input type="checkbox" id="notif-7" onchange="saveNotifPrefs()" style="width:16px;height:16px"> Alert me 7 days before expiration</label>
+    </div>
+    <p style="font-size:11px;color:#6b7f96;margin-top:12px">Email alerts are coming in a future update. Your preferences will be saved and applied when they launch.</p>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-title">📥 Export your data</div>
+    <p style="font-size:13px;color:#6b7f96;margin-bottom:14px">Download all your credentials as a CSV file. Keep a copy for your own records.</p>
     <button class="btn btn-ghost btn-sm" onclick="exportData()">📥 Download my data (CSV)</button>
   </div>
 
-  <div class="card" style="border:1px solid #fecaca;background:#fef2f2;margin-bottom:16px">
-    <div class="card-title" style="color:#d42b2b">⚠️ Delete credentials</div>
+  <div class="card" style="margin-bottom:16px;border:1px solid #fecaca;background:#fef2f2">
+    <div class="card-title" style="color:#d42b2b">🗑 Delete all credentials</div>
     <p style="font-size:13px;color:#6b7f96;margin-bottom:14px">Permanently deletes all your licenses, DEA registrations, and certifications. Your account stays active. This cannot be undone.</p>
-    <button class="btn btn-sm" style="background:#fef2f2;color:#d42b2b;border:1px solid #fecaca" onclick="deleteAllData()">🗑 Delete all my credentials</button>
+    <button class="btn btn-sm" style="background:#fef2f2;color:#d42b2b;border:1px solid #fecaca" onclick="deleteAllData()">Delete all my credentials</button>
   </div>
 
-  <div class="card" style="border:1px solid #d42b2b;background:#fef2f2">
+  <div class="card" style="border:2px solid #d42b2b;background:#fef2f2">
     <div class="card-title" style="color:#d42b2b">❌ Delete account</div>
     <p style="font-size:13px;color:#6b7f96;margin-bottom:14px">Permanently deletes your account and ALL data. You will be signed out immediately. <strong style="color:#0a0f1e">This cannot be undone.</strong></p>
     <button class="btn btn-sm" style="background:#d42b2b;color:#fff;border:none" onclick="deleteAccount()">Delete my account permanently</button>
   </div>`;
+
+  // Restore saved notification preferences
+  const prefs = JSON.parse(localStorage.getItem('vd_notif_prefs') || '{"90":true,"60":true,"30":true,"7":false}');
+  document.getElementById('notif-90').checked = prefs['90'] !== false;
+  document.getElementById('notif-60').checked = prefs['60'] !== false;
+  document.getElementById('notif-30').checked = prefs['30'] !== false;
+  document.getElementById('notif-7').checked = prefs['7'] === true;
 }
+
+function saveNotifPrefs(){
+  const prefs = {
+    '90': document.getElementById('notif-90').checked,
+    '60': document.getElementById('notif-60').checked,
+    '30': document.getElementById('notif-30').checked,
+    '7':  document.getElementById('notif-7').checked,
+  };
+  localStorage.setItem('vd_notif_prefs', JSON.stringify(prefs));
+  toast('Notification preferences saved', 'ok');
+}
+
+async function changePassword(){
+  const current = document.getElementById('pw-current').value;
+  const newPw = document.getElementById('pw-new').value;
+  const confirm = document.getElementById('pw-confirm').value;
+  const errEl = document.getElementById('pw-err');
+  errEl.style.display = 'none';
+  if(!current||!newPw||!confirm){ errEl.textContent='Please fill in all fields.'; errEl.style.display='block'; return; }
+  if(newPw.length < 8){ errEl.textContent='New password must be at least 8 characters.'; errEl.style.display='block'; return; }
+  if(newPw !== confirm){ errEl.textContent='New passwords do not match.'; errEl.style.display='block'; return; }
+  if(current === newPw){ errEl.textContent='New password must be different from your current password.'; errEl.style.display='block'; return; }
+  const user = getUser();
+  try {
+    // Verify current password first
+    const verifyRes = await fetch(`${SURL}/auth/v1/token?grant_type=password`, {
+      method:'POST',
+      headers:{'apikey':SKEY,'Content-Type':'application/json'},
+      body:JSON.stringify({email:user.email, password:current})
+    });
+    if(!verifyRes.ok){ errEl.textContent='Current password is incorrect.'; errEl.style.display='block'; return; }
+    const verifyData = await verifyRes.json();
+    // Update password
+    const updateRes = await fetch(`${SURL}/auth/v1/user`, {
+      method:'PUT',
+      headers:{'apikey':SKEY,'Authorization':`Bearer ${verifyData.access_token}`,'Content-Type':'application/json'},
+      body:JSON.stringify({password:newPw})
+    });
+    if(!updateRes.ok){ const e=await updateRes.json(); errEl.textContent=e.msg||'Failed to update password.'; errEl.style.display='block'; return; }
+    localStorage.setItem('vd_token', verifyData.access_token);
+    document.getElementById('pw-current').value='';
+    document.getElementById('pw-new').value='';
+    document.getElementById('pw-confirm').value='';
+    toast('Password updated successfully ✓','ok');
+  } catch(e){ errEl.textContent='Something went wrong. Try again.'; errEl.style.display='block'; }
+}
+
 
 async function exportData(){
   let csv = 'Type,State,License Type,Number,Issue Date,Effective Date,Expiry Date,Notes\n';
