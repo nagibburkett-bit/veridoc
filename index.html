@@ -442,9 +442,15 @@ async function doLogin(){
   err.classList.remove('show');
   if(!email||!pass){err.textContent='Please enter email and password.';err.classList.add('show');return;}
   btn.disabled=true;btn.textContent='Signing in...';
-  const{error}=await sb.auth.signInWithPassword({email,password:pass});
+  const{data,error}=await sb.auth.signInWithPassword({email,password:pass});
   btn.disabled=false;btn.textContent='Sign in →';
-  if(error){err.textContent=error.message==='Invalid login credentials'?'Incorrect email or password.':error.message;err.classList.add('show');}
+  if(error){
+    err.textContent=error.message==='Invalid login credentials'?'Incorrect email or password.':error.message;
+    err.classList.add('show');
+  } else if(data?.session){
+    saveSession(data.session);
+    console.log('Veridoc: login successful, session saved');
+  }
 }
 
 async function doSignup(){
@@ -883,61 +889,111 @@ document.addEventListener('keydown',e=>{
 // ─── AUTH LISTENER ───────────────────────────────────────────────────────────
 // This fires whenever the auth state changes (login, logout, session restore)
 // Check for existing session immediately on page load
-async function initApp(){
-  try {
-    console.log('Checking session...');
-    // First try getSession
-    const { data: { session }, error } = await sb.auth.getSession();
-    console.log('Session check result:', session ? 'Found session' : 'No session', error ? error.message : '');
-    if(session?.user){
-      console.log('Session found, entering app...');
-      await enterApp(session.user);
-    } else {
-      // Try refreshSession as fallback
-      console.log('No session found, trying refresh...');
-      const { data: refreshData } = await sb.auth.refreshSession();
-      if(refreshData?.session?.user){
-        console.log('Refresh worked, entering app...');
-        await enterApp(refreshData.session.user);
-      } else {
-        console.log('No session, showing login...');
-        document.getElementById('auth-screen').style.display='flex';
-        document.getElementById('app-screen').classList.remove('active');
-      }
-    }
-  } catch(err){
-    console.error('Session check failed:',err);
-    document.getElementById('auth-screen').style.display='flex';
+// ─── SESSION MANAGEMENT ──────────────────────────────────────────────────────
+// Store session manually so it survives page refresh
+function saveSession(session){
+  if(session){
+    localStorage.setItem('vd_session', JSON.stringify({
+      access_token: session.access_token,
+      refresh_token: session.refresh_token,
+      user: session.user,
+      expires_at: session.expires_at
+    }));
   }
 }
 
+function clearSession(){
+  localStorage.removeItem('vd_session');
+}
+
+function getSavedSession(){
+  try {
+    const raw = localStorage.getItem('vd_session');
+    if(!raw) return null;
+    const s = JSON.parse(raw);
+    // Check if expired (with 60 second buffer)
+    if(s.expires_at && (s.expires_at - 60) < Math.floor(Date.now()/1000)){
+      console.log('Session expired, will try to refresh');
+      return null;
+    }
+    return s;
+  } catch(e){ return null; }
+}
+
 async function enterApp(user){
-  currentUser=user;
-  const meta=user.user_metadata||{};
-  const first=meta.first_name||user.email.split('@')[0];
-  const last=meta.last_name||'';
-  document.getElementById('top-name').textContent=`${first} ${last}`.trim();
-  document.getElementById('top-av').textContent=`${(first[0]||'').toUpperCase()}${(last[0]||'').toUpperCase()}`;
-  document.getElementById('auth-screen').style.display='none';
+  currentUser = user;
+  const meta = user.user_metadata || {};
+  const first = meta.first_name || user.email.split('@')[0];
+  const last = meta.last_name || '';
+  document.getElementById('top-name').textContent = `${first} ${last}`.trim();
+  document.getElementById('top-av').textContent = `${(first[0]||'').toUpperCase()}${(last[0]||'').toUpperCase()}`;
+  document.getElementById('auth-screen').style.display = 'none';
   document.getElementById('app-screen').classList.add('active');
   await loadAllData();
 }
 
-// Listen for auth changes (login/logout)
-sb.auth.onAuthStateChange(async(event,session)=>{
-  console.log('Auth event:',event);
-  if(event==='SIGNED_IN' && session?.user){
+function showLogin(){
+  document.getElementById('auth-screen').style.display = 'flex';
+  document.getElementById('app-screen').classList.remove('active');
+}
+
+async function initApp(){
+  console.log('Veridoc: initializing...');
+
+  // Step 1: Check localStorage for saved session
+  const saved = getSavedSession();
+  if(saved?.user){
+    console.log('Veridoc: found saved session, restoring...');
+    // Set the session in Supabase client
+    const { data, error } = await sb.auth.setSession({
+      access_token: saved.access_token,
+      refresh_token: saved.refresh_token
+    });
+    if(data?.session?.user){
+      console.log('Veridoc: session restored successfully');
+      saveSession(data.session); // Update with refreshed tokens
+      await enterApp(data.session.user);
+      return;
+    } else {
+      console.log('Veridoc: session restore failed:', error?.message);
+      clearSession();
+    }
+  }
+
+  // Step 2: Try getSession from Supabase
+  console.log('Veridoc: checking Supabase session...');
+  const { data: { session } } = await sb.auth.getSession();
+  if(session?.user){
+    console.log('Veridoc: Supabase session found');
+    saveSession(session);
+    await enterApp(session.user);
+    return;
+  }
+
+  // Step 3: No session — show login
+  console.log('Veridoc: no session found, showing login');
+  showLogin();
+}
+
+// Listen for auth events
+sb.auth.onAuthStateChange(async(event, session)=>{
+  console.log('Veridoc auth event:', event);
+  if(event === 'SIGNED_IN' && session?.user){
+    saveSession(session);
     await enterApp(session.user);
   }
-  if(event==='SIGNED_OUT'){
-    currentUser=null;
-    licenses=[];dea=[];certs=[];
-    document.getElementById('auth-screen').style.display='flex';
-    document.getElementById('app-screen').classList.remove('active');
+  if(event === 'TOKEN_REFRESHED' && session){
+    saveSession(session); // Keep localStorage updated
+  }
+  if(event === 'SIGNED_OUT'){
+    clearSession();
+    currentUser = null;
+    licenses = []; dea = []; certs = [];
+    showLogin();
   }
 });
 
-// Initialize on page load
+// Start the app
 initApp();
 </script>
 </body>
