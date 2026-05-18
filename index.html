@@ -885,12 +885,25 @@ document.addEventListener('keydown',e=>{
 // Check for existing session immediately on page load
 async function initApp(){
   try {
-    const { data: { session } } = await sb.auth.getSession();
+    console.log('Checking session...');
+    // First try getSession
+    const { data: { session }, error } = await sb.auth.getSession();
+    console.log('Session check result:', session ? 'Found session' : 'No session', error ? error.message : '');
     if(session?.user){
+      console.log('Session found, entering app...');
       await enterApp(session.user);
     } else {
-      document.getElementById('auth-screen').style.display='flex';
-      document.getElementById('app-screen').classList.remove('active');
+      // Try refreshSession as fallback
+      console.log('No session found, trying refresh...');
+      const { data: refreshData } = await sb.auth.refreshSession();
+      if(refreshData?.session?.user){
+        console.log('Refresh worked, entering app...');
+        await enterApp(refreshData.session.user);
+      } else {
+        console.log('No session, showing login...');
+        document.getElementById('auth-screen').style.display='flex';
+        document.getElementById('app-screen').classList.remove('active');
+      }
     }
   } catch(err){
     console.error('Session check failed:',err);
