@@ -483,30 +483,34 @@ async function doSignout(){
 // ─── DATA LOADING ────────────────────────────────────────────────────────────
 async function loadAllData(){
   try {
-    
-    const[lRes,dRes,cRes,pRes]=await Promise.all([
-      sb.from('licenses').select('*').order('expiry_date'),
-      sb.from('dea_registrations').select('*').order('expiry_date'),
-      sb.from('certifications').select('*').order('expiry_date'),
-      sb.from('profiles').select('*').eq('id',currentUser.id).maybeSingle()
+    const safeQuery = async (fn) => {
+      try { return await fn(); } 
+      catch(e) { console.error('Query failed:',e.message); return {data:[],error:e}; }
+    };
+
+    const [lRes,dRes,cRes,pRes] = await Promise.all([
+      safeQuery(()=>sb.from('licenses').select('*').order('expiry_date')),
+      safeQuery(()=>sb.from('dea_registrations').select('*').order('expiry_date')),
+      safeQuery(()=>sb.from('certifications').select('*').order('expiry_date')),
+      safeQuery(()=>sb.from('profiles').select('*').eq('id',currentUser.id).maybeSingle()),
     ]);
-    if(lRes.error){console.error('licenses:',lRes.error.message);}
-    if(dRes.error){console.error('dea:',dRes.error.message);}
-    if(cRes.error){console.error('certs:',cRes.error.message);}
-    if(pRes.error){console.error('profile:',pRes.error.message);}
-    // Non-fatal errors — log but continue
-    const fatal=lRes.error||dRes.error||cRes.error;
-    if(fatal){
-      console.warn('Query warning:',fatal.message);
-    }
-    licenses=lRes.data||[];
-    dea=dRes.data||[];
-    certs=cRes.data||[];
-    profile=pRes.data||{first_name:'',last_name:''};
+
+    console.log('Veridoc loaded:',{
+      licenses:(lRes.data||[]).length,
+      dea:(dRes.data||[]).length,
+      certs:(cRes.data||[]).length,
+      profile:!!pRes.data
+    });
+
+    licenses = lRes.data||[];
+    dea = dRes.data||[];
+    certs = cRes.data||[];
+    profile = pRes.data||{first_name:'',last_name:''};
     renderAll();
+
   } catch(err){
-    console.error('loadAllData error:',err);
-    document.getElementById('page-dashboard').innerHTML='<div style="padding:40px;text-align:center"><p style="color:var(--red);font-size:14px;margin-bottom:12px">Error: '+err.message+'</p><p style="color:var(--muted);font-size:12px">Open browser console (F12) for details.</p><button onclick="loadAllData()" style="margin-top:16px;padding:10px 20px;background:var(--blue);color:#fff;border:none;border-radius:8px;cursor:pointer">Retry</button></div>';
+    console.error('loadAllData crashed:',err);
+    document.getElementById('page-dashboard').innerHTML='<div style="padding:40px;text-align:center"><p style="color:var(--red);font-size:14px;margin-bottom:12px">Error: '+err.message+'</p><button onclick="loadAllData()" style="margin-top:16px;padding:10px 20px;background:var(--blue);color:#fff;border:none;border-radius:8px;cursor:pointer">Retry</button></div>';
   }
 }
 
