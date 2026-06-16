@@ -1,0 +1,1129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Veridoc</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:#f5f8fb;color:#0a0f1e;min-height:100vh;}
+input,select,button,textarea{font-family:'DM Sans',sans-serif;}
+::-webkit-scrollbar{width:5px;} ::-webkit-scrollbar-thumb{background:#d4dde8;border-radius:3px;}
+
+/* AUTH */
+#auth{display:flex;min-height:100vh;}
+.auth-left{flex:1;background:#0a0f1e;display:flex;align-items:center;justify-content:center;padding:60px;}
+.auth-logo{font-size:42px;font-weight:700;color:#fff;margin-bottom:12px;}
+.auth-logo span{color:#3b82f6;}
+.auth-tagline{font-size:16px;color:rgba(255,255,255,.5);line-height:1.7;max-width:360px;margin-bottom:40px;}
+.auth-feat{display:flex;gap:10px;margin-bottom:12px;align-items:flex-start;}
+.auth-feat-dot{width:6px;height:6px;border-radius:50%;background:#3b82f6;margin-top:7px;flex-shrink:0;}
+.auth-feat p{font-size:13px;color:rgba(255,255,255,.5);}
+.auth-right{flex:1;display:flex;align-items:center;justify-content:center;padding:40px;}
+.auth-box{width:100%;max-width:400px;}
+.auth-box h2{font-size:28px;font-weight:700;margin-bottom:6px;}
+.auth-box p{font-size:14px;color:#6b7f96;margin-bottom:28px;}
+.fg{margin-bottom:14px;}
+.fg label{display:block;font-size:11px;font-weight:700;color:#3a4a5c;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;}
+.fg input,.fg select{width:100%;padding:11px 14px;border:1.5px solid #d4dde8;border-radius:8px;font-size:14px;color:#0a0f1e;outline:none;transition:border-color .15s;}
+.fg input:focus,.fg select:focus{border-color:#3b82f6;}
+.fr2{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.auth-btn{width:100%;padding:12px;background:#3b82f6;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;margin-top:6px;}
+.auth-btn:hover{background:#2563eb;}
+.auth-btn:disabled{opacity:.6;cursor:not-allowed;}
+.auth-err{background:#fef2f2;border:1px solid #fecaca;color:#d42b2b;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none;}
+.auth-err.show{display:block;}
+.auth-switch{text-align:center;margin-top:16px;font-size:14px;color:#6b7f96;}
+.auth-switch a{color:#3b82f6;font-weight:600;cursor:pointer;}
+
+/* APP */
+#app{display:none;flex-direction:column;min-height:100vh;}
+#app.on{display:flex;}
+.topbar{background:#fff;border-bottom:1px solid #d4dde8;height:54px;display:flex;align-items:center;padding:0 24px;gap:14px;position:sticky;top:0;z-index:50;}
+.t-logo{font-size:22px;font-weight:700;color:#0a0f1e;}
+.t-logo span{color:#3b82f6;}
+.t-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
+.t-user{font-size:13px;color:#3a4a5c;font-weight:500;}
+.t-out{padding:7px 13px;background:transparent;border:1px solid #d4dde8;border-radius:8px;font-size:12px;font-weight:600;color:#6b7f96;cursor:pointer;}
+.t-out:hover{border-color:#ef4444;color:#ef4444;}
+.wrap{display:flex;flex:1;}
+.side{width:200px;background:#fff;border-right:1px solid #d4dde8;padding:14px 8px;flex-shrink:0;}
+.nav{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:8px;font-size:13px;font-weight:500;color:#6b7f96;cursor:pointer;margin-bottom:2px;border:none;background:transparent;width:100%;text-align:left;}
+.nav:hover{background:#f5f8fb;color:#0a0f1e;}
+.nav.on{background:#eef3ff;color:#3b82f6;font-weight:600;}
+.nav-badge{margin-left:auto;background:#ef4444;color:#fff;border-radius:20px;padding:1px 6px;font-size:10px;font-weight:700;}
+.main{flex:1;padding:28px 32px;overflow-y:auto;}
+.page{display:none;}
+.page.on{display:block;}
+
+/* COMPONENTS */
+.ph{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;}
+.ph h1{font-size:24px;font-weight:700;color:#0a0f1e;}
+.ph p{font-size:13px;color:#6b7f96;margin-top:3px;}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;border:none;cursor:pointer;}
+.btn-blue{background:#3b82f6;color:#fff;}
+.btn-blue:hover{background:#2563eb;}
+.btn-ghost{background:#fff;color:#3a4a5c;border:1px solid #d4dde8;}
+.btn-ghost:hover{border-color:#3b82f6;color:#3b82f6;}
+.btn-sm{padding:6px 12px;font-size:12px;}
+.card{background:#fff;border:1px solid #d4dde8;border-radius:12px;padding:20px;margin-bottom:16px;}
+.card-title{font-size:14px;font-weight:600;color:#0a0f1e;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
+.stat{background:#fff;border:1px solid #d4dde8;border-radius:10px;padding:16px;}
+.stat-n{font-size:30px;font-weight:700;line-height:1;margin-bottom:4px;}
+.stat-l{font-size:10px;font-weight:700;color:#6b7f96;text-transform:uppercase;letter-spacing:.06em;}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;}
+.b-green{background:#e6f7f0;color:#0fa360;}
+.b-amber{background:#fff4e5;color:#e07000;}
+.b-red{background:#fef2f2;color:#d42b2b;}
+.b-gray{background:#f1f5f9;color:#6b7f96;}
+.cred-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eaf0f7;}
+.cred-row:last-child{border-bottom:none;}
+.cr-info h4{font-size:13px;font-weight:600;}
+.cr-info p{font-size:11px;color:#6b7f96;margin-top:2px;}
+.cr-right{display:flex;align-items:center;gap:8px;}
+.tbl-wrap{overflow-x:auto;border-radius:12px;border:1px solid #d4dde8;}
+table{width:100%;border-collapse:collapse;}
+th{font-size:10px;font-weight:700;color:#6b7f96;text-transform:uppercase;letter-spacing:.07em;padding:10px 14px;text-align:left;background:#f5f8fb;border-bottom:1px solid #d4dde8;}
+td{font-size:12px;color:#3a4a5c;padding:11px 14px;border-bottom:1px solid #eaf0f7;vertical-align:middle;}
+tr:last-child td{border-bottom:none;}
+tr:hover td{background:#f5f8fb;}
+.chip-state{display:inline-block;background:#eef3ff;color:#3b82f6;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:700;}
+.chip-type{display:inline-block;background:#f1f5f9;color:#3a4a5c;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:600;border:1px solid #d4dde8;}
+.mono{font-family:monospace;font-size:11px;color:#6b7f96;}
+.ib{background:transparent;border:none;cursor:pointer;padding:5px;border-radius:6px;color:#6b7f96;font-size:14px;}
+.ib:hover{background:#f1f5f9;color:#0a0f1e;}
+.ib.del:hover{color:#ef4444;}
+.ac{display:flex;gap:4px;}
+.renew-wrap{display:flex;flex-direction:column;gap:2px;}
+.rb{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:600;text-decoration:none;border:1px solid;}
+.rb-open{border-color:#0fa360;color:#0fa360;background:#e6f7f0;}
+.rb-open:hover{opacity:.8;}
+.rb-urg{border-color:#e07000;color:#e07000;background:#fff4e5;}
+.rb-lock{border-color:#d4dde8;color:#6b7f96;background:#f1f5f9;cursor:default;}
+.rb-exp{border-color:#d42b2b;color:#d42b2b;background:#fef2f2;}
+.rn{font-size:10px;color:#6b7f96;}
+.dea-warn{background:#fff4e5;border:1px solid #fde68a;border-radius:8px;padding:12px 16px;margin-bottom:18px;font-size:13px;color:#e07000;}
+.al-item{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-radius:8px;margin-bottom:10px;border:1px solid;}
+.al-exp{background:#fef2f2;border-color:#fecaca;}
+.al-warn{background:#fff4e5;border-color:#fde68a;}
+.al-l h4{font-size:13px;font-weight:600;}
+.al-l p{font-size:11px;color:#6b7f96;margin-top:2px;}
+.al-r .big{font-size:22px;font-weight:700;line-height:1;text-align:right;}
+.al-r .sm{font-size:10px;color:#6b7f96;text-align:right;}
+.empty{text-align:center;padding:40px;color:#6b7f96;}
+.empty-icon{font-size:32px;display:block;margin-bottom:10px;}
+.filters{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+.fc{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid #d4dde8;background:transparent;color:#6b7f96;}
+.fc.on{background:#eef3ff;border-color:#bfdbfe;color:#3b82f6;}
+
+/* MODAL */
+.modal-bg{position:fixed;inset:0;background:rgba(10,15,30,.45);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;}
+.modal{background:#fff;border-radius:14px;padding:28px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;}
+.modal h2{font-size:20px;font-weight:700;margin-bottom:20px;}
+.modal-actions{display:flex;gap:10px;margin-top:20px;}
+.modal-actions .btn{flex:1;justify-content:center;}
+.field-err{font-size:11px;color:#d42b2b;margin-top:4px;display:none;}
+.field-err.show{display:block;}
+.sib{background:#f5f8fb;border:1px solid #d4dde8;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#6b7f96;display:none;}
+.sib.show{display:block;}
+.sib strong{color:#3a4a5c;display:block;margin-bottom:3px;}
+.dea-box{background:#fff4e5;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#e07000;}
+.fr3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+
+/* TOAST */
+.toast-wrap{position:fixed;bottom:20px;right:20px;z-index:999;display:flex;flex-direction:column;gap:8px;}
+.toast{background:#0a0f1e;color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:500;}
+.toast.ok{background:#0fa360;}
+.toast.err{background:#d42b2b;}
+
+.spinner{width:24px;height:24px;border:3px solid #d4dde8;border-top-color:#3b82f6;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;gap:14px;color:#6b7f96;font-size:14px;}
+@media(max-width:700px){.auth-left,.side{display:none;}.main{padding:16px;}.stats{grid-template-columns:1fr 1fr;}}
+</style>
+</head>
+<body>
+
+<!-- AUTH -->
+<div id="auth">
+  <div class="auth-left">
+    <div>
+      <div class="auth-logo">Veridoc<span>.</span></div>
+      <p class="auth-tagline">Track every NP & PA license, DEA registration, and certification in one place.</p>
+      <div class="auth-feat"><div class="auth-feat-dot"></div><p>All 50 states with state-specific renewal windows</p></div>
+      <div class="auth-feat"><div class="auth-feat-dot"></div><p>DEA registration alerts — never miss the $888 renewal</p></div>
+      <div class="auth-feat"><div class="auth-feat-dot"></div><p>ANCC, AANP, NCCPA, BLS, ACLS, PALS and more</p></div>
+    </div>
+  </div>
+  <div class="auth-right">
+    <div id="login-box" class="auth-box">
+      <h2>Welcome back.</h2>
+      <p>Sign in to your Veridoc account.</p>
+      <div class="auth-err" id="login-err"></div>
+      <div class="fg"><label>Email</label><input type="email" id="le" placeholder="you@example.com" autocomplete="email"/></div>
+      <div class="fg"><label>Password</label><input type="password" id="lp" placeholder="••••••••"/></div>
+      <button class="auth-btn" id="login-btn" onclick="doLogin()">Sign in →</button>
+      <div class="auth-switch">No account? <a onclick="show('signup')">Create one free →</a></div>
+    </div>
+    <div id="signup-box" class="auth-box" style="display:none">
+      <h2>Create your account.</h2>
+      <p>Free beta access for NPs and PAs.</p>
+      <div class="auth-err" id="signup-err"></div>
+      <div class="fr2">
+        <div class="fg"><label>First name</label><input type="text" id="sf" placeholder="Jane"/></div>
+        <div class="fg"><label>Last name</label><input type="text" id="sl" placeholder="Smith"/></div>
+      </div>
+      <div class="fg"><label>Email</label><input type="email" id="se" placeholder="you@example.com"/></div>
+      <div class="fg"><label>Password</label><input type="password" id="sp" placeholder="At least 8 characters"/></div>
+      <div class="fr2">
+        <div class="fg"><label>Role</label>
+          <select id="sr"><option value="NP">NP</option><option value="PA">PA</option><option value="CRNA">CRNA</option><option value="RN">RN</option><option value="MD">MD</option></select>
+        </div>
+        <div class="fg"><label>Account type</label>
+          <select id="st"><option value="individual">Individual</option><option value="telehealth">Telehealth</option><option value="staffing">Staffing</option></select>
+        </div>
+      </div>
+      <button class="auth-btn" id="signup-btn" onclick="doSignup()">Create account →</button>
+      <div class="auth-switch">Have an account? <a onclick="show('login')">Sign in →</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="topbar">
+    <div class="t-logo">Veridoc<span>.</span></div>
+    <div class="t-right">
+      <span class="t-user" id="t-name"></span>
+      <button class="t-out" onclick="doSignout()">Sign out</button>
+    </div>
+  </div>
+  <div class="wrap">
+    <div class="side">
+      <button class="nav on" onclick="go('dashboard',this)">📊 Dashboard</button>
+      <button class="nav" onclick="go('licenses',this)">🗺 Licenses</button>
+      <button class="nav" onclick="go('dea',this)">💊 DEA Registry</button>
+      <button class="nav" onclick="go('certifications',this)">🎓 Certifications</button>
+      <button class="nav" onclick="go('alerts',this)" id="nav-al">🔔 Alerts <span class="nav-badge" id="al-ct" style="display:none">0</span></button>
+      <button class="nav" onclick="go('settings',this)">⚙️ Settings</button>
+      <button class="nav" onclick="go('admin',this)" id="nav-admin" style="display:none">📈 Admin</button>
+    </div>
+    <div class="main">
+      <div class="page on" id="pg-dashboard"><div class="loading"><div class="spinner"></div>Loading...</div></div>
+      <div class="page" id="pg-licenses"></div>
+      <div class="page" id="pg-dea"></div>
+      <div class="page" id="pg-certifications"></div>
+      <div class="page" id="pg-alerts"></div>
+      <div class="page" id="pg-settings"></div>
+      <div class="page" id="pg-admin"></div>
+    </div>
+  </div>
+</div>
+
+<!-- FEEDBACK BUTTON (floating, always visible) -->
+<button id="feedback-fab" onclick="openFeedbackModal()" style="display:none;position:fixed;bottom:24px;right:24px;z-index:150;background:#3b82f6;color:#fff;border:none;border-radius:50px;padding:12px 20px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 4px 16px rgba(59,130,246,.35);align-items:center;gap:6px">
+  💬 Feedback
+</button>
+
+<!-- FEEDBACK MODAL -->
+<div class="modal-bg" id="feedback-modal-bg" style="display:none" onclick="if(event.target===this)closeFeedbackModal()">
+  <div class="modal">
+    <h2>Report an issue or share feedback</h2>
+    <p style="font-size:13px;color:#6b7f96;margin-bottom:16px">Tell us what's confusing, broken, or what you'd love to see. This goes straight to the founder.</p>
+    <div class="fg"><label>Category</label>
+      <select id="fb-category">
+        <option value="confusing">Something is confusing</option>
+        <option value="bug">Something is broken</option>
+        <option value="missing">Missing a feature I need</option>
+        <option value="praise">Just wanted to say something nice</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div class="fg"><label>Your message *</label>
+      <textarea id="fb-message" rows="4" placeholder="What happened? What were you trying to do?" style="width:100%;padding:10px 13px;border:1.5px solid #d4dde8;border-radius:8px;font-size:13px;resize:vertical;font-family:inherit"></textarea>
+    </div>
+    <div id="fb-err" style="font-size:12px;color:#d42b2b;display:none;margin-bottom:8px"></div>
+    <div class="modal-actions">
+      <button class="btn btn-blue" onclick="submitFeedback()">Send feedback</button>
+      <button class="btn btn-ghost" onclick="closeFeedbackModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modal-bg" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal"><h2 id="m-title"></h2><div id="m-body"></div>
+    <div class="modal-actions">
+      <button class="btn btn-blue" onclick="saveModal()">Save</button>
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toasts"></div>
+
+<script>
+// ── CONFIG ────────────────────────────────────────────────────────────────────
+const SURL = 'https://lfpjmsjafgkzlidvoivk.supabase.co';
+const SKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxmcGptc2phZmdremxpZHZvaXZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2OTE5MTgsImV4cCI6MjA5NDI2NzkxOH0.dUYYpsmr2dMNKgjgxv92iim7HmUF5lBMaWTLgJaPDq0';
+
+// ── ANALYTICS TRACKING ────────────────────────────────────────────────────
+let currentPage = 'dashboard';
+async function track(eventName, eventData={}){
+  try {
+    const user = getUser();
+    const token = getToken();
+    if(!token) return; // not logged in yet, skip silently
+    await fetch(`${SURL}/rest/v1/analytics_events`, {
+      method: 'POST',
+      headers: {
+        'apikey': SKEY,
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({
+        user_id: user?.id || null,
+        event_name: eventName,
+        event_data: eventData,
+        page: currentPage
+      })
+    });
+  } catch(e){ console.warn('track failed (non-critical):', e.message); }
+}
+
+// ── SUPABASE ──────────────────────────────────────────────────────────────────
+// Simple direct API calls — no SDK needed, no session management issues
+// ── TOKEN REFRESH ─────────────────────────────────────────────────────────────
+let isRefreshing = false;
+async function refreshAccessToken() {
+  if (isRefreshing) {
+    await new Promise(r => setTimeout(r, 500));
+    return getToken();
+  }
+  const refreshToken = localStorage.getItem('vd_refresh');
+  if (!refreshToken) return null;
+  isRefreshing = true;
+  try {
+    const res = await fetch(`${SURL}/auth/v1/token?grant_type=refresh_token`, {
+      method: 'POST',
+      headers: { 'apikey': SKEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: refreshToken })
+    });
+    if (!res.ok) { console.warn('Refresh token invalid or expired'); return null; }
+    const data = await res.json();
+    localStorage.setItem('vd_token', data.access_token);
+    localStorage.setItem('vd_refresh', data.refresh_token);
+    if (data.user) localStorage.setItem('vd_user', JSON.stringify(data.user));
+    console.log('Veridoc: access token refreshed');
+    return data.access_token;
+  } catch(e) {
+    console.error('Token refresh failed:', e.message);
+    return null;
+  } finally {
+    isRefreshing = false;
+  }
+}
+
+async function authFetch(url, options={}) {
+  let token = getToken();
+  const buildHeaders = (tok) => ({
+    'apikey': SKEY,
+    'Authorization': `Bearer ${tok}`,
+    'Content-Type': 'application/json',
+    ...(options.headers || {})
+  });
+  let res = await fetch(url, { ...options, headers: buildHeaders(token) });
+  if (res.status === 401) {
+    const newToken = await refreshAccessToken();
+    if (newToken) {
+      res = await fetch(url, { ...options, headers: buildHeaders(newToken) });
+    } else {
+      console.warn('Session expired - redirecting to login');
+      localStorage.removeItem('vd_token');
+      localStorage.removeItem('vd_refresh');
+      localStorage.removeItem('vd_user');
+      document.getElementById('app').classList.remove('on');
+      document.getElementById('auth').style.display = 'flex';
+      toast('Your session expired. Please sign in again.', 'err');
+    }
+  }
+  return res;
+}
+
+async function sbQuery(table, userId) {
+  const session = getToken();
+  if (!session) return [];
+  try {
+    const res = await authFetch(`${SURL}/rest/v1/${table}?select=*&order=expiry_date`, { method: 'GET' });
+    if (!res.ok) { console.error(table, res.status, await res.text()); return []; }
+    return await res.json();
+  } catch(e) { console.error(table, e.message); return []; }
+}
+
+async function sbInsert(table, data) {
+  const session = getToken();
+  if (!session) return null;
+  const res = await authFetch(`${SURL}/rest/v1/${table}`, {
+    method: 'POST',
+    headers: { 'Prefer': 'return=representation' },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) { toast(await res.text(), 'err'); return null; }
+  return (await res.json())[0];
+}
+
+async function sbUpdate(table, id, data) {
+  const session = getToken();
+  if (!session) return null;
+  const res = await authFetch(`${SURL}/rest/v1/${table}?id=eq.${id}`, {
+    method: 'PATCH',
+    headers: { 'Prefer': 'return=representation' },
+    body: JSON.stringify(data)
+  });
+  if (!res.ok) { toast(await res.text(), 'err'); return null; }
+  return (await res.json())[0];
+}
+
+async function sbDelete(table, id) {
+  const session = getToken();
+  if (!session) return false;
+  const res = await authFetch(`${SURL}/rest/v1/${table}?id=eq.${id}`, { method: 'DELETE' });
+  return res.ok;
+}
+
+// ── AUTH ──────────────────────────────────────────────────────────────────────
+function getToken() { return localStorage.getItem('vd_token'); }
+function getUser() { try { return JSON.parse(localStorage.getItem('vd_user')||'null'); } catch{return null;} }
+
+async function doLogin() {
+  const btn = document.getElementById('login-btn');
+  const err = document.getElementById('login-err');
+  const email = document.getElementById('le').value.trim();
+  const pass = document.getElementById('lp').value;
+  err.classList.remove('show');
+  if (!email || !pass) { err.textContent = 'Enter email and password.'; err.classList.add('show'); return; }
+  btn.disabled = true; btn.textContent = 'Signing in...';
+  try {
+    const res = await fetch(`${SURL}/auth/v1/token?grant_type=password`, {
+      method: 'POST',
+      headers: { 'apikey': SKEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pass })
+    });
+    const data = await res.json();
+    if (!res.ok) { err.textContent = data.error_description || data.msg || 'Login failed.'; err.classList.add('show'); return; }
+    localStorage.setItem('vd_token', data.access_token);
+    localStorage.setItem('vd_refresh', data.refresh_token);
+    localStorage.setItem('vd_user', JSON.stringify(data.user));
+    enterApp(data.user);
+    track('login', {email});
+  } catch(e) { err.textContent = e.message; err.classList.add('show'); }
+  finally { btn.disabled = false; btn.textContent = 'Sign in →'; }
+}
+
+async function doSignup() {
+  const btn = document.getElementById('signup-btn');
+  const err = document.getElementById('signup-err');
+  const first = document.getElementById('sf').value.trim();
+  const last = document.getElementById('sl').value.trim();
+  const email = document.getElementById('se').value.trim();
+  const pass = document.getElementById('sp').value;
+  err.classList.remove('show');
+  if (!first || !last || !email || !pass) { err.textContent = 'Fill in all fields.'; err.classList.add('show'); return; }
+  if (pass.length < 8) { err.textContent = 'Password must be 8+ characters.'; err.classList.add('show'); return; }
+  btn.disabled = true; btn.textContent = 'Creating...';
+  try {
+    const res = await fetch(`${SURL}/auth/v1/signup`, {
+      method: 'POST',
+      headers: { 'apikey': SKEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pass, data: { first_name: first, last_name: last } })
+    });
+    const data = await res.json();
+    if (!res.ok) { err.textContent = data.msg || 'Signup failed.'; err.classList.add('show'); return; }
+    if (data.access_token) {
+      localStorage.setItem('vd_token', data.access_token);
+      localStorage.setItem('vd_refresh', data.refresh_token);
+      localStorage.setItem('vd_user', JSON.stringify(data.user));
+      enterApp(data.user);
+      track('signup', {email, role: document.getElementById('sr').value, account_type: document.getElementById('st').value});
+    } else {
+      err.style.background='#e6f7f0';err.style.borderColor='#0fa360';err.style.color='#0fa360';
+      err.textContent = 'Account created! Check your email then sign in.'; err.classList.add('show');
+    }
+  } catch(e) { err.textContent = e.message; err.classList.add('show'); }
+  finally { btn.disabled = false; btn.textContent = 'Create account →'; }
+}
+
+async function doSignout() {
+  localStorage.removeItem('vd_token');
+  localStorage.removeItem('vd_refresh');
+  localStorage.removeItem('vd_user');
+  document.getElementById('app').classList.remove('on');
+  document.getElementById('auth').style.display = 'flex';
+  licenses=[]; dea=[]; certs=[];
+}
+
+function show(panel) {
+  document.getElementById('login-box').style.display = panel==='login' ? 'block' : 'none';
+  document.getElementById('signup-box').style.display = panel==='signup' ? 'block' : 'none';
+}
+
+// ── ENTER APP ─────────────────────────────────────────────────────────────────
+// Add your own email(s) here to see the Admin dashboard tab
+const ADMIN_EMAILS = ['nagibburkett@gmail.com']; // e.g. ['nagib@example.com']
+
+function enterApp(user) {
+  const meta = user.user_metadata || {};
+  const first = meta.first_name || user.email.split('@')[0];
+  const last = meta.last_name || '';
+  document.getElementById('t-name').textContent = `${first} ${last}`.trim();
+  document.getElementById('auth').style.display = 'none';
+  document.getElementById('app').classList.add('on');
+  document.getElementById('feedback-fab').style.display = 'flex';
+  if (ADMIN_EMAILS.includes(user.email)) {
+    document.getElementById('nav-admin').style.display = 'block';
+  }
+  loadAll();
+}
+
+// ── ON PAGE LOAD: restore session ─────────────────────────────────────────────
+window.addEventListener('DOMContentLoaded', async () => {
+  const token = getToken();
+  const user = getUser();
+  if (token && user) {
+    console.log('Veridoc: restoring session, refreshing token proactively...');
+    await refreshAccessToken(); // get a fresh token right away on load
+    enterApp(getUser() || user);
+    // Keep the token fresh every 10 minutes while the app stays open
+    setInterval(refreshAccessToken, 10 * 60 * 1000);
+  } else {
+    document.getElementById('auth').style.display = 'flex';
+  }
+});
+
+// ── DATA ──────────────────────────────────────────────────────────────────────
+const STATES=['AL','AK','AZ','AR','CA','CO','CT','DE','FL','GA','HI','ID','IL','IN','IA','KS','KY','LA','ME','MD','MA','MI','MN','MS','MO','MT','NE','NV','NH','NJ','NM','NY','NC','ND','OH','OK','OR','PA','RI','SC','SD','TN','TX','UT','VT','VA','WA','WV','WI','WY'];
+const LIC_TYPES=['NP','PA','RN','APRN','MD','DO','LPN'];
+const CERT_TYPES=['ANCC','AANP','NCCPA','BLS','ACLS','PALS','TNCC','ATLS','NIHSS','NRP','CCRN','CEN','Other'];
+const STATE_RULES={CA:{w:90,url:'https://www.rn.ca.gov/licensees/lic-renewal.shtml',note:'90 days before expiration via BreEZe.'},TX:{w:60,url:'https://www.bon.texas.gov/',note:'60 days. License lapses immediately after — reinstatement required.'},FL:{w:60,url:'https://floridasnursing.gov/',note:'60 days before expiration.'},NY:{w:90,url:'https://www.op.nysed.gov/',note:'90 days. 3-year cycles.'},IL:{w:60,url:'https://idfpr.illinois.gov/',note:'60 days before expiration.'},OH:{w:90,url:'https://nursing.ohio.gov/',note:'90 days before expiration.'},WA:{w:90,url:'https://nursing.wa.gov/',note:'90 days before expiration.'},OR:{w:90,url:'https://www.oregon.gov/osbn/',note:'90 days before expiration.'},AZ:{w:60,url:'https://azbn.gov/',note:'60 days before expiration.'},MA:{w:90,url:'https://www.mass.gov/how-to/renew-your-nursing-license',note:'90 days before expiration.'},NC:{w:90,url:'https://www.ncbon.com/',note:'90 days before expiration.'},GA:{w:60,url:'https://sos.ga.gov/index.php/licensing/plb/45',note:'60 days. 30-day grace with late fee.'},PA:{w:60,url:'https://www.dos.pa.gov/',note:'60 days before expiration.'},MO:{w:3,url:'https://pr.mo.gov/nursing-renewal.asp',note:'3 business days only. No grace period.'},VA:{w:90,url:'https://www.dhp.virginia.gov/nursing/',note:'90 days before expiration.'}};
+const DEF_RULE={w:90,url:'https://www.ncsbn.org/',note:'Check state board. Typically 60–90 days.'};
+const CERT_RULES={ANCC:{days:365,body:'ANCC'},AANP:{days:180,body:'AANP'},NCCPA:{days:365,body:'NCCPA'},BLS:{days:60,body:'AHA'},ACLS:{days:60,body:'AHA'},PALS:{days:60,body:'AHA'},TNCC:{days:90,body:'ENA'},ATLS:{days:90,body:'ACS'},NIHSS:{days:90,body:'NIH'},NRP:{days:60,body:'AAP'},CCRN:{days:180,body:'AACN'},CEN:{days:180,body:'BCEN'}};
+function rule(s){return STATE_RULES[s]||DEF_RULE;}
+
+let licenses=[], dea=[], certs=[];
+let licF='all', licTF='all', deaF='all', certF='all';
+let modalType=null, editId=null;
+
+const today=()=>{const d=new Date();d.setHours(0,0,0,0);return d;};
+const daysUntil=s=>Math.round((new Date(s+'T00:00:00')-today())/86400000);
+const fmt=s=>s?new Date(s+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'}):'—';
+
+function getLS(l){const n=daysUntil(l.expiry_date);return n<0?'exp':n<=30?'expr':n<=90?'warn':'ok';}
+function getRS(l){const r=rule(l.state);const n=daysUntil(l.expiry_date);return n<0?'exp':n<=r.w?'open':n<=r.w+30?'soon':'lock';}
+function getDS(d){const n=daysUntil(d.expiry_date);return n<0?'exp':n<=30?'expr':n<=90?'warn':'ok';}
+function getCS(c){const n=daysUntil(c.expiry_date);return n<0?'exp':n<=30?'expr':n<=90?'warn':'ok';}
+
+function sBadge(s){
+  if(s==='exp') return '<span class="badge b-red">Expired</span>';
+  if(s==='expr'||s==='warn') return `<span class="badge b-amber">${s==='expr'?'Expiring':'Due soon'}</span>`;
+  return '<span class="badge b-green">Active</span>';
+}
+function dChip(expiry){
+  const n=daysUntil(expiry);
+  const c=n<0?'#d42b2b':n<=90?'#e07000':'#0fa360';
+  return `<span style="font-size:11px;font-weight:600;color:${c}">${n<0?Math.abs(n)+'d overdue':n+'d left'}</span>`;
+}
+function renewCell(l){
+  const rs=getRS(l),r=rule(l.state),n=daysUntil(l.expiry_date);
+  if(rs==='exp') return `<div class="renew-wrap"><a href="${r.url}" target="_blank" class="rb rb-exp">Renew now</a><div class="rn">Reinstatement may apply</div></div>`;
+  if(rs==='open') return `<div class="renew-wrap"><a href="${r.url}" target="_blank" class="rb ${n<=30?'rb-urg':'rb-open'}">Renew now</a><div class="rn">Window open · ${r.w}d rule</div></div>`;
+  if(rs==='soon') return `<div class="renew-wrap"><span class="rb rb-lock">Opens ~${n-r.w}d</span><div class="rn">${r.w}d rule</div></div>`;
+  return `<div class="renew-wrap"><span class="rb rb-lock">Not open</span><div class="rn">Opens ${n-r.w}d from now</div></div>`;
+}
+
+function allUrgent(){
+  const out=[];
+  licenses.forEach(l=>{const s=getLS(l);if(s!=='ok')out.push({...l,_s:s,_k:'lic',_label:`${l.state} ${l.license_type} License`,_sub:l.license_number,_exp:l.expiry_date});});
+  dea.forEach(d=>{const s=getDS(d);if(s!=='ok')out.push({...d,_s:s,_k:'dea',_label:`DEA ${d.dea_number} (${d.state})`,_sub:`Sched. ${d.schedule} · $888`,_exp:d.expiry_date});});
+  certs.forEach(c=>{const s=getCS(c);if(s!=='ok')out.push({...c,_s:s,_k:'cert',_label:`${c.cert_type} Certification`,_sub:c.cert_number||'',_exp:c.expiry_date});});
+  return out.sort((a,b)=>daysUntil(a._exp)-daysUntil(b._exp));
+}
+
+async function loadAll(){
+  console.log('Loading data...');
+  [licenses, dea, certs] = await Promise.all([
+    sbQuery('licenses'),
+    sbQuery('dea_registrations'),
+    sbQuery('certifications'),
+  ]);
+  console.log('Loaded:', licenses.length, 'licenses,', dea.length, 'DEA,', certs.length, 'certs');
+  renderAll();
+}
+
+function renderSettings(){
+  const user = getUser();
+  const email = user?.email || '';
+  document.getElementById('pg-settings').innerHTML = `
+  <div class="ph"><div><h1>Settings</h1><p>Manage your account, security, and data</p></div></div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-title">👤 Profile</div>
+    <div class="cred-row"><div class="cr-info"><h4>Email address</h4><p>${email}</p></div></div>
+    <div class="cred-row"><div class="cr-info"><h4>Data stored</h4><p>${licenses.length} license${licenses.length!==1?'s':''} · ${dea.length} DEA registration${dea.length!==1?'s':''} · ${certs.length} certification${certs.length!==1?'s':''}</p></div></div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-title">🔐 Change password</div>
+    <p style="font-size:13px;color:#6b7f96;margin-bottom:14px">Update your password. You will need your current password to make changes.</p>
+    <div style="max-width:360px;display:flex;flex-direction:column;gap:12px">
+      <div class="fg" style="margin-bottom:0"><label>Current password</label><input type="password" id="pw-current" placeholder="••••••••"/></div>
+      <div class="fg" style="margin-bottom:0"><label>New password</label><input type="password" id="pw-new" placeholder="At least 8 characters"/></div>
+      <div class="fg" style="margin-bottom:0"><label>Confirm new password</label><input type="password" id="pw-confirm" placeholder="Re-enter new password"/></div>
+      <div id="pw-err" style="font-size:12px;color:#d42b2b;display:none"></div>
+      <button class="btn btn-blue btn-sm" style="width:fit-content" onclick="changePassword()">Update password</button>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-title">📧 Email notification preferences</div>
+    <p style="font-size:13px;color:#6b7f96;margin-bottom:14px">Choose when Veridoc alerts you about expiring credentials.</p>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer"><input type="checkbox" id="notif-90" onchange="saveNotifPrefs()" style="width:16px;height:16px"> Alert me 90 days before expiration</label>
+      <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer"><input type="checkbox" id="notif-60" onchange="saveNotifPrefs()" style="width:16px;height:16px"> Alert me 60 days before expiration</label>
+      <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer"><input type="checkbox" id="notif-30" onchange="saveNotifPrefs()" style="width:16px;height:16px"> Alert me 30 days before expiration</label>
+      <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer"><input type="checkbox" id="notif-7" onchange="saveNotifPrefs()" style="width:16px;height:16px"> Alert me 7 days before expiration</label>
+    </div>
+    <p style="font-size:11px;color:#6b7f96;margin-top:12px">Email alerts are coming in a future update. Your preferences will be saved and applied when they launch.</p>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-title">📥 Export your data</div>
+    <p style="font-size:13px;color:#6b7f96;margin-bottom:14px">Download all your credentials as a CSV file. Keep a copy for your own records.</p>
+    <button class="btn btn-ghost btn-sm" onclick="exportData()">📥 Download my data (CSV)</button>
+  </div>
+
+  <div class="card" style="margin-bottom:16px;border:1px solid #fecaca;background:#fef2f2">
+    <div class="card-title" style="color:#d42b2b">🗑 Delete all credentials</div>
+    <p style="font-size:13px;color:#6b7f96;margin-bottom:14px">Permanently deletes all your licenses, DEA registrations, and certifications. Your account stays active. This cannot be undone.</p>
+    <button class="btn btn-sm" style="background:#fef2f2;color:#d42b2b;border:1px solid #fecaca" onclick="deleteAllData()">Delete all my credentials</button>
+  </div>
+
+  <div class="card" style="border:2px solid #d42b2b;background:#fef2f2">
+    <div class="card-title" style="color:#d42b2b">❌ Delete account</div>
+    <p style="font-size:13px;color:#6b7f96;margin-bottom:14px">Permanently deletes your account and ALL data. You will be signed out immediately. <strong style="color:#0a0f1e">This cannot be undone.</strong></p>
+    <button class="btn btn-sm" style="background:#d42b2b;color:#fff;border:none" onclick="deleteAccount()">Delete my account permanently</button>
+  </div>`;
+
+  // Restore saved notification preferences
+  const prefs = JSON.parse(localStorage.getItem('vd_notif_prefs') || '{"90":true,"60":true,"30":true,"7":false}');
+  document.getElementById('notif-90').checked = prefs['90'] !== false;
+  document.getElementById('notif-60').checked = prefs['60'] !== false;
+  document.getElementById('notif-30').checked = prefs['30'] !== false;
+  document.getElementById('notif-7').checked = prefs['7'] === true;
+}
+
+function saveNotifPrefs(){
+  const prefs = {
+    '90': document.getElementById('notif-90').checked,
+    '60': document.getElementById('notif-60').checked,
+    '30': document.getElementById('notif-30').checked,
+    '7':  document.getElementById('notif-7').checked,
+  };
+  localStorage.setItem('vd_notif_prefs', JSON.stringify(prefs));
+  toast('Notification preferences saved', 'ok');
+}
+
+async function changePassword(){
+  const current = document.getElementById('pw-current').value;
+  const newPw = document.getElementById('pw-new').value;
+  const confirm = document.getElementById('pw-confirm').value;
+  const errEl = document.getElementById('pw-err');
+  errEl.style.display = 'none';
+  if(!current||!newPw||!confirm){ errEl.textContent='Please fill in all fields.'; errEl.style.display='block'; return; }
+  if(newPw.length < 8){ errEl.textContent='New password must be at least 8 characters.'; errEl.style.display='block'; return; }
+  if(newPw !== confirm){ errEl.textContent='New passwords do not match.'; errEl.style.display='block'; return; }
+  if(current === newPw){ errEl.textContent='New password must be different from your current password.'; errEl.style.display='block'; return; }
+  const user = getUser();
+  try {
+    // Verify current password first
+    const verifyRes = await fetch(`${SURL}/auth/v1/token?grant_type=password`, {
+      method:'POST',
+      headers:{'apikey':SKEY,'Content-Type':'application/json'},
+      body:JSON.stringify({email:user.email, password:current})
+    });
+    if(!verifyRes.ok){ errEl.textContent='Current password is incorrect.'; errEl.style.display='block'; return; }
+    const verifyData = await verifyRes.json();
+    // Update password
+    const updateRes = await fetch(`${SURL}/auth/v1/user`, {
+      method:'PUT',
+      headers:{'apikey':SKEY,'Authorization':`Bearer ${verifyData.access_token}`,'Content-Type':'application/json'},
+      body:JSON.stringify({password:newPw})
+    });
+    if(!updateRes.ok){ const e=await updateRes.json(); errEl.textContent=e.msg||'Failed to update password.'; errEl.style.display='block'; return; }
+    localStorage.setItem('vd_token', verifyData.access_token);
+    document.getElementById('pw-current').value='';
+    document.getElementById('pw-new').value='';
+    document.getElementById('pw-confirm').value='';
+    toast('Password updated successfully ✓','ok');
+  } catch(e){ errEl.textContent='Something went wrong. Try again.'; errEl.style.display='block'; }
+}
+
+
+async function exportData(){
+  let csv = 'Type,State,License Type,Number,Issue Date,Effective Date,Expiry Date,Notes\n';
+  licenses.forEach(l => csv += `License,${l.state},${l.license_type},${l.license_number},${l.issue_date||''},${l.effective_date||''},${l.expiry_date},"${(l.notes||'').replace(/"/g,'')}"\n`);
+  dea.forEach(d => csv += `DEA,${d.state},DEA,${d.dea_number},,,${d.expiry_date},"Schedule ${d.schedule}"\n`);
+  certs.forEach(c => csv += `Certification,,${c.cert_type},${c.cert_number||''},,,${c.expiry_date},"${(c.issuer||'').replace(/"/g,'')}"\n`);
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'veridoc-my-data.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+  toast('Data exported ✓','ok');
+}
+
+async function deleteAllData(){
+  if(!confirm('This will permanently delete ALL your licenses, DEA registrations, and certifications.\n\nThis cannot be undone. Continue?')) return;
+  if(!confirm('Last chance — are you absolutely sure?')) return;
+  const token = getToken();
+  const user = getUser();
+  if(!token||!user) return;
+  const h = {'apikey':SKEY,'Authorization':`Bearer ${token}`,'Content-Type':'application/json'};
+  await Promise.all([
+    fetch(`${SURL}/rest/v1/licenses?user_id=eq.${user.id}`,{method:'DELETE',headers:h}),
+    fetch(`${SURL}/rest/v1/dea_registrations?user_id=eq.${user.id}`,{method:'DELETE',headers:h}),
+    fetch(`${SURL}/rest/v1/certifications?user_id=eq.${user.id}`,{method:'DELETE',headers:h}),
+  ]);
+  toast('All credentials deleted','ok');
+  await loadAll();
+  renderSettings();
+}
+
+async function deleteAccount(){
+  if(!confirm('This permanently deletes your ENTIRE account including all data.\n\nThis CANNOT be undone. Continue?')) return;
+  const typed = prompt('Type DELETE to confirm permanent account deletion:');
+  if(typed !== 'DELETE'){ toast('Cancelled — nothing was deleted'); return; }
+  const token = getToken();
+  const user = getUser();
+  if(!token||!user) return;
+  const h = {'apikey':SKEY,'Authorization':`Bearer ${token}`,'Content-Type':'application/json'};
+  await Promise.all([
+    fetch(`${SURL}/rest/v1/licenses?user_id=eq.${user.id}`,{method:'DELETE',headers:h}),
+    fetch(`${SURL}/rest/v1/dea_registrations?user_id=eq.${user.id}`,{method:'DELETE',headers:h}),
+    fetch(`${SURL}/rest/v1/certifications?user_id=eq.${user.id}`,{method:'DELETE',headers:h}),
+    fetch(`${SURL}/rest/v1/profiles?id=eq.${user.id}`,{method:'DELETE',headers:h}),
+  ]);
+  localStorage.removeItem('vd_token');
+  localStorage.removeItem('vd_refresh');
+  localStorage.removeItem('vd_user');
+  licenses=[]; dea=[]; certs=[];
+  document.getElementById('app').classList.remove('on');
+  document.getElementById('auth').style.display='flex';
+  document.getElementById('login-box').innerHTML=`
+    <div style="text-align:center;padding:40px 20px">
+      <div style="font-size:48px;margin-bottom:16px">✅</div>
+      <h2 style="font-size:26px;font-weight:700;margin-bottom:10px">Account deleted</h2>
+      <p style="color:#6b7f96;font-size:14px;line-height:1.7">Your account and all data has been permanently deleted.<br>We are sorry to see you go.</p>
+      <button onclick="location.reload()" style="margin-top:20px;padding:10px 24px;background:#3b82f6;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer">Back to sign in</button>
+    </div>`;
+}
+
+function renderAll(){renderDash();renderLic();renderDEA();renderCerts();renderAlerts();renderSettings();}
+
+function renderDash(){
+  const urgent=allUrgent();
+  const all=[...licenses,...dea,...certs];
+  const exp=all.filter(x=>daysUntil(x.expiry_date)<0).length;
+  const warn=all.filter(x=>{const n=daysUntil(x.expiry_date);return n>=0&&n<=90;}).length;
+  const pct=all.length>0?Math.round(((all.length-exp)/all.length)*100):100;
+  const rOpen=licenses.filter(l=>getRS(l)==='open').length;
+  const sc=pct>=80?'#0fa360':pct>=50?'#e07000':'#d42b2b';
+  document.getElementById('al-ct').style.display=urgent.length?'inline':'none';
+  document.getElementById('al-ct').textContent=urgent.length;
+  document.getElementById('pg-dashboard').innerHTML=`
+  <div class="ph"><div><h1>Dashboard</h1><p>${all.length} credentials · ${exp} expired · ${rOpen} renewal${rOpen!==1?'s':''} open</p></div></div>
+  <div class="stats">
+    <div class="stat"><div class="stat-n" style="color:#3b82f6">${licenses.length}</div><div class="stat-l">Licenses</div></div>
+    <div class="stat"><div class="stat-n" style="color:#3b82f6">${dea.length}</div><div class="stat-l">DEA</div></div>
+    <div class="stat"><div class="stat-n" style="color:${warn>0?'#e07000':'#0fa360'}">${warn}</div><div class="stat-l">Expiring 90d</div></div>
+    <div class="stat"><div class="stat-n" style="color:${exp>0?'#d42b2b':'#0fa360'}">${exp}</div><div class="stat-l">Expired</div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div class="card">
+      <div class="card-title">🚨 Needs attention <span>${urgent.length} items</span></div>
+      ${urgent.length===0?'<div class="empty"><span class="empty-icon">✅</span>All credentials current</div>':urgent.slice(0,6).map(u=>`<div class="cred-row"><div class="cr-info"><h4>${u._label}</h4><p>${u._sub}</p></div><div class="cr-right">${dChip(u._exp)}${sBadge(u._s)}</div></div>`).join('')}
+    </div>
+    <div class="card">
+      <div class="card-title">🔓 Renewals open <span>${rOpen} available</span></div>
+      ${rOpen===0?'<div class="empty"><span class="empty-icon">🔒</span>No windows open yet</div>':licenses.filter(l=>getRS(l)==='open').map(l=>`<div class="cred-row"><div class="cr-info"><h4>${l.state} ${l.license_type} — ${l.license_number}</h4><p>Expires ${fmt(l.expiry_date)}</p></div><div class="cr-right"><a href="${rule(l.state).url}" target="_blank" class="rb rb-open" style="font-size:11px">Renew</a></div></div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function renderLic(){
+  const rows=licenses.filter(l=>{
+    if(licF==='open')return getRS(l)==='open';
+    if(licF==='expiring'){const s=getLS(l);return s==='expr'||s==='warn';}
+    if(licF==='expired')return getLS(l)==='exp';
+    return true;
+  }).filter(l=>licTF==='all'||l.license_type===licTF);
+  document.getElementById('pg-licenses').innerHTML=`
+  <div class="ph"><div><h1>State Licenses</h1><p>${licenses.length} licenses</p></div><button class="btn btn-blue" onclick="openModal('lic')">+ Add license</button></div>
+  <div class="filters">
+    <button class="fc ${licF==='all'?'on':''}" onclick="setF('lf','all',this)">All</button>
+    <button class="fc ${licF==='open'?'on':''}" onclick="setF('lf','open',this)">Renewal open</button>
+    <button class="fc ${licF==='expiring'?'on':''}" onclick="setF('lf','expiring',this)">Expiring</button>
+    <button class="fc ${licF==='expired'?'on':''}" onclick="setF('lf','expired',this)">Expired</button>
+    &nbsp;
+    <button class="fc ${licTF==='all'?'on':''}" onclick="setF('lt','all',this)">All types</button>
+    <button class="fc ${licTF==='NP'?'on':''}" onclick="setF('lt','NP',this)">NP</button>
+    <button class="fc ${licTF==='PA'?'on':''}" onclick="setF('lt','PA',this)">PA</button>
+    <button class="fc ${licTF==='RN'?'on':''}" onclick="setF('lt','RN',this)">RN</button>
+  </div>
+  <div class="tbl-wrap"><table>
+    <colgroup><col style="width:65px"><col style="width:65px"><col style="width:130px"><col style="width:95px"><col style="width:95px"><col style="width:95px"><col style="width:105px"><col style="width:145px"><col style="width:70px"></colgroup>
+    <thead><tr><th>State</th><th>Type</th><th>License #</th><th>Issue date</th><th>Effective</th><th>Expiration</th><th>Status</th><th>Renewal</th><th></th></tr></thead>
+    <tbody>${rows.length===0?'<tr><td colspan="9" style="text-align:center;padding:32px;color:#6b7f96">No licenses match filter</td></tr>':rows.map(l=>`<tr>
+      <td><span class="chip-state">${l.state}</span></td>
+      <td><span class="chip-type">${l.license_type}</span></td>
+      <td><span class="mono">${l.license_number}</span></td>
+      <td style="color:#6b7f96;font-size:11px">${fmt(l.issue_date)}</td>
+      <td style="color:#6b7f96;font-size:11px">${fmt(l.effective_date)}</td>
+      <td style="font-weight:600;font-size:12px">${fmt(l.expiry_date)}</td>
+      <td>${sBadge(getLS(l))}</td>
+      <td>${renewCell(l)}</td>
+      <td><div class="ac"><button class="ib" onclick="openModal('lic','${l.id}')">✏️</button><button class="ib del" onclick="del('licenses','${l.id}')">🗑</button></div></td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+function renderDEA(){
+  const rows=dea.filter(d=>{
+    if(deaF==='expiring'){const s=getDS(d);return s==='expr'||s==='warn';}
+    if(deaF==='expired')return getDS(d)==='exp';
+    return true;
+  });
+  document.getElementById('pg-dea').innerHTML=`
+  <div class="ph"><div><h1>DEA Registry</h1><p>${dea.length} registrations · $888 renewal</p></div><button class="btn btn-blue" onclick="openModal('dea')">+ Add DEA</button></div>
+  <div class="dea-warn">⚠️ DEA expires every 3 years — $888 renewal. A lapsed DEA means <strong>immediate loss of all controlled substance prescribing</strong>.</div>
+  <div class="filters">
+    <button class="fc ${deaF==='all'?'on':''}" onclick="setF('df','all',this)">All</button>
+    <button class="fc ${deaF==='expiring'?'on':''}" onclick="setF('df','expiring',this)">Expiring</button>
+    <button class="fc ${deaF==='expired'?'on':''}" onclick="setF('df','expired',this)">Expired</button>
+  </div>
+  <div class="tbl-wrap"><table>
+    <colgroup><col style="width:130px"><col style="width:70px"><col style="width:100px"><col style="width:110px"><col style="width:95px"><col style="width:110px"><col style="width:70px"></colgroup>
+    <thead><tr><th>DEA Number</th><th>State</th><th>Schedule</th><th>Expiration</th><th>Renewal</th><th>Status</th><th></th></tr></thead>
+    <tbody>${rows.length===0?'<tr><td colspan="7" style="text-align:center;padding:32px;color:#6b7f96">No DEA registrations match filter</td></tr>':rows.map(d=>`<tr>
+      <td><span style="font-family:monospace;font-size:12px;font-weight:700;color:#3b82f6">${d.dea_number}</span></td>
+      <td><span class="chip-state">${d.state}</span></td>
+      <td>Sched. ${d.schedule}</td>
+      <td style="font-weight:600;font-size:12px">${fmt(d.expiry_date)}</td>
+      <td style="color:#e07000;font-weight:600">$888</td>
+      <td>${sBadge(getDS(d))}</td>
+      <td><div class="ac"><button class="ib" onclick="openModal('dea','${d.id}')">✏️</button><button class="ib del" onclick="del('dea_registrations','${d.id}')">🗑</button></div></td>
+    </tr>`).join('')}</tbody>
+  </table></div>`;
+}
+
+function renderCerts(){
+  const rows=certs.filter(c=>{
+    if(certF==='expiring'){const s=getCS(c);return s==='expr'||s==='warn';}
+    if(certF==='expired')return getCS(c)==='exp';
+    return true;
+  });
+  document.getElementById('pg-certifications').innerHTML=`
+  <div class="ph"><div><h1>Certifications</h1><p>${certs.length} certifications</p></div><button class="btn btn-blue" onclick="openModal('cert')">+ Add cert</button></div>
+  <div class="filters">
+    <button class="fc ${certF==='all'?'on':''}" onclick="setF('cf','all',this)">All</button>
+    <button class="fc ${certF==='expiring'?'on':''}" onclick="setF('cf','expiring',this)">Expiring</button>
+    <button class="fc ${certF==='expired'?'on':''}" onclick="setF('cf','expired',this)">Expired</button>
+  </div>
+  <div class="tbl-wrap"><table>
+    <colgroup><col style="width:80px"><col style="width:130px"><col style="width:140px"><col style="width:110px"><col style="width:110px"><col style="width:110px"><col style="width:70px"></colgroup>
+    <thead><tr><th>Type</th><th>Cert #</th><th>Issuing body</th><th>Expiration</th><th>Renew window</th><th>Status</th><th></th></tr></thead>
+    <tbody>${rows.length===0?'<tr><td colspan="7" style="text-align:center;padding:32px;color:#6b7f96">No certifications match filter</td></tr>':rows.map(c=>{
+      const cr=CERT_RULES[c.cert_type];const n=daysUntil(c.expiry_date);const s=getCS(c);
+      const rb=s==='exp'?'<span class="badge b-red">Reinstate</span>':!cr?'<span class="badge b-gray">Check issuer</span>':n<=cr.days?`<span class="badge ${n<=30?'b-amber':'b-green'}">${n<=30?'Renew now':'Open'}</span>`:`<span class="badge b-gray">Opens ${n-cr.days}d</span>`;
+      return `<tr>
+        <td><span style="font-weight:700;color:#3b82f6;font-size:12px">${c.cert_type}</span></td>
+        <td><span class="mono">${c.cert_number||'—'}</span></td>
+        <td style="color:#6b7f96;font-size:12px">${c.issuer||cr?.body||'—'}</td>
+        <td style="font-weight:600;font-size:12px">${fmt(c.expiry_date)}</td>
+        <td>${rb}</td>
+        <td>${sBadge(s)}</td>
+        <td><div class="ac"><button class="ib" onclick="openModal('cert','${c.id}')">✏️</button><button class="ib del" onclick="del('certifications','${c.id}')">🗑</button></div></td>
+      </tr>`;
+    }).join('')}</tbody>
+  </table></div>`;
+}
+
+function renderAlerts(){
+  const urgent=allUrgent();
+  document.getElementById('pg-alerts').innerHTML=`
+  <div class="ph"><div><h1>Alerts</h1><p>${urgent.length} items need attention</p></div></div>
+  ${urgent.length===0?'<div class="card"><div class="empty"><span class="empty-icon">✅</span><h3>All clear</h3><p>Every credential is current.</p></div></div>':urgent.map(u=>{
+    const n=daysUntil(u._exp),s=u._s;
+    return `<div class="al-item ${s==='exp'?'al-exp':'al-warn'}">
+      <div class="al-l"><h4>${u._label}</h4><p>${u._sub} · ${n<0?'Expired':'Expires'} ${fmt(u._exp)}</p></div>
+      <div class="al-r"><div class="big" style="color:${s==='exp'?'#d42b2b':'#e07000'}">${n<0?'+'+Math.abs(n)+'d':n+'d'}</div><div class="sm">${n<0?'past due':'remaining'}</div></div>
+    </div>`;
+  }).join('')}`;
+}
+
+function setF(type,val,btn){
+  if(type==='lf')licF=val;else if(type==='lt')licTF=val;else if(type==='df')deaF=val;else if(type==='cf')certF=val;
+  if(type==='lf'||type==='lt')renderLic();else if(type==='df')renderDEA();else if(type==='cf')renderCerts();
+}
+
+function go(id,btn){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.nav').forEach(n=>n.classList.remove('on'));
+  document.getElementById('pg-'+id).classList.add('on');
+  btn.classList.add('on');
+  currentPage = id;
+  track('page_view', {page: id});
+  if(id === 'admin') renderAdmin();
+}
+
+// ── MODAL ─────────────────────────────────────────────────────────────────────
+function openModal(type,id){
+  modalType=type; editId=id||null;
+  const d=id?(type==='lic'?licenses:type==='dea'?dea:certs).find(x=>x.id===id):null;
+  document.getElementById('m-title').textContent=id?`Edit ${type==='lic'?'license':type==='dea'?'DEA':'certification'}`:`Add ${type==='lic'?'state license':type==='dea'?'DEA registration':'certification'}`;
+  const stOpts=STATES.map(s=>`<option${d&&d.state===s?' selected':''}>${s}</option>`).join('');
+  let html='';
+  if(type==='lic'){
+    const ltOpts=LIC_TYPES.map(t=>`<option${d&&d.license_type===t?' selected':''}>${t}</option>`).join('');
+    html=`<div class="fr2"><div class="fg"><label>State *</label><select id="f-state" onchange="updSIB()">${stOpts}</select></div><div class="fg"><label>Type *</label><select id="f-ltype">${ltOpts}</select></div></div>
+    <div class="sib" id="f-sib"></div>
+    <div class="fg"><label>License number *</label><input id="f-num" value="${d?d.license_number:''}" placeholder="e.g. NP-CA-284711"><div class="field-err" id="e-num">Required</div></div>
+    <div class="fr3"><div class="fg"><label>Issue date</label><input type="date" id="f-issue" value="${d?d.issue_date||'':''}"></div><div class="fg"><label>Effective</label><input type="date" id="f-eff" value="${d?d.effective_date||'':''}"></div><div class="fg"><label>Expiration *</label><input type="date" id="f-exp" value="${d?d.expiry_date:''}"><div class="field-err" id="e-exp">Required</div></div></div>
+    <div class="fg"><label>Notes</label><input id="f-notes" value="${d?d.notes||'':''}" placeholder="Optional"></div>`;
+  } else if(type==='dea'){
+    html=`<div class="dea-box">⚠️ DEA expires every 3 years · $888 renewal · Lapse = no controlled substance prescribing</div>
+    <div class="fg"><label>DEA number *</label><input id="f-dnum" value="${d?d.dea_number:''}" placeholder="e.g. BC1234563" oninput="this.value=this.value.toUpperCase()"><div class="field-err" id="e-dnum">Required</div></div>
+    <div class="fr2"><div class="fg"><label>State *</label><select id="f-dstate">${stOpts}</select></div><div class="fg"><label>Schedule</label><select id="f-dsched"><option${d&&d.schedule==='II-V'?' selected':''}>II-V</option><option${d&&d.schedule==='III-V'?' selected':''}>III-V</option><option${d&&d.schedule==='IV-V'?' selected':''}>IV-V</option><option${d&&d.schedule==='V only'?' selected':''}>V only</option></select></div></div>
+    <div class="fg"><label>Expiration *</label><input type="date" id="f-dexp" value="${d?d.expiry_date:''}"><div class="field-err" id="e-dexp">Required</div></div>
+    <div class="fg"><label>Notes</label><input id="f-dnotes" value="${d?d.notes||'':''}" placeholder="Optional"></div>`;
+  } else {
+    const ctOpts=CERT_TYPES.map(t=>`<option${d&&d.cert_type===t?' selected':''}>${t}</option>`).join('');
+    html=`<div class="fg"><label>Type *</label><select id="f-ctype" onchange="updCIB()">${ctOpts}</select></div>
+    <div class="sib" id="f-csib"></div>
+    <div class="fg"><label>Cert number</label><input id="f-cnum" value="${d?d.cert_number||'':''}" placeholder="Optional"></div>
+    <div class="fg"><label>Issuing body</label><input id="f-cissuer" value="${d?d.issuer||'':''}" placeholder="e.g. American Heart Association"></div>
+    <div class="fg"><label>Expiration *</label><input type="date" id="f-cexp" value="${d?d.expiry_date:''}"><div class="field-err" id="e-cexp">Required</div></div>
+    <div class="fg"><label>Notes</label><input id="f-cnotes" value="${d?d.notes||'':''}" placeholder="Optional"></div>`;
+  }
+  document.getElementById('m-body').innerHTML=html;
+  document.getElementById('modal-bg').style.display='flex';
+  if(type==='lic') setTimeout(updSIB,0);
+  if(type==='cert') setTimeout(updCIB,0);
+}
+
+function updSIB(){const s=document.getElementById('f-state')?.value;const b=document.getElementById('f-sib');if(!b)return;const r=STATE_RULES[s];b.classList.add('show');b.innerHTML=r?`<strong>${s} renewal rule</strong>${r.note}`:`<strong>${s}</strong>Check state board. Typically 60–90 days.`;}
+function updCIB(){const t=document.getElementById('f-ctype')?.value;const b=document.getElementById('f-csib');if(!b)return;const cr=CERT_RULES[t];if(cr){b.classList.add('show');b.innerHTML=`<strong>${t} — ${cr.body}</strong>Window opens ${cr.days} days before expiration.`;}else b.classList.remove('show');}
+function closeModal(){document.getElementById('modal-bg').style.display='none';modalType=null;editId=null;}
+
+async function saveModal(){
+  const user=getUser();if(!user)return;
+  const uid=user.id;
+  const wasEdit = !!editId;
+  if(modalType==='lic'){
+    const num=document.getElementById('f-num').value.trim();
+    const exp=document.getElementById('f-exp').value;
+    let ok=true;
+    if(!num){document.getElementById('e-num').classList.add('show');ok=false;}else document.getElementById('e-num').classList.remove('show');
+    if(!exp){document.getElementById('e-exp').classList.add('show');ok=false;}else document.getElementById('e-exp').classList.remove('show');
+    if(!ok)return;
+    const payload={state:document.getElementById('f-state').value,license_type:document.getElementById('f-ltype').value,license_number:num,issue_date:document.getElementById('f-issue').value||null,effective_date:document.getElementById('f-eff').value||null,expiry_date:exp,notes:document.getElementById('f-notes').value.trim(),user_id:uid};
+    if(editId){await sbUpdate('licenses',editId,payload);toast('License updated','ok');track('license_updated',{state:payload.state});}
+    else{await sbInsert('licenses',payload);toast('License added','ok');track('license_added',{state:payload.state,type:payload.license_type});}
+  } else if(modalType==='dea'){
+    const num=document.getElementById('f-dnum').value.trim().toUpperCase();
+    const exp=document.getElementById('f-dexp').value;
+    let ok=true;
+    if(!num){document.getElementById('e-dnum').classList.add('show');ok=false;}else document.getElementById('e-dnum').classList.remove('show');
+    if(!exp){document.getElementById('e-dexp').classList.add('show');ok=false;}else document.getElementById('e-dexp').classList.remove('show');
+    if(!ok)return;
+    const payload={dea_number:num,state:document.getElementById('f-dstate').value,schedule:document.getElementById('f-dsched').value,expiry_date:exp,notes:document.getElementById('f-dnotes').value.trim(),user_id:uid};
+    if(editId){await sbUpdate('dea_registrations',editId,payload);toast('DEA updated','ok');track('dea_updated',{state:payload.state});}
+    else{await sbInsert('dea_registrations',payload);toast('DEA added','ok');track('dea_added',{state:payload.state});}
+  } else if(modalType==='cert'){
+    const exp=document.getElementById('f-cexp').value;
+    if(!exp){document.getElementById('e-cexp').classList.add('show');return;}
+    document.getElementById('e-cexp').classList.remove('show');
+    const payload={cert_type:document.getElementById('f-ctype').value,cert_number:document.getElementById('f-cnum').value.trim(),issuer:document.getElementById('f-cissuer').value.trim(),expiry_date:exp,notes:document.getElementById('f-cnotes').value.trim(),user_id:uid};
+    if(editId){await sbUpdate('certifications',editId,payload);toast('Cert updated','ok');track('cert_updated',{type:payload.cert_type});}
+    else{await sbInsert('certifications',payload);toast('Cert added','ok');track('cert_added',{type:payload.cert_type});}
+  }
+  closeModal();
+  await loadAll();
+}
+
+async function del(table,id){
+  if(!confirm('Remove this item?'))return;
+  const ok=await sbDelete(table,id);
+  if(ok){toast('Removed','ok');track('credential_deleted',{table});await loadAll();}
+  else toast('Delete failed','err');
+}
+
+function toast(msg,type=''){
+  const w=document.getElementById('toasts');
+  const t=document.createElement('div');
+  t.className=`toast ${type}`;t.textContent=msg;
+  w.appendChild(t);setTimeout(()=>t.remove(),2500);
+}
+
+document.addEventListener('keydown',e=>{
+  if(e.key==='Escape'&&document.getElementById('modal-bg').style.display!=='none')closeModal();
+  if((e.metaKey||e.ctrlKey)&&e.key==='Enter'&&document.getElementById('modal-bg').style.display!=='none')saveModal();
+});
+
+// ── FEEDBACK WIDGET ────────────────────────────────────────────────────────
+function openFeedbackModal(){
+  document.getElementById('fb-message').value='';
+  document.getElementById('fb-err').style.display='none';
+  document.getElementById('feedback-modal-bg').style.display='flex';
+  track('feedback_opened', {page: currentPage});
+}
+function closeFeedbackModal(){
+  document.getElementById('feedback-modal-bg').style.display='none';
+}
+async function submitFeedback(){
+  const msg = document.getElementById('fb-message').value.trim();
+  const category = document.getElementById('fb-category').value;
+  const errEl = document.getElementById('fb-err');
+  if(!msg){ errEl.textContent='Please enter a message.'; errEl.style.display='block'; return; }
+  const user = getUser();
+  const token = getToken();
+  try{
+    const res = await fetch(`${SURL}/rest/v1/user_feedback`, {
+      method:'POST',
+      headers:{'apikey':SKEY,'Authorization':`Bearer ${token}`,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body: JSON.stringify({
+        user_id: user?.id || null,
+        user_email: user?.email || null,
+        page: currentPage,
+        message: msg,
+        category,
+      })
+    });
+    if(!res.ok){ errEl.textContent='Something went wrong sending feedback. Try again.'; errEl.style.display='block'; return; }
+    track('feedback_submitted', {category, page: currentPage});
+    closeFeedbackModal();
+    toast('Thanks! Your feedback was sent. 🙏','ok');
+  } catch(e){
+    errEl.textContent='Network error. Try again.'; errEl.style.display='block';
+  }
+}
+
+// ── ADMIN DASHBOARD ────────────────────────────────────────────────────────
+async function renderAdmin(){
+  const token = getToken();
+  const headers = {'apikey':SKEY,'Authorization':`Bearer ${token}`,'Content-Type':'application/json'};
+  document.getElementById('pg-admin').innerHTML = `<div class="loading"><div class="spinner"></div>Loading admin data...</div>`;
+
+  try {
+    const [eventsRes, feedbackRes] = await Promise.all([
+      fetch(`${SURL}/rest/v1/analytics_events?select=*&order=created_at.desc&limit=500`, {headers}),
+      fetch(`${SURL}/rest/v1/user_feedback?select=*&order=created_at.desc&limit=100`, {headers}),
+    ]);
+    const events = await eventsRes.json();
+    const feedback = await feedbackRes.json();
+
+    // Compute funnel
+    const signups = events.filter(e=>e.event_name==='signup').length;
+    const logins = events.filter(e=>e.event_name==='login').length;
+    const addedLicense = new Set(events.filter(e=>e.event_name==='license_added').map(e=>e.user_id)).size;
+    const addedDea = new Set(events.filter(e=>e.event_name==='dea_added').map(e=>e.user_id)).size;
+    const addedCert = new Set(events.filter(e=>e.event_name==='cert_added').map(e=>e.user_id)).size;
+    const uniqueUsers = new Set(events.map(e=>e.user_id).filter(Boolean)).size;
+
+    // Page view counts
+    const pageCounts = {};
+    events.filter(e=>e.event_name==='page_view').forEach(e=>{
+      const p = e.event_data?.page || e.page || 'unknown';
+      pageCounts[p] = (pageCounts[p]||0)+1;
+    });
+    const sortedPages = Object.entries(pageCounts).sort((a,b)=>b[1]-a[1]);
+
+    // Event type breakdown
+    const eventCounts = {};
+    events.forEach(e=>{ eventCounts[e.event_name] = (eventCounts[e.event_name]||0)+1; });
+    const sortedEvents = Object.entries(eventCounts).sort((a,b)=>b[1]-a[1]);
+
+    document.getElementById('pg-admin').innerHTML = `
+    <div class="ph"><div><h1>📈 Admin Dashboard</h1><p>Internal analytics — only visible to admin accounts</p></div></div>
+
+    <div class="stats" style="margin-bottom:20px">
+      <div class="stat"><div class="stat-n" style="color:#3b82f6">${uniqueUsers}</div><div class="stat-l">Unique active users</div></div>
+      <div class="stat"><div class="stat-n" style="color:#0fa360">${signups}</div><div class="stat-l">Signups</div></div>
+      <div class="stat"><div class="stat-n" style="color:#3b82f6">${logins}</div><div class="stat-l">Total logins</div></div>
+      <div class="stat"><div class="stat-n" style="color:${feedback.length>0?'#e07000':'#6b7f96'}">${feedback.length}</div><div class="stat-l">Feedback items</div></div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">🔻 Activation funnel <span>did users get value?</span></div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        ${funnelBar('Signed up', signups, signups)}
+        ${funnelBar('Added a license', addedLicense, signups)}
+        ${funnelBar('Added a DEA registration', addedDea, signups)}
+        ${funnelBar('Added a certification', addedCert, signups)}
+      </div>
+      <p style="font-size:11px;color:#6b7f96;margin-top:10px">Bars show % of signups who completed each step. A big drop between two steps shows you exactly where people get stuck.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div class="card">
+        <div class="card-title">📄 Most viewed pages</div>
+        ${sortedPages.length===0?'<div class="empty">No page views tracked yet</div>':sortedPages.map(([page,count])=>`
+          <div class="cred-row"><div class="cr-info"><h4>${page}</h4></div><div class="cr-right"><span class="badge b-gray">${count} views</span></div></div>
+        `).join('')}
+      </div>
+      <div class="card">
+        <div class="card-title">⚡ All event types</div>
+        ${sortedEvents.length===0?'<div class="empty">No events tracked yet</div>':sortedEvents.map(([name,count])=>`
+          <div class="cred-row"><div class="cr-info"><h4>${name}</h4></div><div class="cr-right"><span class="badge b-gray">${count}</span></div></div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">💬 User feedback <span>${feedback.length} submitted</span></div>
+      ${feedback.length===0?'<div class="empty">No feedback submitted yet</div>':feedback.map(f=>`
+        <div class="cred-row" style="align-items:flex-start">
+          <div class="cr-info" style="max-width:75%">
+            <h4>${f.category||'general'} · ${f.page||'unknown page'}</h4>
+            <p style="margin-top:4px;color:#3a4a5c">${f.message}</p>
+            <p style="font-size:10px;color:#6b7f96;margin-top:4px">${f.user_email||'anonymous'} · ${new Date(f.created_at).toLocaleString()}</p>
+          </div>
+          <span class="badge ${f.status==='new'?'b-amber':'b-green'}">${f.status}</span>
+        </div>
+      `).join('')}
+    </div>
+    `;
+  } catch(err){
+    document.getElementById('pg-admin').innerHTML = `<div class="card"><p style="color:#d42b2b">Error loading admin data: ${err.message}</p></div>`;
+  }
+}
+
+function funnelBar(label, count, total){
+  const pct = total > 0 ? Math.round((count/total)*100) : 0;
+  return `
+  <div>
+    <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+      <span style="font-weight:600;color:#0a0f1e">${label}</span>
+      <span style="color:#6b7f96">${count} (${pct}%)</span>
+    </div>
+    <div style="background:#f1f5f9;border-radius:6px;height:10px;overflow:hidden">
+      <div style="background:#3b82f6;height:100%;width:${pct}%;border-radius:6px"></div>
+    </div>
+  </div>`;
+}
+</script>
+</body>
+</html>
