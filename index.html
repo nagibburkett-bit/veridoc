@@ -141,7 +141,52 @@ tr:hover td{background:#f5f8fb;}
 .spinner{width:24px;height:24px;border:3px solid #d4dde8;border-top-color:#3b82f6;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto;}
 @keyframes spin{to{transform:rotate(360deg);}}
 .loading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;gap:14px;color:#6b7f96;font-size:14px;}
-@media(max-width:700px){.auth-left,.side{display:none;}.main{padding:16px;}.stats{grid-template-columns:1fr 1fr;}}
+@media(max-width:700px){.auth-left{display:none;}.main{padding:16px;}.stats{grid-template-columns:1fr 1fr;}}
+
+/* ── MOBILE MENU ──────────────────────────────────────────── */
+.menu-btn{display:none;background:transparent;border:none;cursor:pointer;padding:6px;border-radius:8px;color:#0a0f1e;}
+.menu-btn:hover{background:#f1f5f9;}
+.menu-btn svg{width:22px;height:22px;display:block;}
+.side-close{display:none;}
+.side-overlay{display:none;position:fixed;inset:0;background:rgba(10,15,30,.45);z-index:90;}
+.side-overlay.show{display:block;}
+
+@media(max-width:700px){
+  .menu-btn{display:flex;align-items:center;justify-content:center;}
+  .t-user{display:none;}
+  .topbar{padding:0 14px;gap:10px;}
+  .t-logo{font-size:19px;}
+  .side{
+    position:fixed;top:0;left:0;height:100vh;width:240px;
+    transform:translateX(-100%);transition:transform .25s ease;
+    z-index:100;box-shadow:4px 0 24px rgba(10,15,30,.15);
+    display:block;padding-top:64px;
+  }
+  .side.open{transform:translateX(0);}
+  .side-close{display:flex;position:absolute;top:14px;right:14px;background:transparent;border:none;cursor:pointer;padding:6px;border-radius:8px;color:#6b7f96;}
+  .side-close:hover{background:#f1f5f9;}
+  .wrap{position:relative;}
+  .ph{flex-direction:column;align-items:stretch;gap:12px;}
+  .ph .btn{align-self:flex-start;}
+  .fr2,.fr3{grid-template-columns:1fr;}
+  .modal{padding:20px;max-width:100%;width:100%;border-radius:14px 14px 0 0;position:fixed;bottom:0;left:0;max-height:85vh;}
+  .modal-bg{align-items:flex-end;padding:0;}
+  .dea-warn,.dea-box{font-size:12px;}
+  .card-title{flex-wrap:wrap;gap:6px;}
+  #feedback-fab{padding:10px 14px;font-size:0;bottom:16px;right:16px;}
+  #feedback-fab::after{content:'💬';font-size:20px;}
+  .filters{overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px;-webkit-overflow-scrolling:touch;}
+  .fc{flex-shrink:0;}
+}
+
+@media(max-width:480px){
+  .stats{grid-template-columns:1fr 1fr;gap:8px;}
+  .stat{padding:12px;}
+  .stat-n{font-size:24px;}
+  .auth-right{padding:20px;}
+  .card{padding:16px;}
+  .ph h1{font-size:20px;}
+}
 </style>
 </head>
 <body>
@@ -194,14 +239,21 @@ tr:hover td{background:#f5f8fb;}
 <!-- APP -->
 <div id="app">
   <div class="topbar">
+    <button class="menu-btn" onclick="openSidebar()" aria-label="Open menu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+    </button>
     <div class="t-logo">Veridoc<span>.</span></div>
     <div class="t-right">
       <span class="t-user" id="t-name"></span>
       <button class="t-out" onclick="doSignout()">Sign out</button>
     </div>
   </div>
+  <div class="side-overlay" id="side-overlay" onclick="closeSidebar()"></div>
   <div class="wrap">
-    <div class="side">
+    <div class="side" id="side-menu">
+      <button class="side-close" onclick="closeSidebar()" aria-label="Close menu">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
       <button class="nav on" onclick="go('dashboard',this)">📊 Dashboard</button>
       <button class="nav" onclick="go('licenses',this)">🗺 Licenses</button>
       <button class="nav" onclick="go('dea',this)">💊 DEA Registry</button>
@@ -887,6 +939,17 @@ function go(id,btn){
   currentPage = id;
   track('page_view', {page: id});
   if(id === 'admin') renderAdmin();
+  closeSidebar(); // auto-close mobile menu after picking a page
+}
+
+// ── MOBILE SIDEBAR ──────────────────────────────────────────────────────────
+function openSidebar(){
+  document.getElementById('side-menu').classList.add('open');
+  document.getElementById('side-overlay').classList.add('show');
+}
+function closeSidebar(){
+  document.getElementById('side-menu').classList.remove('open');
+  document.getElementById('side-overlay').classList.remove('show');
 }
 
 // ── MODAL ─────────────────────────────────────────────────────────────────────
