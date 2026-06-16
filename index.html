@@ -208,6 +208,7 @@ tr:hover td{background:#f5f8fb;}
       <button class="nav" onclick="go('certifications',this)">🎓 Certifications</button>
       <button class="nav" onclick="go('alerts',this)" id="nav-al">🔔 Alerts <span class="nav-badge" id="al-ct" style="display:none">0</span></button>
       <button class="nav" onclick="go('settings',this)">⚙️ Settings</button>
+      <button class="nav" onclick="go('admin',this)" id="nav-admin" style="display:none">📈 Admin</button>
     </div>
     <div class="main">
       <div class="page on" id="pg-dashboard"><div class="loading"><div class="spinner"></div>Loading...</div></div>
@@ -216,6 +217,37 @@ tr:hover td{background:#f5f8fb;}
       <div class="page" id="pg-certifications"></div>
       <div class="page" id="pg-alerts"></div>
       <div class="page" id="pg-settings"></div>
+      <div class="page" id="pg-admin"></div>
+    </div>
+  </div>
+</div>
+
+<!-- FEEDBACK BUTTON (floating, always visible) -->
+<button id="feedback-fab" onclick="openFeedbackModal()" style="display:none;position:fixed;bottom:24px;right:24px;z-index:150;background:#3b82f6;color:#fff;border:none;border-radius:50px;padding:12px 20px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 4px 16px rgba(59,130,246,.35);align-items:center;gap:6px">
+  💬 Feedback
+</button>
+
+<!-- FEEDBACK MODAL -->
+<div class="modal-bg" id="feedback-modal-bg" style="display:none" onclick="if(event.target===this)closeFeedbackModal()">
+  <div class="modal">
+    <h2>Report an issue or share feedback</h2>
+    <p style="font-size:13px;color:#6b7f96;margin-bottom:16px">Tell us what's confusing, broken, or what you'd love to see. This goes straight to the founder.</p>
+    <div class="fg"><label>Category</label>
+      <select id="fb-category">
+        <option value="confusing">Something is confusing</option>
+        <option value="bug">Something is broken</option>
+        <option value="missing">Missing a feature I need</option>
+        <option value="praise">Just wanted to say something nice</option>
+        <option value="other">Other</option>
+      </select>
+    </div>
+    <div class="fg"><label>Your message *</label>
+      <textarea id="fb-message" rows="4" placeholder="What happened? What were you trying to do?" style="width:100%;padding:10px 13px;border:1.5px solid #d4dde8;border-radius:8px;font-size:13px;resize:vertical;font-family:inherit"></textarea>
+    </div>
+    <div id="fb-err" style="font-size:12px;color:#d42b2b;display:none;margin-bottom:8px"></div>
+    <div class="modal-actions">
+      <button class="btn btn-blue" onclick="submitFeedback()">Send feedback</button>
+      <button class="btn btn-ghost" onclick="closeFeedbackModal()">Cancel</button>
     </div>
   </div>
 </div>
@@ -236,6 +268,31 @@ tr:hover td{background:#f5f8fb;}
 // ── CONFIG ────────────────────────────────────────────────────────────────────
 const SURL = 'https://lfpjmsjafgkzlidvoivk.supabase.co';
 const SKEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxmcGptc2phZmdremxpZHZvaXZrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2OTE5MTgsImV4cCI6MjA5NDI2NzkxOH0.dUYYpsmr2dMNKgjgxv92iim7HmUF5lBMaWTLgJaPDq0';
+
+// ── ANALYTICS TRACKING ────────────────────────────────────────────────────
+let currentPage = 'dashboard';
+async function track(eventName, eventData={}){
+  try {
+    const user = getUser();
+    const token = getToken();
+    if(!token) return; // not logged in yet, skip silently
+    await fetch(`${SURL}/rest/v1/analytics_events`, {
+      method: 'POST',
+      headers: {
+        'apikey': SKEY,
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({
+        user_id: user?.id || null,
+        event_name: eventName,
+        event_data: eventData,
+        page: currentPage
+      })
+    });
+  } catch(e){ console.warn('track failed (non-critical):', e.message); }
+}
 
 // ── SUPABASE ──────────────────────────────────────────────────────────────────
 // Simple direct API calls — no SDK needed, no session management issues
@@ -327,6 +384,7 @@ async function doLogin() {
     localStorage.setItem('vd_refresh', data.refresh_token);
     localStorage.setItem('vd_user', JSON.stringify(data.user));
     enterApp(data.user);
+    track('login', {email});
   } catch(e) { err.textContent = e.message; err.classList.add('show'); }
   finally { btn.disabled = false; btn.textContent = 'Sign in →'; }
 }
@@ -355,6 +413,7 @@ async function doSignup() {
       localStorage.setItem('vd_refresh', data.refresh_token);
       localStorage.setItem('vd_user', JSON.stringify(data.user));
       enterApp(data.user);
+      track('signup', {email, role: document.getElementById('sr').value, account_type: document.getElementById('st').value});
     } else {
       err.style.background='#e6f7f0';err.style.borderColor='#0fa360';err.style.color='#0fa360';
       err.textContent = 'Account created! Check your email then sign in.'; err.classList.add('show');
@@ -378,6 +437,9 @@ function show(panel) {
 }
 
 // ── ENTER APP ─────────────────────────────────────────────────────────────────
+// Add your own email(s) here to see the Admin dashboard tab
+const ADMIN_EMAILS = [nagibburkett@gmail.com]; // e.g. ['nagib@example.com']
+
 function enterApp(user) {
   const meta = user.user_metadata || {};
   const first = meta.first_name || user.email.split('@')[0];
@@ -385,6 +447,10 @@ function enterApp(user) {
   document.getElementById('t-name').textContent = `${first} ${last}`.trim();
   document.getElementById('auth').style.display = 'none';
   document.getElementById('app').classList.add('on');
+  document.getElementById('feedback-fab').style.display = 'flex';
+  if (ADMIN_EMAILS.includes(user.email)) {
+    document.getElementById('nav-admin').style.display = 'block';
+  }
   loadAll();
 }
 
@@ -781,6 +847,9 @@ function go(id,btn){
   document.querySelectorAll('.nav').forEach(n=>n.classList.remove('on'));
   document.getElementById('pg-'+id).classList.add('on');
   btn.classList.add('on');
+  currentPage = id;
+  track('page_view', {page: id});
+  if(id === 'admin') renderAdmin();
 }
 
 // ── MODAL ─────────────────────────────────────────────────────────────────────
@@ -825,6 +894,7 @@ function closeModal(){document.getElementById('modal-bg').style.display='none';m
 async function saveModal(){
   const user=getUser();if(!user)return;
   const uid=user.id;
+  const wasEdit = !!editId;
   if(modalType==='lic'){
     const num=document.getElementById('f-num').value.trim();
     const exp=document.getElementById('f-exp').value;
@@ -833,8 +903,8 @@ async function saveModal(){
     if(!exp){document.getElementById('e-exp').classList.add('show');ok=false;}else document.getElementById('e-exp').classList.remove('show');
     if(!ok)return;
     const payload={state:document.getElementById('f-state').value,license_type:document.getElementById('f-ltype').value,license_number:num,issue_date:document.getElementById('f-issue').value||null,effective_date:document.getElementById('f-eff').value||null,expiry_date:exp,notes:document.getElementById('f-notes').value.trim(),user_id:uid};
-    if(editId){await sbUpdate('licenses',editId,payload);toast('License updated','ok');}
-    else{await sbInsert('licenses',payload);toast('License added','ok');}
+    if(editId){await sbUpdate('licenses',editId,payload);toast('License updated','ok');track('license_updated',{state:payload.state});}
+    else{await sbInsert('licenses',payload);toast('License added','ok');track('license_added',{state:payload.state,type:payload.license_type});}
   } else if(modalType==='dea'){
     const num=document.getElementById('f-dnum').value.trim().toUpperCase();
     const exp=document.getElementById('f-dexp').value;
@@ -843,15 +913,15 @@ async function saveModal(){
     if(!exp){document.getElementById('e-dexp').classList.add('show');ok=false;}else document.getElementById('e-dexp').classList.remove('show');
     if(!ok)return;
     const payload={dea_number:num,state:document.getElementById('f-dstate').value,schedule:document.getElementById('f-dsched').value,expiry_date:exp,notes:document.getElementById('f-dnotes').value.trim(),user_id:uid};
-    if(editId){await sbUpdate('dea_registrations',editId,payload);toast('DEA updated','ok');}
-    else{await sbInsert('dea_registrations',payload);toast('DEA added','ok');}
+    if(editId){await sbUpdate('dea_registrations',editId,payload);toast('DEA updated','ok');track('dea_updated',{state:payload.state});}
+    else{await sbInsert('dea_registrations',payload);toast('DEA added','ok');track('dea_added',{state:payload.state});}
   } else if(modalType==='cert'){
     const exp=document.getElementById('f-cexp').value;
     if(!exp){document.getElementById('e-cexp').classList.add('show');return;}
     document.getElementById('e-cexp').classList.remove('show');
     const payload={cert_type:document.getElementById('f-ctype').value,cert_number:document.getElementById('f-cnum').value.trim(),issuer:document.getElementById('f-cissuer').value.trim(),expiry_date:exp,notes:document.getElementById('f-cnotes').value.trim(),user_id:uid};
-    if(editId){await sbUpdate('certifications',editId,payload);toast('Cert updated','ok');}
-    else{await sbInsert('certifications',payload);toast('Cert added','ok');}
+    if(editId){await sbUpdate('certifications',editId,payload);toast('Cert updated','ok');track('cert_updated',{type:payload.cert_type});}
+    else{await sbInsert('certifications',payload);toast('Cert added','ok');track('cert_added',{type:payload.cert_type});}
   }
   closeModal();
   await loadAll();
@@ -860,7 +930,7 @@ async function saveModal(){
 async function del(table,id){
   if(!confirm('Remove this item?'))return;
   const ok=await sbDelete(table,id);
-  if(ok){toast('Removed','ok');await loadAll();}
+  if(ok){toast('Removed','ok');track('credential_deleted',{table});await loadAll();}
   else toast('Delete failed','err');
 }
 
@@ -875,6 +945,148 @@ document.addEventListener('keydown',e=>{
   if(e.key==='Escape'&&document.getElementById('modal-bg').style.display!=='none')closeModal();
   if((e.metaKey||e.ctrlKey)&&e.key==='Enter'&&document.getElementById('modal-bg').style.display!=='none')saveModal();
 });
+
+// ── FEEDBACK WIDGET ────────────────────────────────────────────────────────
+function openFeedbackModal(){
+  document.getElementById('fb-message').value='';
+  document.getElementById('fb-err').style.display='none';
+  document.getElementById('feedback-modal-bg').style.display='flex';
+  track('feedback_opened', {page: currentPage});
+}
+function closeFeedbackModal(){
+  document.getElementById('feedback-modal-bg').style.display='none';
+}
+async function submitFeedback(){
+  const msg = document.getElementById('fb-message').value.trim();
+  const category = document.getElementById('fb-category').value;
+  const errEl = document.getElementById('fb-err');
+  if(!msg){ errEl.textContent='Please enter a message.'; errEl.style.display='block'; return; }
+  const user = getUser();
+  const token = getToken();
+  try{
+    const res = await fetch(`${SURL}/rest/v1/user_feedback`, {
+      method:'POST',
+      headers:{'apikey':SKEY,'Authorization':`Bearer ${token}`,'Content-Type':'application/json','Prefer':'return=minimal'},
+      body: JSON.stringify({
+        user_id: user?.id || null,
+        user_email: user?.email || null,
+        page: currentPage,
+        message: msg,
+        category,
+      })
+    });
+    if(!res.ok){ errEl.textContent='Something went wrong sending feedback. Try again.'; errEl.style.display='block'; return; }
+    track('feedback_submitted', {category, page: currentPage});
+    closeFeedbackModal();
+    toast('Thanks! Your feedback was sent. 🙏','ok');
+  } catch(e){
+    errEl.textContent='Network error. Try again.'; errEl.style.display='block';
+  }
+}
+
+// ── ADMIN DASHBOARD ────────────────────────────────────────────────────────
+async function renderAdmin(){
+  const token = getToken();
+  const headers = {'apikey':SKEY,'Authorization':`Bearer ${token}`,'Content-Type':'application/json'};
+  document.getElementById('pg-admin').innerHTML = `<div class="loading"><div class="spinner"></div>Loading admin data...</div>`;
+
+  try {
+    const [eventsRes, feedbackRes] = await Promise.all([
+      fetch(`${SURL}/rest/v1/analytics_events?select=*&order=created_at.desc&limit=500`, {headers}),
+      fetch(`${SURL}/rest/v1/user_feedback?select=*&order=created_at.desc&limit=100`, {headers}),
+    ]);
+    const events = await eventsRes.json();
+    const feedback = await feedbackRes.json();
+
+    // Compute funnel
+    const signups = events.filter(e=>e.event_name==='signup').length;
+    const logins = events.filter(e=>e.event_name==='login').length;
+    const addedLicense = new Set(events.filter(e=>e.event_name==='license_added').map(e=>e.user_id)).size;
+    const addedDea = new Set(events.filter(e=>e.event_name==='dea_added').map(e=>e.user_id)).size;
+    const addedCert = new Set(events.filter(e=>e.event_name==='cert_added').map(e=>e.user_id)).size;
+    const uniqueUsers = new Set(events.map(e=>e.user_id).filter(Boolean)).size;
+
+    // Page view counts
+    const pageCounts = {};
+    events.filter(e=>e.event_name==='page_view').forEach(e=>{
+      const p = e.event_data?.page || e.page || 'unknown';
+      pageCounts[p] = (pageCounts[p]||0)+1;
+    });
+    const sortedPages = Object.entries(pageCounts).sort((a,b)=>b[1]-a[1]);
+
+    // Event type breakdown
+    const eventCounts = {};
+    events.forEach(e=>{ eventCounts[e.event_name] = (eventCounts[e.event_name]||0)+1; });
+    const sortedEvents = Object.entries(eventCounts).sort((a,b)=>b[1]-a[1]);
+
+    document.getElementById('pg-admin').innerHTML = `
+    <div class="ph"><div><h1>📈 Admin Dashboard</h1><p>Internal analytics — only visible to admin accounts</p></div></div>
+
+    <div class="stats" style="margin-bottom:20px">
+      <div class="stat"><div class="stat-n" style="color:#3b82f6">${uniqueUsers}</div><div class="stat-l">Unique active users</div></div>
+      <div class="stat"><div class="stat-n" style="color:#0fa360">${signups}</div><div class="stat-l">Signups</div></div>
+      <div class="stat"><div class="stat-n" style="color:#3b82f6">${logins}</div><div class="stat-l">Total logins</div></div>
+      <div class="stat"><div class="stat-n" style="color:${feedback.length>0?'#e07000':'#6b7f96'}">${feedback.length}</div><div class="stat-l">Feedback items</div></div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div class="card-title">🔻 Activation funnel <span>did users get value?</span></div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        ${funnelBar('Signed up', signups, signups)}
+        ${funnelBar('Added a license', addedLicense, signups)}
+        ${funnelBar('Added a DEA registration', addedDea, signups)}
+        ${funnelBar('Added a certification', addedCert, signups)}
+      </div>
+      <p style="font-size:11px;color:#6b7f96;margin-top:10px">Bars show % of signups who completed each step. A big drop between two steps shows you exactly where people get stuck.</p>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div class="card">
+        <div class="card-title">📄 Most viewed pages</div>
+        ${sortedPages.length===0?'<div class="empty">No page views tracked yet</div>':sortedPages.map(([page,count])=>`
+          <div class="cred-row"><div class="cr-info"><h4>${page}</h4></div><div class="cr-right"><span class="badge b-gray">${count} views</span></div></div>
+        `).join('')}
+      </div>
+      <div class="card">
+        <div class="card-title">⚡ All event types</div>
+        ${sortedEvents.length===0?'<div class="empty">No events tracked yet</div>':sortedEvents.map(([name,count])=>`
+          <div class="cred-row"><div class="cr-info"><h4>${name}</h4></div><div class="cr-right"><span class="badge b-gray">${count}</span></div></div>
+        `).join('')}
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">💬 User feedback <span>${feedback.length} submitted</span></div>
+      ${feedback.length===0?'<div class="empty">No feedback submitted yet</div>':feedback.map(f=>`
+        <div class="cred-row" style="align-items:flex-start">
+          <div class="cr-info" style="max-width:75%">
+            <h4>${f.category||'general'} · ${f.page||'unknown page'}</h4>
+            <p style="margin-top:4px;color:#3a4a5c">${f.message}</p>
+            <p style="font-size:10px;color:#6b7f96;margin-top:4px">${f.user_email||'anonymous'} · ${new Date(f.created_at).toLocaleString()}</p>
+          </div>
+          <span class="badge ${f.status==='new'?'b-amber':'b-green'}">${f.status}</span>
+        </div>
+      `).join('')}
+    </div>
+    `;
+  } catch(err){
+    document.getElementById('pg-admin').innerHTML = `<div class="card"><p style="color:#d42b2b">Error loading admin data: ${err.message}</p></div>`;
+  }
+}
+
+function funnelBar(label, count, total){
+  const pct = total > 0 ? Math.round((count/total)*100) : 0;
+  return `
+  <div>
+    <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
+      <span style="font-weight:600;color:#0a0f1e">${label}</span>
+      <span style="color:#6b7f96">${count} (${pct}%)</span>
+    </div>
+    <div style="background:#f1f5f9;border-radius:6px;height:10px;overflow:hidden">
+      <div style="background:#3b82f6;height:100%;width:${pct}%;border-radius:6px"></div>
+    </div>
+  </div>`;
+}
 </script>
 </body>
 </html>
