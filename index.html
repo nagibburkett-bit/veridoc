@@ -296,17 +296,68 @@ async function track(eventName, eventData={}){
 
 // ── SUPABASE ──────────────────────────────────────────────────────────────────
 // Simple direct API calls — no SDK needed, no session management issues
+// ── TOKEN REFRESH ─────────────────────────────────────────────────────────────
+let isRefreshing = false;
+async function refreshAccessToken() {
+  if (isRefreshing) {
+    await new Promise(r => setTimeout(r, 500));
+    return getToken();
+  }
+  const refreshToken = localStorage.getItem('vd_refresh');
+  if (!refreshToken) return null;
+  isRefreshing = true;
+  try {
+    const res = await fetch(`${SURL}/auth/v1/token?grant_type=refresh_token`, {
+      method: 'POST',
+      headers: { 'apikey': SKEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: refreshToken })
+    });
+    if (!res.ok) { console.warn('Refresh token invalid or expired'); return null; }
+    const data = await res.json();
+    localStorage.setItem('vd_token', data.access_token);
+    localStorage.setItem('vd_refresh', data.refresh_token);
+    if (data.user) localStorage.setItem('vd_user', JSON.stringify(data.user));
+    console.log('Veridoc: access token refreshed');
+    return data.access_token;
+  } catch(e) {
+    console.error('Token refresh failed:', e.message);
+    return null;
+  } finally {
+    isRefreshing = false;
+  }
+}
+
+async function authFetch(url, options={}) {
+  let token = getToken();
+  const buildHeaders = (tok) => ({
+    'apikey': SKEY,
+    'Authorization': `Bearer ${tok}`,
+    'Content-Type': 'application/json',
+    ...(options.headers || {})
+  });
+  let res = await fetch(url, { ...options, headers: buildHeaders(token) });
+  if (res.status === 401) {
+    const newToken = await refreshAccessToken();
+    if (newToken) {
+      res = await fetch(url, { ...options, headers: buildHeaders(newToken) });
+    } else {
+      console.warn('Session expired - redirecting to login');
+      localStorage.removeItem('vd_token');
+      localStorage.removeItem('vd_refresh');
+      localStorage.removeItem('vd_user');
+      document.getElementById('app').classList.remove('on');
+      document.getElementById('auth').style.display = 'flex';
+      toast('Your session expired. Please sign in again.', 'err');
+    }
+  }
+  return res;
+}
+
 async function sbQuery(table, userId) {
   const session = getToken();
   if (!session) return [];
   try {
-    const res = await fetch(`${SURL}/rest/v1/${table}?select=*&order=expiry_date`, {
-      headers: {
-        'apikey': SKEY,
-        'Authorization': `Bearer ${session}`,
-        'Content-Type': 'application/json',
-      }
-    });
+    const res = await authFetch(`${SURL}/rest/v1/${table}?select=*&order=expiry_date`, { method: 'GET' });
     if (!res.ok) { console.error(table, res.status, await res.text()); return []; }
     return await res.json();
   } catch(e) { console.error(table, e.message); return []; }
@@ -315,14 +366,9 @@ async function sbQuery(table, userId) {
 async function sbInsert(table, data) {
   const session = getToken();
   if (!session) return null;
-  const res = await fetch(`${SURL}/rest/v1/${table}`, {
+  const res = await authFetch(`${SURL}/rest/v1/${table}`, {
     method: 'POST',
-    headers: {
-      'apikey': SKEY,
-      'Authorization': `Bearer ${session}`,
-      'Content-Type': 'application/json',
-      'Prefer': 'return=representation',
-    },
+    headers: { 'Prefer': 'return=representation' },
     body: JSON.stringify(data)
   });
   if (!res.ok) { toast(await res.text(), 'err'); return null; }
@@ -332,14 +378,9 @@ async function sbInsert(table, data) {
 async function sbUpdate(table, id, data) {
   const session = getToken();
   if (!session) return null;
-  const res = await fetch(`${SURL}/rest/v1/${table}?id=eq.${id}`, {
+  const res = await authFetch(`${SURL}/rest/v1/${table}?id=eq.${id}`, {
     method: 'PATCH',
-    headers: {
-      'apikey': SKEY,
-      'Authorization': `Bearer ${session}`,
-      'Content-Type': 'application/json',
-      'Prefer': 'return=representation',
-    },
+    headers: { 'Prefer': 'return=representation' },
     body: JSON.stringify(data)
   });
   if (!res.ok) { toast(await res.text(), 'err'); return null; }
@@ -349,14 +390,7 @@ async function sbUpdate(table, id, data) {
 async function sbDelete(table, id) {
   const session = getToken();
   if (!session) return false;
-  const res = await fetch(`${SURL}/rest/v1/${table}?id=eq.${id}`, {
-    method: 'DELETE',
-    headers: {
-      'apikey': SKEY,
-      'Authorization': `Bearer ${session}`,
-      'Content-Type': 'application/json',
-    }
-  });
+  const res = await authFetch(`${SURL}/rest/v1/${table}?id=eq.${id}`, { method: 'DELETE' });
   return res.ok;
 }
 
@@ -459,8 +493,11 @@ window.addEventListener('DOMContentLoaded', async () => {
   const token = getToken();
   const user = getUser();
   if (token && user) {
-    console.log('Veridoc: restoring session from localStorage');
-    enterApp(user);
+    console.log('Veridoc: restoring session, refreshing token proactively...');
+    await refreshAccessToken(); // get a fresh token right away on load
+    enterApp(getUser() || user);
+    // Keep the token fresh every 10 minutes while the app stays open
+    setInterval(refreshAccessToken, 10 * 60 * 1000);
   } else {
     document.getElementById('auth').style.display = 'flex';
   }
