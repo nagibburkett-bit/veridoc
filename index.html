@@ -73,6 +73,10 @@ input[type="date"]{min-width:0;width:100%;max-width:100%;box-sizing:border-box;}
 .card-title{font-size:14px;font-weight:600;color:#0a0f1e;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
 .stat{background:#fff;border:1px solid #d4dde8;border-radius:10px;padding:16px;}
+.stat.clickable{cursor:pointer;transition:border-color .12s,box-shadow .12s,transform .08s;}
+.stat.clickable:hover{border-color:#bfdbfe;box-shadow:0 4px 14px rgba(59,130,246,.12);transform:translateY(-1px);}
+.cred-row.clickable{cursor:pointer;transition:background .12s;border-radius:8px;margin:0 -10px;padding-left:10px;padding-right:10px;}
+.cred-row.clickable:hover{background:#f5f8fb;}
 .stat-n{font-size:30px;font-weight:700;line-height:1;margin-bottom:4px;}
 .stat-l{font-size:10px;font-weight:700;color:#6b7f96;text-transform:uppercase;letter-spacing:.06em;}
 .badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;}
@@ -91,6 +95,8 @@ th{font-size:10px;font-weight:700;color:#6b7f96;text-transform:uppercase;letter-
 td{font-size:12px;color:#3a4a5c;padding:11px 14px;border-bottom:1px solid #eaf0f7;vertical-align:middle;}
 tr:last-child td{border-bottom:none;}
 tr:hover td{background:#f5f8fb;}
+tbody tr.clickable-row{cursor:pointer;transition:background .12s;}
+tbody tr.clickable-row:hover td{background:#eef3ff;}
 .chip-state{display:inline-block;background:#eef3ff;color:#3b82f6;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:700;}
 .chip-type{display:inline-block;background:#f1f5f9;color:#3a4a5c;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:600;border:1px solid #d4dde8;}
 .mono{font-family:monospace;font-size:11px;color:#6b7f96;}
@@ -256,13 +262,13 @@ tr:hover td{background:#f5f8fb;}
       <button class="side-close" onclick="closeSidebar()" aria-label="Close menu">
         <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
-      <button class="nav on" onclick="go('dashboard',this)">📊 Dashboard</button>
-      <button class="nav" onclick="go('licenses',this)">🗺 Licenses</button>
-      <button class="nav" onclick="go('dea',this)">💊 DEA Registry</button>
-      <button class="nav" onclick="go('certifications',this)">🎓 Certifications</button>
-      <button class="nav" onclick="go('alerts',this)" id="nav-al">🔔 Alerts <span class="nav-badge" id="al-ct" style="display:none">0</span></button>
-      <button class="nav" onclick="go('settings',this)">⚙️ Settings</button>
-      <button class="nav" onclick="go('admin',this)" id="nav-admin" style="display:none">📈 Admin</button>
+      <button class="nav on" data-page="dashboard" onclick="go('dashboard',this)">📊 Dashboard</button>
+      <button class="nav" data-page="licenses" onclick="go('licenses',this)">🗺 Licenses</button>
+      <button class="nav" data-page="dea" onclick="go('dea',this)">💊 DEA Registry</button>
+      <button class="nav" data-page="certifications" onclick="go('certifications',this)">🎓 Certifications</button>
+      <button class="nav" data-page="alerts" onclick="go('alerts',this)" id="nav-al">🔔 Alerts <span class="nav-badge" id="al-ct" style="display:none">0</span></button>
+      <button class="nav" data-page="settings" onclick="go('settings',this)">⚙️ Settings</button>
+      <button class="nav" data-page="admin" onclick="go('admin',this)" id="nav-admin" style="display:none">📈 Admin</button>
     </div>
     <div class="main">
       <div class="page on" id="pg-dashboard"><div class="loading"><div class="spinner"></div>Loading...</div></div>
@@ -598,8 +604,8 @@ function dChip(expiry){
 }
 function renewCell(l){
   const rs=getRS(l),r=rule(l.state),n=daysUntil(l.expiry_date);
-  if(rs==='exp') return `<div class="renew-wrap"><a href="${r.url}" target="_blank" class="rb rb-exp">Renew now</a><div class="rn">Reinstatement may apply</div></div>`;
-  if(rs==='open') return `<div class="renew-wrap"><a href="${r.url}" target="_blank" class="rb ${n<=30?'rb-urg':'rb-open'}">Renew now</a><div class="rn">Window open · ${r.w}d rule</div></div>`;
+  if(rs==='exp') return `<div class="renew-wrap"><a href="${r.url}" target="_blank" onclick="event.stopPropagation()" class="rb rb-exp">Renew now</a><div class="rn">Reinstatement may apply</div></div>`;
+  if(rs==='open') return `<div class="renew-wrap"><a href="${r.url}" target="_blank" onclick="event.stopPropagation()" class="rb ${n<=30?'rb-urg':'rb-open'}">Renew now</a><div class="rn">Window open · ${r.w}d rule</div></div>`;
   if(rs==='soon') return `<div class="renew-wrap"><span class="rb rb-lock">Opens ~${n-r.w}d</span><div class="rn">${r.w}d rule</div></div>`;
   return `<div class="renew-wrap"><span class="rb rb-lock">Not open</span><div class="rn">Opens ${n-r.w}d from now</div></div>`;
 }
@@ -807,19 +813,19 @@ function renderDash(){
   document.getElementById('pg-dashboard').innerHTML=`
   <div class="ph"><div><h1>Dashboard</h1><p>${all.length} credentials · ${exp} expired · ${rOpen} renewal${rOpen!==1?'s':''} open</p></div></div>
   <div class="stats">
-    <div class="stat"><div class="stat-n" style="color:#3b82f6">${licenses.length}</div><div class="stat-l">Licenses</div></div>
-    <div class="stat"><div class="stat-n" style="color:#3b82f6">${dea.length}</div><div class="stat-l">DEA</div></div>
-    <div class="stat"><div class="stat-n" style="color:${warn>0?'#e07000':'#0fa360'}">${warn}</div><div class="stat-l">Expiring 90d</div></div>
-    <div class="stat"><div class="stat-n" style="color:${exp>0?'#d42b2b':'#0fa360'}">${exp}</div><div class="stat-l">Expired</div></div>
+    <div class="stat clickable" onclick="go('licenses')"><div class="stat-n" style="color:#3b82f6">${licenses.length}</div><div class="stat-l">Licenses</div></div>
+    <div class="stat clickable" onclick="go('dea')"><div class="stat-n" style="color:#3b82f6">${dea.length}</div><div class="stat-l">DEA</div></div>
+    <div class="stat clickable" onclick="go('alerts')"><div class="stat-n" style="color:${warn>0?'#e07000':'#0fa360'}">${warn}</div><div class="stat-l">Expiring 90d</div></div>
+    <div class="stat clickable" onclick="go('alerts')"><div class="stat-n" style="color:${exp>0?'#d42b2b':'#0fa360'}">${exp}</div><div class="stat-l">Expired</div></div>
   </div>
   <div class="dash-grid-2">
     <div class="card">
       <div class="card-title">🚨 Needs attention <span>${urgent.length} items</span></div>
-      ${urgent.length===0?'<div class="empty"><span class="empty-icon">✅</span>All credentials current</div>':urgent.slice(0,6).map(u=>`<div class="cred-row"><div class="cr-info"><h4>${u._label}</h4><p>${u._sub}</p></div><div class="cr-right">${dChip(u._exp)}${sBadge(u._s)}</div></div>`).join('')}
+      ${urgent.length===0?'<div class="empty"><span class="empty-icon">✅</span>All credentials current</div>':urgent.slice(0,6).map(u=>`<div class="cred-row clickable" onclick="openModal('${u._k}','${u.id}')"><div class="cr-info"><h4>${u._label}</h4><p>${u._sub}</p></div><div class="cr-right">${dChip(u._exp)}${sBadge(u._s)}</div></div>`).join('')}
     </div>
     <div class="card">
       <div class="card-title">🔓 Renewals open <span>${rOpen} available</span></div>
-      ${rOpen===0?'<div class="empty"><span class="empty-icon">🔒</span>No windows open yet</div>':licenses.filter(l=>getRS(l)==='open').map(l=>`<div class="cred-row"><div class="cr-info"><h4>${l.state} ${l.license_type} — ${l.license_number}</h4><p>Expires ${fmt(l.expiry_date)}</p></div><div class="cr-right"><a href="${rule(l.state).url}" target="_blank" class="rb rb-open" style="font-size:11px">Renew</a></div></div>`).join('')}
+      ${rOpen===0?'<div class="empty"><span class="empty-icon">🔒</span>No windows open yet</div>':licenses.filter(l=>getRS(l)==='open').map(l=>`<div class="cred-row clickable" onclick="openModal('lic','${l.id}')"><div class="cr-info"><h4>${l.state} ${l.license_type} — ${l.license_number}</h4><p>Expires ${fmt(l.expiry_date)}</p></div><div class="cr-right"><a href="${rule(l.state).url}" target="_blank" onclick="event.stopPropagation()" class="rb rb-open" style="font-size:11px">Renew</a></div></div>`).join('')}
     </div>
   </div>`;
 }
@@ -847,7 +853,7 @@ function renderLic(){
   <div class="tbl-wrap"><table>
     <colgroup><col style="width:65px"><col style="width:65px"><col style="width:130px"><col style="width:95px"><col style="width:95px"><col style="width:95px"><col style="width:105px"><col style="width:145px"><col style="width:70px"></colgroup>
     <thead><tr><th>State</th><th>Type</th><th>License #</th><th>Issue date</th><th>Effective</th><th>Expiration</th><th>Status</th><th>Renewal</th><th></th></tr></thead>
-    <tbody>${rows.length===0?'<tr><td colspan="9" style="text-align:center;padding:32px;color:#6b7f96">No licenses match filter</td></tr>':rows.map(l=>`<tr>
+    <tbody>${rows.length===0?'<tr><td colspan="9" style="text-align:center;padding:32px;color:#6b7f96">No licenses match filter</td></tr>':rows.map(l=>`<tr class="clickable-row" onclick="openModal('lic','${l.id}')">
       <td><span class="chip-state">${l.state}</span></td>
       <td><span class="chip-type">${l.license_type}</span></td>
       <td><span class="mono">${l.license_number}</span></td>
@@ -856,7 +862,7 @@ function renderLic(){
       <td style="font-weight:600;font-size:12px">${fmt(l.expiry_date)}</td>
       <td>${sBadge(getLS(l))}</td>
       <td>${renewCell(l)}</td>
-      <td><div class="ac"><button class="ib" onclick="openModal('lic','${l.id}')">✏️</button><button class="ib del" onclick="del('licenses','${l.id}')">🗑</button></div></td>
+      <td><div class="ac"><button class="ib" onclick="event.stopPropagation();openModal('lic','${l.id}')">✏️</button><button class="ib del" onclick="event.stopPropagation();del('licenses','${l.id}')">🗑</button></div></td>
     </tr>`).join('')}</tbody>
   </table></div>`;
 }
@@ -878,14 +884,14 @@ function renderDEA(){
   <div class="tbl-wrap"><table>
     <colgroup><col style="width:130px"><col style="width:70px"><col style="width:100px"><col style="width:110px"><col style="width:95px"><col style="width:110px"><col style="width:70px"></colgroup>
     <thead><tr><th>DEA Number</th><th>State</th><th>Schedule</th><th>Expiration</th><th>Renewal</th><th>Status</th><th></th></tr></thead>
-    <tbody>${rows.length===0?'<tr><td colspan="7" style="text-align:center;padding:32px;color:#6b7f96">No DEA registrations match filter</td></tr>':rows.map(d=>`<tr>
+    <tbody>${rows.length===0?'<tr><td colspan="7" style="text-align:center;padding:32px;color:#6b7f96">No DEA registrations match filter</td></tr>':rows.map(d=>`<tr class="clickable-row" onclick="openModal('dea','${d.id}')">
       <td><span style="font-family:monospace;font-size:12px;font-weight:700;color:#3b82f6">${d.dea_number}</span></td>
       <td><span class="chip-state">${d.state}</span></td>
       <td>Sched. ${d.schedule}</td>
       <td style="font-weight:600;font-size:12px">${fmt(d.expiry_date)}</td>
       <td style="color:#e07000;font-weight:600">$888</td>
       <td>${sBadge(getDS(d))}</td>
-      <td><div class="ac"><button class="ib" onclick="openModal('dea','${d.id}')">✏️</button><button class="ib del" onclick="del('dea_registrations','${d.id}')">🗑</button></div></td>
+      <td><div class="ac"><button class="ib" onclick="event.stopPropagation();openModal('dea','${d.id}')">✏️</button><button class="ib del" onclick="event.stopPropagation();del('dea_registrations','${d.id}')">🗑</button></div></td>
     </tr>`).join('')}</tbody>
   </table></div>`;
 }
@@ -909,14 +915,14 @@ function renderCerts(){
     <tbody>${rows.length===0?'<tr><td colspan="7" style="text-align:center;padding:32px;color:#6b7f96">No certifications match filter</td></tr>':rows.map(c=>{
       const cr=CERT_RULES[c.cert_type];const n=daysUntil(c.expiry_date);const s=getCS(c);
       const rb=s==='exp'?'<span class="badge b-red">Reinstate</span>':!cr?'<span class="badge b-gray">Check issuer</span>':n<=cr.days?`<span class="badge ${n<=30?'b-amber':'b-green'}">${n<=30?'Renew now':'Open'}</span>`:`<span class="badge b-gray">Opens ${n-cr.days}d</span>`;
-      return `<tr>
+      return `<tr class="clickable-row" onclick="openModal('cert','${c.id}')">
         <td><span style="font-weight:700;color:#3b82f6;font-size:12px">${c.cert_type}</span></td>
         <td><span class="mono">${c.cert_number||'—'}</span></td>
         <td style="color:#6b7f96;font-size:12px">${c.issuer||cr?.body||'—'}</td>
         <td style="font-weight:600;font-size:12px">${fmt(c.expiry_date)}</td>
         <td>${rb}</td>
         <td>${sBadge(s)}</td>
-        <td><div class="ac"><button class="ib" onclick="openModal('cert','${c.id}')">✏️</button><button class="ib del" onclick="del('certifications','${c.id}')">🗑</button></div></td>
+        <td><div class="ac"><button class="ib" onclick="event.stopPropagation();openModal('cert','${c.id}')">✏️</button><button class="ib del" onclick="event.stopPropagation();del('certifications','${c.id}')">🗑</button></div></td>
       </tr>`;
     }).join('')}</tbody>
   </table></div>`;
@@ -943,8 +949,10 @@ function setF(type,val,btn){
 function go(id,btn){
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('on'));
   document.querySelectorAll('.nav').forEach(n=>n.classList.remove('on'));
-  document.getElementById('pg-'+id).classList.add('on');
-  btn.classList.add('on');
+  const pg=document.getElementById('pg-'+id);
+  if(pg) pg.classList.add('on');
+  const navBtn=btn||document.querySelector('.side .nav[data-page="'+id+'"]');
+  if(navBtn) navBtn.classList.add('on');
   currentPage = id;
   track('page_view', {page: id});
   if(id === 'admin') renderAdmin();
