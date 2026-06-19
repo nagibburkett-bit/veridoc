@@ -331,6 +331,11 @@ tbody tr.clickable-row:hover td{background:#eef3ff;}
 
 <div class="toast-wrap" id="toasts"></div>
 
+<!-- PDF generation (credential summary export) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+
+
 <script>
 // ── CONFIG ────────────────────────────────────────────────────────────────────
 const SURL = 'https://lfpjmsjafgkzlidvoivk.supabase.co';
@@ -665,6 +670,12 @@ function renderSettings(){
     <p style="font-size:11px;color:#6b7f96;margin-top:12px">Email alerts are coming in a future update. Your preferences will be saved and applied when they launch.</p>
   </div>
 
+  <div class="card" style="margin-bottom:16px;border:1px solid #bfdbfe;background:#f5f9ff">
+    <div class="card-title" style="color:#2563eb">📄 Share with your employer</div>
+    <p style="font-size:13px;color:#6b7f96;margin-bottom:14px">Generate a clean, branded PDF summary of all your credentials to email to HR or your credentialing department. It's a point-in-time snapshot — your live dashboard always stays here in Veridoc.</p>
+    <button class="btn btn-blue btn-sm" onclick="exportCredentialsPDF()">📄 Download credential summary (PDF)</button>
+  </div>
+
   <div class="card" style="margin-bottom:16px">
     <div class="card-title">📥 Export your data</div>
     <p style="font-size:13px;color:#6b7f96;margin-bottom:14px">Download all your credentials as a CSV file. Keep a copy for your own records.</p>
@@ -752,6 +763,103 @@ async function exportData(){
   toast('Data exported ✓','ok');
 }
 
+// ── PDF CREDENTIAL SUMMARY (shareable with employer) ────────────────────────
+function exportCredentialsPDF(){
+  if(!window.jspdf || !window.jspdf.jsPDF){
+    toast('PDF tool is still loading — try again in a second.','err');
+    return;
+  }
+  const { jsPDF } = window.jspdf;
+  const user = getUser();
+  const meta = user?.user_metadata || {};
+  const name = `${meta.first_name||''} ${meta.last_name||''}`.trim() || (user?.email||'provider').split('@')[0];
+  const email = user?.email || '';
+  const role = meta.role || '';
+  const today = new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
+
+  const statusLabel = s => s==='exp' ? 'Expired' : s==='expr' ? 'Expiring soon' : s==='warn' ? 'Due within 90d' : 'Active';
+
+  const doc = new jsPDF({unit:'pt', format:'letter'});
+  const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
+  const M = 48;
+
+  // Header band
+  doc.setFillColor(10,15,30);
+  doc.rect(0,0,pageW,84,'F');
+  doc.setFont('helvetica','bold'); doc.setFontSize(22); doc.setTextColor(255,255,255);
+  doc.text('Veridoc', M, 42);
+  doc.setTextColor(59,130,246);
+  doc.text('.', M + doc.getTextWidth('Veridoc'), 42);
+  doc.setFont('helvetica','normal'); doc.setFontSize(11); doc.setTextColor(255,255,255);
+  doc.text('Credential Summary', M, 64);
+  doc.setFontSize(9); doc.setTextColor(170,182,200);
+  doc.text(`Generated ${today}`, pageW - M, 42, {align:'right'});
+  doc.text('Point-in-time snapshot', pageW - M, 56, {align:'right'});
+
+  // Provider block
+  let y = 116;
+  doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.setTextColor(10,15,30);
+  doc.text(name, M, y);
+  y += 18;
+  doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(107,127,150);
+  const sub = [role, email].filter(Boolean).join('   ·   ');
+  if(sub){ doc.text(sub, M, y); y += 10; }
+  y += 18;
+
+  const tableStyle = startY => ({
+    startY,
+    margin:{left:M, right:M},
+    theme:'grid',
+    styles:{font:'helvetica', overflow:'linebreak'},
+    headStyles:{fillColor:[245,248,251], textColor:[107,127,150], fontStyle:'bold', fontSize:8, lineColor:[212,221,232], lineWidth:0.5},
+    bodyStyles:{fontSize:9, textColor:[58,74,92], lineColor:[234,240,247], lineWidth:0.5, cellPadding:5},
+    alternateRowStyles:{fillColor:[250,252,254]},
+  });
+
+  function section(title, head, body){
+    if(y > pageH - 130){ doc.addPage(); y = 56; }
+    doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(10,15,30);
+    doc.text(title, M, y);
+    if(body.length === 0){
+      doc.setFont('helvetica','italic'); doc.setFontSize(9); doc.setTextColor(150,160,175);
+      doc.text('None on file.', M, y + 16);
+      y += 38;
+      return;
+    }
+    doc.autoTable({ head:[head], body, ...tableStyle(y + 8) });
+    y = doc.lastAutoTable.finalY + 28;
+  }
+
+  section('State Licenses',
+    ['State','Type','License #','Issue date','Expiration','Status'],
+    licenses.map(l => [l.state, l.license_type, l.license_number, fmt(l.issue_date), fmt(l.expiry_date), statusLabel(getLS(l))]));
+
+  section('DEA Registrations',
+    ['DEA number','State','Schedule','Expiration','Status'],
+    dea.map(d => [d.dea_number, d.state, 'Sched. '+d.schedule, fmt(d.expiry_date), statusLabel(getDS(d))]));
+
+  section('Certifications',
+    ['Type','Cert #','Issuing body','Expiration','Status'],
+    certs.map(c => [c.cert_type, c.cert_number||'—', c.issuer||'—', fmt(c.expiry_date), statusLabel(getCS(c))]));
+
+  // Footer on every page
+  const pages = doc.internal.getNumberOfPages();
+  for(let i=1;i<=pages;i++){
+    doc.setPage(i);
+    doc.setDrawColor(212,221,232); doc.setLineWidth(0.5);
+    doc.line(M, pageH-46, pageW-M, pageH-46);
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(150,160,175);
+    doc.text('Generated by Veridoc · veridoc-pi.vercel.app · Point-in-time snapshot, may not reflect current status.', M, pageH-30);
+    doc.text(`Page ${i} of ${pages}`, pageW-M, pageH-30, {align:'right'});
+  }
+
+  const safe = name.replace(/[^a-z0-9]+/gi,'_').replace(/^_+|_+$/g,'');
+  doc.save(`Veridoc_Credentials_${safe||'Summary'}.pdf`);
+  track('pdf_exported', {licenses: licenses.length, dea: dea.length, certs: certs.length});
+  toast('Credential summary downloaded 📄','ok');
+}
+
 async function deleteAllData(){
   if(!confirm('This will permanently delete ALL your licenses, DEA registrations, and certifications.\n\nThis cannot be undone. Continue?')) return;
   if(!confirm('Last chance — are you absolutely sure?')) return;
@@ -811,7 +919,7 @@ function renderDash(){
   document.getElementById('al-ct').style.display=urgent.length?'inline':'none';
   document.getElementById('al-ct').textContent=urgent.length;
   document.getElementById('pg-dashboard').innerHTML=`
-  <div class="ph"><div><h1>Dashboard</h1><p>${all.length} credentials · ${exp} expired · ${rOpen} renewal${rOpen!==1?'s':''} open</p></div></div>
+  <div class="ph"><div><h1>Dashboard</h1><p>${all.length} credentials · ${exp} expired · ${rOpen} renewal${rOpen!==1?'s':''} open</p></div><button class="btn btn-ghost" onclick="exportCredentialsPDF()">📄 Share with employer</button></div>
   <div class="stats">
     <div class="stat clickable" onclick="go('licenses')"><div class="stat-n" style="color:#3b82f6">${licenses.length}</div><div class="stat-l">Licenses</div></div>
     <div class="stat clickable" onclick="go('dea')"><div class="stat-n" style="color:#3b82f6">${dea.length}</div><div class="stat-l">DEA</div></div>
