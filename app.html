@@ -4,159 +4,161 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Veridoc</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;500;600;700;800&family=Inter:wght@400;450;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'DM Sans',sans-serif;background:#f5f8fb;color:#0a0f1e;min-height:100vh;}
-input,select,button,textarea{font-family:'DM Sans',sans-serif;}
-::-webkit-scrollbar{width:5px;} ::-webkit-scrollbar-thumb{background:#d4dde8;border-radius:3px;}
+body{font-family:'Inter',sans-serif;background:#F5F7F9;color:#0F1E2E;min-height:100vh;}
+input,select,button,textarea{font-family:'Inter',sans-serif;}
+::-webkit-scrollbar{width:5px;} ::-webkit-scrollbar-thumb{background:#E3E9EE;border-radius:3px;}
 
 /* AUTH */
 #auth{display:flex;min-height:100vh;}
-.auth-left{flex:1;background:#0a0f1e;display:flex;align-items:center;justify-content:center;padding:60px;}
+.auth-left{flex:1;background:#0F1E2E;display:flex;align-items:center;justify-content:center;padding:60px;}
 .auth-logo{font-size:42px;font-weight:700;color:#fff;margin-bottom:12px;}
-.auth-logo span{color:#3b82f6;}
+.auth-logo span{color:#0F766E;}
 .auth-tagline{font-size:16px;color:rgba(255,255,255,.5);line-height:1.7;max-width:360px;margin-bottom:40px;}
 .auth-feat{display:flex;gap:10px;margin-bottom:12px;align-items:flex-start;}
-.auth-feat-dot{width:6px;height:6px;border-radius:50%;background:#3b82f6;margin-top:7px;flex-shrink:0;}
+.auth-feat-dot{width:6px;height:6px;border-radius:50%;background:#0F766E;margin-top:7px;flex-shrink:0;}
 .auth-feat p{font-size:13px;color:rgba(255,255,255,.5);}
 .auth-right{flex:1;display:flex;align-items:center;justify-content:center;padding:40px;}
 .auth-box{width:100%;max-width:400px;}
 .auth-box h2{font-size:28px;font-weight:700;margin-bottom:6px;}
-.auth-box p{font-size:14px;color:#6b7f96;margin-bottom:28px;}
+.auth-box p{font-size:14px;color:#5A6B7B;margin-bottom:28px;}
 .fg{margin-bottom:14px;min-width:0;}
-.fg label{display:block;font-size:11px;font-weight:700;color:#3a4a5c;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;}
-.fg input,.fg select{width:100%;max-width:100%;min-width:0;padding:11px 14px;border:1.5px solid #d4dde8;border-radius:8px;font-size:14px;color:#0a0f1e;outline:none;transition:border-color .15s;box-sizing:border-box;}
-.fg input:focus,.fg select:focus{border-color:#3b82f6;}
+.fg label{display:block;font-size:11px;font-weight:700;color:#47586A;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px;}
+.fg input,.fg select{width:100%;max-width:100%;min-width:0;padding:11px 14px;border:1.5px solid #E3E9EE;border-radius:8px;font-size:14px;color:#0F1E2E;outline:none;transition:border-color .15s;box-sizing:border-box;}
+.fg input:focus,.fg select:focus{border-color:#0F766E;}
 input[type="date"]{min-width:0;width:100%;max-width:100%;box-sizing:border-box;}
 .fr2{display:grid;grid-template-columns:1fr 1fr;gap:12px;min-width:0;}
 .dash-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-.auth-btn{width:100%;padding:12px;background:#3b82f6;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;margin-top:6px;}
-.auth-btn:hover{background:#2563eb;}
+.auth-btn{width:100%;padding:12px;background:#0F766E;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;margin-top:6px;}
+.auth-btn:hover{background:#0B5E57;}
 .auth-btn:disabled{opacity:.6;cursor:not-allowed;}
-.auth-err{background:#fef2f2;border:1px solid #fecaca;color:#d42b2b;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none;}
+.auth-err{background:#FBE6E6;border:1px solid #F3C9C9;color:#B91C1C;border-radius:8px;padding:10px 14px;font-size:13px;margin-bottom:14px;display:none;}
 .auth-err.show{display:block;}
-.auth-switch{text-align:center;margin-top:16px;font-size:14px;color:#6b7f96;}
-.auth-switch a{color:#3b82f6;font-weight:600;cursor:pointer;}
+.auth-switch{text-align:center;margin-top:16px;font-size:14px;color:#5A6B7B;}
+.auth-switch a{color:#0F766E;font-weight:600;cursor:pointer;}
 
 /* APP */
 #app{display:none;flex-direction:column;min-height:100vh;}
 #app.on{display:flex;}
-.topbar{background:#fff;border-bottom:1px solid #d4dde8;height:54px;display:flex;align-items:center;padding:0 24px;gap:14px;position:sticky;top:0;z-index:50;}
-.t-logo{font-size:22px;font-weight:700;color:#0a0f1e;}
-.t-logo span{color:#3b82f6;}
+.topbar{background:#fff;border-bottom:1px solid #E3E9EE;height:54px;display:flex;align-items:center;padding:0 24px;gap:14px;position:sticky;top:0;z-index:50;}
+.t-logo{font-size:22px;font-weight:700;color:#0F1E2E;}
+.t-logo span{color:#0F766E;}
 .t-right{margin-left:auto;display:flex;align-items:center;gap:10px;}
-.t-user{font-size:13px;color:#3a4a5c;font-weight:500;}
-.t-out{padding:7px 13px;background:transparent;border:1px solid #d4dde8;border-radius:8px;font-size:12px;font-weight:600;color:#6b7f96;cursor:pointer;}
-.t-out:hover{border-color:#ef4444;color:#ef4444;}
+.t-user{font-size:13px;color:#47586A;font-weight:500;}
+.t-out{padding:7px 13px;background:transparent;border:1px solid #E3E9EE;border-radius:8px;font-size:12px;font-weight:600;color:#5A6B7B;cursor:pointer;}
+.t-out:hover{border-color:#B91C1C;color:#B91C1C;}
 .wrap{display:flex;flex:1;}
-.side{width:200px;background:#fff;border-right:1px solid #d4dde8;padding:14px 8px;flex-shrink:0;}
-.nav{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:8px;font-size:13px;font-weight:500;color:#6b7f96;cursor:pointer;margin-bottom:2px;border:none;background:transparent;width:100%;text-align:left;}
-.nav:hover{background:#f5f8fb;color:#0a0f1e;}
-.nav.on{background:#eef3ff;color:#3b82f6;font-weight:600;}
-.nav-badge{margin-left:auto;background:#ef4444;color:#fff;border-radius:20px;padding:1px 6px;font-size:10px;font-weight:700;}
+.side{width:200px;background:#fff;border-right:1px solid #E3E9EE;padding:14px 8px;flex-shrink:0;}
+.nav{display:flex;align-items:center;gap:9px;padding:9px 12px;border-radius:8px;font-size:13px;font-weight:500;color:#5A6B7B;cursor:pointer;margin-bottom:2px;border:none;background:transparent;width:100%;text-align:left;}
+.nav:hover{background:#F5F7F9;color:#0F1E2E;}
+.nav.on{background:#E6F2F0;color:#0F766E;font-weight:600;}
+.nav-badge{margin-left:auto;background:#B91C1C;color:#fff;border-radius:20px;padding:1px 6px;font-size:10px;font-weight:700;}
 .main{flex:1;padding:28px 32px;overflow-y:auto;}
 .page{display:none;}
 .page.on{display:block;}
 
 /* COMPONENTS */
 .ph{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:22px;}
-.ph h1{font-size:24px;font-weight:700;color:#0a0f1e;}
-.ph p{font-size:13px;color:#6b7f96;margin-top:3px;}
+.ph h1{font-size:24px;font-weight:700;color:#0F1E2E;}
+.ph p{font-size:13px;color:#5A6B7B;margin-top:3px;}
 .btn{display:inline-flex;align-items:center;gap:6px;padding:9px 18px;border-radius:8px;font-size:13px;font-weight:600;border:none;cursor:pointer;}
-.btn-blue{background:#3b82f6;color:#fff;}
-.btn-blue:hover{background:#2563eb;}
-.btn-ghost{background:#fff;color:#3a4a5c;border:1px solid #d4dde8;}
-.btn-ghost:hover{border-color:#3b82f6;color:#3b82f6;}
+.btn-blue{background:#0F766E;color:#fff;}
+.btn-blue:hover{background:#0B5E57;}
+.btn-ghost{background:#fff;color:#47586A;border:1px solid #E3E9EE;}
+.btn-ghost:hover{border-color:#0F766E;color:#0F766E;}
 .btn-sm{padding:6px 12px;font-size:12px;}
-.card{background:#fff;border:1px solid #d4dde8;border-radius:12px;padding:20px;margin-bottom:16px;}
-.card-title{font-size:14px;font-weight:600;color:#0a0f1e;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;}
+.card{background:#fff;border:1px solid #E3E9EE;border-radius:12px;padding:20px;margin-bottom:16px;}
+.card-title{font-size:14px;font-weight:600;color:#0F1E2E;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;}
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px;}
-.stat{background:#fff;border:1px solid #d4dde8;border-radius:10px;padding:16px;}
+.stat{background:#fff;border:1px solid #E3E9EE;border-radius:10px;padding:16px;}
 .stat.clickable{cursor:pointer;transition:border-color .12s,box-shadow .12s,transform .08s;}
-.stat.clickable:hover{border-color:#bfdbfe;box-shadow:0 4px 14px rgba(59,130,246,.12);transform:translateY(-1px);}
+.stat.clickable:hover{border-color:#A7D5CF;box-shadow:0 4px 14px rgba(15,118,110,.12);transform:translateY(-1px);}
 .cred-row.clickable{cursor:pointer;transition:background .12s;border-radius:8px;margin:0 -10px;padding-left:10px;padding-right:10px;}
-.cred-row.clickable:hover{background:#f5f8fb;}
+.cred-row.clickable:hover{background:#F5F7F9;}
 .stat-n{font-size:30px;font-weight:700;line-height:1;margin-bottom:4px;}
-.stat-l{font-size:10px;font-weight:700;color:#6b7f96;text-transform:uppercase;letter-spacing:.06em;}
+.stat-l{font-size:10px;font-weight:700;color:#5A6B7B;text-transform:uppercase;letter-spacing:.06em;}
 .badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;}
-.b-green{background:#e6f7f0;color:#0fa360;}
-.b-amber{background:#fff4e5;color:#e07000;}
-.b-red{background:#fef2f2;color:#d42b2b;}
-.b-gray{background:#f1f5f9;color:#6b7f96;}
-.cred-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #eaf0f7;}
+.b-green{background:#E7F4EC;color:#15803D;}
+.b-amber{background:#FBEEDA;color:#B45309;}
+.b-red{background:#FBE6E6;color:#B91C1C;}
+.b-gray{background:#EEF2F5;color:#5A6B7B;}
+.cred-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid #EDF1F4;}
 .cred-row:last-child{border-bottom:none;}
 .cr-info h4{font-size:13px;font-weight:600;}
-.cr-info p{font-size:11px;color:#6b7f96;margin-top:2px;}
+.cr-info p{font-size:11px;color:#5A6B7B;margin-top:2px;}
 .cr-right{display:flex;align-items:center;gap:8px;}
-.tbl-wrap{overflow-x:auto;border-radius:12px;border:1px solid #d4dde8;}
+.tbl-wrap{overflow-x:auto;border-radius:12px;border:1px solid #E3E9EE;}
 table{width:100%;border-collapse:collapse;}
-th{font-size:10px;font-weight:700;color:#6b7f96;text-transform:uppercase;letter-spacing:.07em;padding:10px 14px;text-align:left;background:#f5f8fb;border-bottom:1px solid #d4dde8;}
-td{font-size:12px;color:#3a4a5c;padding:11px 14px;border-bottom:1px solid #eaf0f7;vertical-align:middle;}
+th{font-size:10px;font-weight:700;color:#5A6B7B;text-transform:uppercase;letter-spacing:.07em;padding:10px 14px;text-align:left;background:#F5F7F9;border-bottom:1px solid #E3E9EE;}
+td{font-size:12px;color:#47586A;padding:11px 14px;border-bottom:1px solid #EDF1F4;vertical-align:middle;}
 tr:last-child td{border-bottom:none;}
-tr:hover td{background:#f5f8fb;}
+tr:hover td{background:#F5F7F9;}
 tbody tr.clickable-row{cursor:pointer;transition:background .12s;}
-tbody tr.clickable-row:hover td{background:#eef3ff;}
-.chip-state{display:inline-block;background:#eef3ff;color:#3b82f6;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:700;}
-.chip-type{display:inline-block;background:#f1f5f9;color:#3a4a5c;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:600;border:1px solid #d4dde8;}
-.mono{font-family:monospace;font-size:11px;color:#6b7f96;}
-.ib{background:transparent;border:none;cursor:pointer;padding:5px;border-radius:6px;color:#6b7f96;font-size:14px;}
-.ib:hover{background:#f1f5f9;color:#0a0f1e;}
-.ib.del:hover{color:#ef4444;}
+tbody tr.clickable-row:hover td{background:#E6F2F0;}
+.chip-state{display:inline-block;background:#E6F2F0;color:#0F766E;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:700;}
+.chip-type{display:inline-block;background:#EEF2F5;color:#47586A;border-radius:4px;padding:2px 8px;font-size:11px;font-weight:600;border:1px solid #E3E9EE;}
+.mono{font-family:'JetBrains Mono',monospace;font-size:11px;color:#5A6B7B;}
+.ib{background:transparent;border:none;cursor:pointer;padding:5px;border-radius:6px;color:#5A6B7B;font-size:14px;}
+.ib:hover{background:#EEF2F5;color:#0F1E2E;}
+.ib.del:hover{color:#B91C1C;}
 .ac{display:flex;gap:4px;}
 .renew-wrap{display:flex;flex-direction:column;gap:2px;}
 .rb{display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:600;text-decoration:none;border:1px solid;}
-.rb-open{border-color:#0fa360;color:#0fa360;background:#e6f7f0;}
+.rb-open{border-color:#15803D;color:#15803D;background:#E7F4EC;}
 .rb-open:hover{opacity:.8;}
-.rb-urg{border-color:#e07000;color:#e07000;background:#fff4e5;}
-.rb-lock{border-color:#d4dde8;color:#6b7f96;background:#f1f5f9;cursor:default;}
-.rb-exp{border-color:#d42b2b;color:#d42b2b;background:#fef2f2;}
-.rn{font-size:10px;color:#6b7f96;}
-.dea-warn{background:#fff4e5;border:1px solid #fde68a;border-radius:8px;padding:12px 16px;margin-bottom:18px;font-size:13px;color:#e07000;}
+.rb-urg{border-color:#B45309;color:#B45309;background:#FBEEDA;}
+.rb-lock{border-color:#E3E9EE;color:#5A6B7B;background:#EEF2F5;cursor:default;}
+.rb-exp{border-color:#B91C1C;color:#B91C1C;background:#FBE6E6;}
+.rn{font-size:10px;color:#5A6B7B;}
+.dea-warn{background:#FBEEDA;border:1px solid #F2DCAE;border-radius:8px;padding:12px 16px;margin-bottom:18px;font-size:13px;color:#B45309;}
 .al-item{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-radius:8px;margin-bottom:10px;border:1px solid;}
-.al-exp{background:#fef2f2;border-color:#fecaca;}
-.al-warn{background:#fff4e5;border-color:#fde68a;}
+.al-exp{background:#FBE6E6;border-color:#F3C9C9;}
+.al-warn{background:#FBEEDA;border-color:#F2DCAE;}
 .al-l h4{font-size:13px;font-weight:600;}
-.al-l p{font-size:11px;color:#6b7f96;margin-top:2px;}
+.al-l p{font-size:11px;color:#5A6B7B;margin-top:2px;}
 .al-r .big{font-size:22px;font-weight:700;line-height:1;text-align:right;}
-.al-r .sm{font-size:10px;color:#6b7f96;text-align:right;}
-.empty{text-align:center;padding:40px;color:#6b7f96;}
+.al-r .sm{font-size:10px;color:#5A6B7B;text-align:right;}
+.empty{text-align:center;padding:40px;color:#5A6B7B;}
 .empty-icon{font-size:32px;display:block;margin-bottom:10px;}
 .filters{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
-.fc{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid #d4dde8;background:transparent;color:#6b7f96;}
-.fc.on{background:#eef3ff;border-color:#bfdbfe;color:#3b82f6;}
+.fc{padding:5px 12px;border-radius:20px;font-size:11px;font-weight:600;cursor:pointer;border:1px solid #E3E9EE;background:transparent;color:#5A6B7B;}
+.fc.on{background:#E6F2F0;border-color:#A7D5CF;color:#0F766E;}
 
 /* MODAL */
-.modal-bg{position:fixed;inset:0;background:rgba(10,15,30,.45);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;}
+.modal-bg{position:fixed;inset:0;background:rgba(15,30,46,.45);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;}
 .modal{background:#fff;border-radius:14px;padding:28px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;}
 .modal h2{font-size:20px;font-weight:700;margin-bottom:20px;}
 .modal-actions{display:flex;gap:10px;margin-top:20px;}
 .modal-actions .btn{flex:1;justify-content:center;}
-.field-err{font-size:11px;color:#d42b2b;margin-top:4px;display:none;}
+.field-err{font-size:11px;color:#B91C1C;margin-top:4px;display:none;}
 .field-err.show{display:block;}
-.sib{background:#f5f8fb;border:1px solid #d4dde8;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#6b7f96;display:none;}
+.sib{background:#F5F7F9;border:1px solid #E3E9EE;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#5A6B7B;display:none;}
 .sib.show{display:block;}
-.sib strong{color:#3a4a5c;display:block;margin-bottom:3px;}
-.dea-box{background:#fff4e5;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#e07000;}
+.sib strong{color:#47586A;display:block;margin-bottom:3px;}
+.dea-box{background:#FBEEDA;border:1px solid #F2DCAE;border-radius:8px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:#B45309;}
 .fr3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;min-width:0;}
 
 /* TOAST */
 .toast-wrap{position:fixed;bottom:20px;right:20px;z-index:999;display:flex;flex-direction:column;gap:8px;}
-.toast{background:#0a0f1e;color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:500;}
-.toast.ok{background:#0fa360;}
-.toast.err{background:#d42b2b;}
+.toast{background:#0F1E2E;color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;font-weight:500;}
+.toast.ok{background:#15803D;}
+.toast.err{background:#B91C1C;}
 
-.spinner{width:24px;height:24px;border:3px solid #d4dde8;border-top-color:#3b82f6;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto;}
+.spinner{width:24px;height:24px;border:3px solid #E3E9EE;border-top-color:#0F766E;border-radius:50%;animation:spin .7s linear infinite;margin:0 auto;}
 @keyframes spin{to{transform:rotate(360deg);}}
-.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;gap:14px;color:#6b7f96;font-size:14px;}
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:50vh;gap:14px;color:#5A6B7B;font-size:14px;}
 @media(max-width:700px){.auth-left{display:none;}.main{padding:16px;}.stats{grid-template-columns:1fr 1fr;}}
 
 /* ── MOBILE MENU ──────────────────────────────────────────── */
-.menu-btn{display:none;background:transparent;border:none;cursor:pointer;padding:6px;border-radius:8px;color:#0a0f1e;}
-.menu-btn:hover{background:#f1f5f9;}
+.menu-btn{display:none;background:transparent;border:none;cursor:pointer;padding:6px;border-radius:8px;color:#0F1E2E;}
+.menu-btn:hover{background:#EEF2F5;}
 .menu-btn svg{width:22px;height:22px;display:block;}
 .side-close{display:none;}
-.side-overlay{display:none;position:fixed;inset:0;background:rgba(10,15,30,.45);z-index:90;}
+.side-overlay{display:none;position:fixed;inset:0;background:rgba(15,30,46,.45);z-index:90;}
 .side-overlay.show{display:block;}
 
 @media(max-width:700px){
@@ -167,12 +169,12 @@ tbody tr.clickable-row:hover td{background:#eef3ff;}
   .side{
     position:fixed;top:0;left:0;height:100vh;width:240px;
     transform:translateX(-100%);transition:transform .25s ease;
-    z-index:100;box-shadow:4px 0 24px rgba(10,15,30,.15);
+    z-index:100;box-shadow:4px 0 24px rgba(15,30,46,.15);
     display:block;padding-top:64px;
   }
   .side.open{transform:translateX(0);}
-  .side-close{display:flex;position:absolute;top:14px;right:14px;background:transparent;border:none;cursor:pointer;padding:6px;border-radius:8px;color:#6b7f96;}
-  .side-close:hover{background:#f1f5f9;}
+  .side-close{display:flex;position:absolute;top:14px;right:14px;background:transparent;border:none;cursor:pointer;padding:6px;border-radius:8px;color:#5A6B7B;}
+  .side-close:hover{background:#EEF2F5;}
   .wrap{position:relative;}
   .ph{flex-direction:column;align-items:stretch;gap:12px;}
   .ph .btn{align-self:flex-start;}
@@ -195,6 +197,11 @@ tbody tr.clickable-row:hover td{background:#eef3ff;}
   .card{padding:16px;}
   .ph h1{font-size:20px;}
 }
+
+/* THEME: display type — Schibsted Grotesk, matching the landing page */
+.auth-logo,.auth-box h2,.t-logo,.ph h1,.stat-n,.modal h2,.al-r .big,.card-title{font-family:'Schibsted Grotesk',sans-serif;}
+.auth-logo,.auth-box h2,.ph h1,.modal h2{letter-spacing:-.4px;}
+.stat-n,.al-r .big{letter-spacing:-1px;}
 </style>
 </head>
 <body>
@@ -283,7 +290,7 @@ tbody tr.clickable-row:hover td{background:#eef3ff;}
 </div>
 
 <!-- FEEDBACK BUTTON (floating, always visible) -->
-<button id="feedback-fab" onclick="openFeedbackModal()" style="display:none;position:fixed;bottom:24px;right:24px;z-index:150;background:#3b82f6;color:#fff;border:none;border-radius:50px;padding:12px 20px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 4px 16px rgba(59,130,246,.35);align-items:center;gap:6px">
+<button id="feedback-fab" onclick="openFeedbackModal()" style="display:none;position:fixed;bottom:24px;right:24px;z-index:150;background:#0F766E;color:#fff;border:none;border-radius:50px;padding:12px 20px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 4px 16px rgba(15,118,110,.35);align-items:center;gap:6px">
   💬 Feedback
 </button>
 
@@ -291,7 +298,7 @@ tbody tr.clickable-row:hover td{background:#eef3ff;}
 <div class="modal-bg" id="feedback-modal-bg" style="display:none" onclick="if(event.target===this)closeFeedbackModal()">
   <div class="modal">
     <h2>Report an issue or share feedback</h2>
-    <p style="font-size:13px;color:#6b7f96;margin-bottom:16px">Tell us what's confusing, broken, or what you'd love to see. This goes straight to the founder.</p>
+    <p style="font-size:13px;color:#5A6B7B;margin-bottom:16px">Tell us what's confusing, broken, or what you'd love to see. This goes straight to the founder.</p>
     <div class="fg"><label>Category</label>
       <select id="fb-category">
         <option value="confusing">Something is confusing</option>
@@ -302,9 +309,9 @@ tbody tr.clickable-row:hover td{background:#eef3ff;}
       </select>
     </div>
     <div class="fg"><label>Your message *</label>
-      <textarea id="fb-message" rows="4" placeholder="What happened? What were you trying to do?" style="width:100%;padding:10px 13px;border:1.5px solid #d4dde8;border-radius:8px;font-size:13px;resize:vertical;font-family:inherit"></textarea>
+      <textarea id="fb-message" rows="4" placeholder="What happened? What were you trying to do?" style="width:100%;padding:10px 13px;border:1.5px solid #E3E9EE;border-radius:8px;font-size:13px;resize:vertical;font-family:inherit"></textarea>
     </div>
-    <div id="fb-err" style="font-size:12px;color:#d42b2b;display:none;margin-bottom:8px"></div>
+    <div id="fb-err" style="font-size:12px;color:#B91C1C;display:none;margin-bottom:8px"></div>
     <div class="modal-actions">
       <button class="btn btn-blue" onclick="submitFeedback()">Send feedback</button>
       <button class="btn btn-ghost" onclick="closeFeedbackModal()">Cancel</button>
@@ -317,7 +324,7 @@ tbody tr.clickable-row:hover td{background:#eef3ff;}
   <div class="modal">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:20px">
       <h2 id="m-title" style="margin-bottom:0"></h2>
-      <button onclick="closeModal()" aria-label="Close" style="background:#f1f5f9;border:none;border-radius:8px;width:32px;height:32px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#6b7f96;padding:0">
+      <button onclick="closeModal()" aria-label="Close" style="background:#EEF2F5;border:none;border-radius:8px;width:32px;height:32px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#5A6B7B;padding:0">
         <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
       </button>
     </div>
@@ -521,7 +528,7 @@ async function doSignup() {
       enterApp(data.user);
       track('signup', {email, role: document.getElementById('sr').value, account_type: document.getElementById('st').value});
     } else {
-      err.style.background='#e6f7f0';err.style.borderColor='#0fa360';err.style.color='#0fa360';
+      err.style.background='#E7F4EC';err.style.borderColor='#15803D';err.style.color='#15803D';
       err.textContent = 'Account created! Check your email then sign in.'; err.classList.add('show');
     }
   } catch(e) { err.textContent = e.message; err.classList.add('show'); }
@@ -610,7 +617,7 @@ function sBadge(s){
 }
 function dChip(expiry){
   const n=daysUntil(expiry);
-  const c=n<0?'#d42b2b':n<=90?'#e07000':'#0fa360';
+  const c=n<0?'#B91C1C':n<=90?'#B45309':'#15803D';
   return `<span style="font-size:11px;font-weight:600;color:${c}">${n<0?Math.abs(n)+'d overdue':n+'d left'}</span>`;
 }
 function renewCell(l){
@@ -654,50 +661,50 @@ function renderSettings(){
 
   <div class="card" style="margin-bottom:16px">
     <div class="card-title">🔐 Change password</div>
-    <p style="font-size:13px;color:#6b7f96;margin-bottom:14px">Update your password. You will need your current password to make changes.</p>
+    <p style="font-size:13px;color:#5A6B7B;margin-bottom:14px">Update your password. You will need your current password to make changes.</p>
     <div style="max-width:360px;display:flex;flex-direction:column;gap:12px">
       <div class="fg" style="margin-bottom:0"><label>Current password</label><input type="password" id="pw-current" placeholder="••••••••"/></div>
       <div class="fg" style="margin-bottom:0"><label>New password</label><input type="password" id="pw-new" placeholder="At least 8 characters"/></div>
       <div class="fg" style="margin-bottom:0"><label>Confirm new password</label><input type="password" id="pw-confirm" placeholder="Re-enter new password"/></div>
-      <div id="pw-err" style="font-size:12px;color:#d42b2b;display:none"></div>
+      <div id="pw-err" style="font-size:12px;color:#B91C1C;display:none"></div>
       <button class="btn btn-blue btn-sm" style="width:fit-content" onclick="changePassword()">Update password</button>
     </div>
   </div>
 
   <div class="card" style="margin-bottom:16px">
     <div class="card-title">📧 Email notification preferences</div>
-    <p style="font-size:13px;color:#6b7f96;margin-bottom:14px">Choose when Veridoc alerts you about expiring credentials.</p>
+    <p style="font-size:13px;color:#5A6B7B;margin-bottom:14px">Choose when Veridoc alerts you about expiring credentials.</p>
     <div style="display:flex;flex-direction:column;gap:10px">
       <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer"><input type="checkbox" id="notif-90" onchange="saveNotifPrefs()" style="width:16px;height:16px"> Alert me 90 days before expiration</label>
       <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer"><input type="checkbox" id="notif-60" onchange="saveNotifPrefs()" style="width:16px;height:16px"> Alert me 60 days before expiration</label>
       <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer"><input type="checkbox" id="notif-30" onchange="saveNotifPrefs()" style="width:16px;height:16px"> Alert me 30 days before expiration</label>
       <label style="display:flex;align-items:center;gap:10px;font-size:13px;cursor:pointer"><input type="checkbox" id="notif-7" onchange="saveNotifPrefs()" style="width:16px;height:16px"> Alert me 7 days before expiration</label>
     </div>
-    <p style="font-size:11px;color:#6b7f96;margin-top:12px">Email alerts are coming in a future update. Your preferences will be saved and applied when they launch.</p>
+    <p style="font-size:11px;color:#5A6B7B;margin-top:12px">Email alerts are coming in a future update. Your preferences will be saved and applied when they launch.</p>
   </div>
 
-  <div class="card" style="margin-bottom:16px;border:1px solid #bfdbfe;background:#f5f9ff">
-    <div class="card-title" style="color:#2563eb">📄 Share with your employer</div>
-    <p style="font-size:13px;color:#6b7f96;margin-bottom:14px">Generate a clean, branded PDF summary of all your credentials to email to HR or your credentialing department. It's a point-in-time snapshot — your live dashboard always stays here in Veridoc.</p>
+  <div class="card" style="margin-bottom:16px;border:1px solid #A7D5CF;background:#EEF6F4">
+    <div class="card-title" style="color:#0B5E57">📄 Share with your employer</div>
+    <p style="font-size:13px;color:#5A6B7B;margin-bottom:14px">Generate a clean, branded PDF summary of all your credentials to email to HR or your credentialing department. It's a point-in-time snapshot — your live dashboard always stays here in Veridoc.</p>
     <button class="btn btn-blue btn-sm" onclick="exportCredentialsPDF()">📄 Download credential summary (PDF)</button>
   </div>
 
   <div class="card" style="margin-bottom:16px">
     <div class="card-title">📥 Export your data</div>
-    <p style="font-size:13px;color:#6b7f96;margin-bottom:14px">Download all your credentials as a CSV file. Keep a copy for your own records.</p>
+    <p style="font-size:13px;color:#5A6B7B;margin-bottom:14px">Download all your credentials as a CSV file. Keep a copy for your own records.</p>
     <button class="btn btn-ghost btn-sm" onclick="exportData()">📥 Download my data (CSV)</button>
   </div>
 
-  <div class="card" style="margin-bottom:16px;border:1px solid #fecaca;background:#fef2f2">
-    <div class="card-title" style="color:#d42b2b">🗑 Delete all credentials</div>
-    <p style="font-size:13px;color:#6b7f96;margin-bottom:14px">Permanently deletes all your licenses, DEA registrations, and certifications. Your account stays active. This cannot be undone.</p>
-    <button class="btn btn-sm" style="background:#fef2f2;color:#d42b2b;border:1px solid #fecaca" onclick="deleteAllData()">Delete all my credentials</button>
+  <div class="card" style="margin-bottom:16px;border:1px solid #F3C9C9;background:#FBE6E6">
+    <div class="card-title" style="color:#B91C1C">🗑 Delete all credentials</div>
+    <p style="font-size:13px;color:#5A6B7B;margin-bottom:14px">Permanently deletes all your licenses, DEA registrations, and certifications. Your account stays active. This cannot be undone.</p>
+    <button class="btn btn-sm" style="background:#FBE6E6;color:#B91C1C;border:1px solid #F3C9C9" onclick="deleteAllData()">Delete all my credentials</button>
   </div>
 
-  <div class="card" style="border:2px solid #d42b2b;background:#fef2f2">
-    <div class="card-title" style="color:#d42b2b">❌ Delete account</div>
-    <p style="font-size:13px;color:#6b7f96;margin-bottom:14px">Permanently deletes your account and ALL data. You will be signed out immediately. <strong style="color:#0a0f1e">This cannot be undone.</strong></p>
-    <button class="btn btn-sm" style="background:#d42b2b;color:#fff;border:none" onclick="deleteAccount()">Delete my account permanently</button>
+  <div class="card" style="border:2px solid #B91C1C;background:#FBE6E6">
+    <div class="card-title" style="color:#B91C1C">❌ Delete account</div>
+    <p style="font-size:13px;color:#5A6B7B;margin-bottom:14px">Permanently deletes your account and ALL data. You will be signed out immediately. <strong style="color:#0F1E2E">This cannot be undone.</strong></p>
+    <button class="btn btn-sm" style="background:#B91C1C;color:#fff;border:none" onclick="deleteAccount()">Delete my account permanently</button>
   </div>`;
 
   // Restore saved notification preferences
@@ -722,12 +729,12 @@ function saveNotifPrefs(){
 async function changePassword(){
   const current = document.getElementById('pw-current').value;
   const newPw = document.getElementById('pw-new').value;
-  const confirm = document.getElementById('pw-confirm').value;
+  const confirmPw = document.getElementById('pw-confirm').value;
   const errEl = document.getElementById('pw-err');
   errEl.style.display = 'none';
-  if(!current||!newPw||!confirm){ errEl.textContent='Please fill in all fields.'; errEl.style.display='block'; return; }
+  if(!current||!newPw||!confirmPw){ errEl.textContent='Please fill in all fields.'; errEl.style.display='block'; return; }
   if(newPw.length < 8){ errEl.textContent='New password must be at least 8 characters.'; errEl.style.display='block'; return; }
-  if(newPw !== confirm){ errEl.textContent='New passwords do not match.'; errEl.style.display='block'; return; }
+  if(newPw !== confirmPw){ errEl.textContent='New passwords do not match.'; errEl.style.display='block'; return; }
   if(current === newPw){ errEl.textContent='New password must be different from your current password.'; errEl.style.display='block'; return; }
   const user = getUser();
   try {
@@ -747,6 +754,7 @@ async function changePassword(){
     });
     if(!updateRes.ok){ const e=await updateRes.json(); errEl.textContent=e.msg||'Failed to update password.'; errEl.style.display='block'; return; }
     localStorage.setItem('vd_token', verifyData.access_token);
+    if(verifyData.refresh_token) localStorage.setItem('vd_refresh', verifyData.refresh_token);
     document.getElementById('pw-current').value='';
     document.getElementById('pw-new').value='';
     document.getElementById('pw-confirm').value='';
@@ -791,11 +799,11 @@ function exportCredentialsPDF(){
   const M = 48;
 
   // Header band
-  doc.setFillColor(10,15,30);
+  doc.setFillColor(15,30,46);
   doc.rect(0,0,pageW,84,'F');
   doc.setFont('helvetica','bold'); doc.setFontSize(22); doc.setTextColor(255,255,255);
   doc.text('Veridoc', M, 42);
-  doc.setTextColor(59,130,246);
+  doc.setTextColor(15,118,110);
   doc.text('.', M + doc.getTextWidth('Veridoc'), 42);
   doc.setFont('helvetica','normal'); doc.setFontSize(11); doc.setTextColor(255,255,255);
   doc.text('Credential Summary', M, 64);
@@ -805,10 +813,10 @@ function exportCredentialsPDF(){
 
   // Provider block
   let y = 116;
-  doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.setTextColor(10,15,30);
+  doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.setTextColor(15,30,46);
   doc.text(name, M, y);
   y += 18;
-  doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(107,127,150);
+  doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(90,107,123);
   const sub = [role, email].filter(Boolean).join('   ·   ');
   if(sub){ doc.text(sub, M, y); y += 10; }
   y += 18;
@@ -818,14 +826,14 @@ function exportCredentialsPDF(){
     margin:{left:M, right:M},
     theme:'grid',
     styles:{font:'helvetica', overflow:'linebreak'},
-    headStyles:{fillColor:[245,248,251], textColor:[107,127,150], fontStyle:'bold', fontSize:8, lineColor:[212,221,232], lineWidth:0.5},
-    bodyStyles:{fontSize:9, textColor:[58,74,92], lineColor:[234,240,247], lineWidth:0.5, cellPadding:5},
+    headStyles:{fillColor:[245,247,249], textColor:[90,107,123], fontStyle:'bold', fontSize:8, lineColor:[227,233,238], lineWidth:0.5},
+    bodyStyles:{fontSize:9, textColor:[71,88,106], lineColor:[237,241,244], lineWidth:0.5, cellPadding:5},
     alternateRowStyles:{fillColor:[250,252,254]},
   });
 
   function section(title, head, body){
     if(y > pageH - 130){ doc.addPage(); y = 56; }
-    doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(10,15,30);
+    doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(15,30,46);
     doc.text(title, M, y);
     if(body.length === 0){
       doc.setFont('helvetica','italic'); doc.setFontSize(9); doc.setTextColor(150,160,175);
@@ -853,7 +861,7 @@ function exportCredentialsPDF(){
   const pages = doc.internal.getNumberOfPages();
   for(let i=1;i<=pages;i++){
     doc.setPage(i);
-    doc.setDrawColor(212,221,232); doc.setLineWidth(0.5);
+    doc.setDrawColor(227,233,238); doc.setLineWidth(0.5);
     doc.line(M, pageH-46, pageW-M, pageH-46);
     doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(150,160,175);
     doc.text('Generated by Veridoc · veridoc-pi.vercel.app · Point-in-time snapshot, may not reflect current status.', M, pageH-30);
@@ -907,8 +915,8 @@ async function deleteAccount(){
     <div style="text-align:center;padding:40px 20px">
       <div style="font-size:48px;margin-bottom:16px">✅</div>
       <h2 style="font-size:26px;font-weight:700;margin-bottom:10px">Account deleted</h2>
-      <p style="color:#6b7f96;font-size:14px;line-height:1.7">Your account and all data has been permanently deleted.<br>We are sorry to see you go.</p>
-      <button onclick="location.reload()" style="margin-top:20px;padding:10px 24px;background:#3b82f6;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer">Back to sign in</button>
+      <p style="color:#5A6B7B;font-size:14px;line-height:1.7">Your account and all data has been permanently deleted.<br>We are sorry to see you go.</p>
+      <button onclick="location.reload()" style="margin-top:20px;padding:10px 24px;background:#0F766E;color:#fff;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer">Back to sign in</button>
     </div>`;
 }
 
@@ -921,16 +929,16 @@ function renderDash(){
   const warn=all.filter(x=>{const n=daysUntil(x.expiry_date);return n>=0&&n<=90;}).length;
   const pct=all.length>0?Math.round(((all.length-exp)/all.length)*100):100;
   const rOpen=licenses.filter(l=>getRS(l)==='open').length;
-  const sc=pct>=80?'#0fa360':pct>=50?'#e07000':'#d42b2b';
+  const sc=pct>=80?'#15803D':pct>=50?'#B45309':'#B91C1C';
   document.getElementById('al-ct').style.display=urgent.length?'inline':'none';
   document.getElementById('al-ct').textContent=urgent.length;
   document.getElementById('pg-dashboard').innerHTML=`
   <div class="ph"><div><h1>Dashboard</h1><p>${all.length} credentials · ${exp} expired · ${rOpen} renewal${rOpen!==1?'s':''} open</p></div><button class="btn btn-ghost" onclick="exportCredentialsPDF()">📄 Share with employer</button></div>
   <div class="stats">
-    <div class="stat clickable" onclick="go('licenses')"><div class="stat-n" style="color:#3b82f6">${licenses.length}</div><div class="stat-l">Licenses</div></div>
-    <div class="stat clickable" onclick="go('dea')"><div class="stat-n" style="color:#3b82f6">${dea.length}</div><div class="stat-l">DEA</div></div>
-    <div class="stat clickable" onclick="go('alerts')"><div class="stat-n" style="color:${warn>0?'#e07000':'#0fa360'}">${warn}</div><div class="stat-l">Expiring 90d</div></div>
-    <div class="stat clickable" onclick="go('alerts')"><div class="stat-n" style="color:${exp>0?'#d42b2b':'#0fa360'}">${exp}</div><div class="stat-l">Expired</div></div>
+    <div class="stat clickable" onclick="go('licenses')"><div class="stat-n" style="color:#0F766E">${licenses.length}</div><div class="stat-l">Licenses</div></div>
+    <div class="stat clickable" onclick="go('dea')"><div class="stat-n" style="color:#0F766E">${dea.length}</div><div class="stat-l">DEA</div></div>
+    <div class="stat clickable" onclick="go('alerts')"><div class="stat-n" style="color:${warn>0?'#B45309':'#15803D'}">${warn}</div><div class="stat-l">Expiring 90d</div></div>
+    <div class="stat clickable" onclick="go('alerts')"><div class="stat-n" style="color:${exp>0?'#B91C1C':'#15803D'}">${exp}</div><div class="stat-l">Expired</div></div>
   </div>
   <div class="dash-grid-2">
     <div class="card">
@@ -967,12 +975,12 @@ function renderLic(){
   <div class="tbl-wrap"><table>
     <colgroup><col style="width:65px"><col style="width:65px"><col style="width:130px"><col style="width:95px"><col style="width:95px"><col style="width:95px"><col style="width:105px"><col style="width:145px"><col style="width:70px"></colgroup>
     <thead><tr><th>State</th><th>Type</th><th>License #</th><th>Issue date</th><th>Effective</th><th>Expiration</th><th>Status</th><th>Renewal</th><th></th></tr></thead>
-    <tbody>${rows.length===0?'<tr><td colspan="9" style="text-align:center;padding:32px;color:#6b7f96">No licenses match filter</td></tr>':rows.map(l=>`<tr class="clickable-row" onclick="openModal('lic','${l.id}')">
+    <tbody>${rows.length===0?'<tr><td colspan="9" style="text-align:center;padding:32px;color:#5A6B7B">No licenses match filter</td></tr>':rows.map(l=>`<tr class="clickable-row" onclick="openModal('lic','${l.id}')">
       <td><span class="chip-state">${l.state}</span></td>
       <td><span class="chip-type">${l.license_type}</span></td>
       <td><span class="mono">${l.license_number}</span></td>
-      <td style="color:#6b7f96;font-size:11px">${fmt(l.issue_date)}</td>
-      <td style="color:#6b7f96;font-size:11px">${fmt(l.effective_date)}</td>
+      <td style="color:#5A6B7B;font-size:11px">${fmt(l.issue_date)}</td>
+      <td style="color:#5A6B7B;font-size:11px">${fmt(l.effective_date)}</td>
       <td style="font-weight:600;font-size:12px">${fmt(l.expiry_date)}</td>
       <td>${sBadge(getLS(l))}</td>
       <td>${renewCell(l)}</td>
@@ -998,12 +1006,12 @@ function renderDEA(){
   <div class="tbl-wrap"><table>
     <colgroup><col style="width:130px"><col style="width:70px"><col style="width:100px"><col style="width:110px"><col style="width:95px"><col style="width:110px"><col style="width:70px"></colgroup>
     <thead><tr><th>DEA Number</th><th>State</th><th>Schedule</th><th>Expiration</th><th>Renewal</th><th>Status</th><th></th></tr></thead>
-    <tbody>${rows.length===0?'<tr><td colspan="7" style="text-align:center;padding:32px;color:#6b7f96">No DEA registrations match filter</td></tr>':rows.map(d=>`<tr class="clickable-row" onclick="openModal('dea','${d.id}')">
-      <td><span style="font-family:monospace;font-size:12px;font-weight:700;color:#3b82f6">${d.dea_number}</span></td>
+    <tbody>${rows.length===0?'<tr><td colspan="7" style="text-align:center;padding:32px;color:#5A6B7B">No DEA registrations match filter</td></tr>':rows.map(d=>`<tr class="clickable-row" onclick="openModal('dea','${d.id}')">
+      <td><span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;color:#0F766E">${d.dea_number}</span></td>
       <td><span class="chip-state">${d.state}</span></td>
       <td>Sched. ${d.schedule}</td>
       <td style="font-weight:600;font-size:12px">${fmt(d.expiry_date)}</td>
-      <td style="color:#e07000;font-weight:600">$888</td>
+      <td style="color:#B45309;font-weight:600">$888</td>
       <td>${sBadge(getDS(d))}</td>
       <td><div class="ac"><button class="ib" onclick="event.stopPropagation();openModal('dea','${d.id}')">✏️</button><button class="ib del" onclick="event.stopPropagation();del('dea_registrations','${d.id}')">🗑</button></div></td>
     </tr>`).join('')}</tbody>
@@ -1026,13 +1034,13 @@ function renderCerts(){
   <div class="tbl-wrap"><table>
     <colgroup><col style="width:80px"><col style="width:130px"><col style="width:140px"><col style="width:110px"><col style="width:110px"><col style="width:110px"><col style="width:70px"></colgroup>
     <thead><tr><th>Type</th><th>Cert #</th><th>Issuing body</th><th>Expiration</th><th>Renew window</th><th>Status</th><th></th></tr></thead>
-    <tbody>${rows.length===0?'<tr><td colspan="7" style="text-align:center;padding:32px;color:#6b7f96">No certifications match filter</td></tr>':rows.map(c=>{
+    <tbody>${rows.length===0?'<tr><td colspan="7" style="text-align:center;padding:32px;color:#5A6B7B">No certifications match filter</td></tr>':rows.map(c=>{
       const cr=CERT_RULES[c.cert_type];const n=daysUntil(c.expiry_date);const s=getCS(c);
       const rb=s==='exp'?'<span class="badge b-red">Reinstate</span>':!cr?'<span class="badge b-gray">Check issuer</span>':n<=cr.days?`<span class="badge ${n<=30?'b-amber':'b-green'}">${n<=30?'Renew now':'Open'}</span>`:`<span class="badge b-gray">Opens ${n-cr.days}d</span>`;
       return `<tr class="clickable-row" onclick="openModal('cert','${c.id}')">
-        <td><span style="font-weight:700;color:#3b82f6;font-size:12px">${c.cert_type}</span></td>
+        <td><span style="font-weight:700;color:#0F766E;font-size:12px">${c.cert_type}</span></td>
         <td><span class="mono">${c.cert_number||'—'}</span></td>
-        <td style="color:#6b7f96;font-size:12px">${c.issuer||cr?.body||'—'}</td>
+        <td style="color:#5A6B7B;font-size:12px">${c.issuer||cr?.body||'—'}</td>
         <td style="font-weight:600;font-size:12px">${fmt(c.expiry_date)}</td>
         <td>${rb}</td>
         <td>${sBadge(s)}</td>
@@ -1050,7 +1058,7 @@ function renderAlerts(){
     const n=daysUntil(u._exp),s=u._s;
     return `<div class="al-item ${s==='exp'?'al-exp':'al-warn'}">
       <div class="al-l"><h4>${u._label}</h4><p>${u._sub} · ${n<0?'Expired':'Expires'} ${fmt(u._exp)}</p></div>
-      <div class="al-r"><div class="big" style="color:${s==='exp'?'#d42b2b':'#e07000'}">${n<0?'+'+Math.abs(n)+'d':n+'d'}</div><div class="sm">${n<0?'past due':'remaining'}</div></div>
+      <div class="al-r"><div class="big" style="color:${s==='exp'?'#B91C1C':'#B45309'}">${n<0?'+'+Math.abs(n)+'d':n+'d'}</div><div class="sm">${n<0?'past due':'remaining'}</div></div>
     </div>`;
   }).join('')}`;
 }
@@ -1165,6 +1173,7 @@ async function del(table,id){
   else toast('Delete failed','err');
 }
 
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 function toast(msg,type=''){
   const w=document.getElementById('toasts');
   const t=document.createElement('div');
@@ -1254,10 +1263,10 @@ async function renderAdmin(){
     <div class="ph"><div><h1>📈 Admin Dashboard</h1><p>Internal analytics — only visible to admin accounts</p></div></div>
 
     <div class="stats" style="margin-bottom:20px">
-      <div class="stat"><div class="stat-n" style="color:#3b82f6">${uniqueUsers}</div><div class="stat-l">Unique active users</div></div>
-      <div class="stat"><div class="stat-n" style="color:#0fa360">${signups}</div><div class="stat-l">Signups</div></div>
-      <div class="stat"><div class="stat-n" style="color:#3b82f6">${logins}</div><div class="stat-l">Total logins</div></div>
-      <div class="stat"><div class="stat-n" style="color:${feedback.length>0?'#e07000':'#6b7f96'}">${feedback.length}</div><div class="stat-l">Feedback items</div></div>
+      <div class="stat"><div class="stat-n" style="color:#0F766E">${uniqueUsers}</div><div class="stat-l">Unique active users</div></div>
+      <div class="stat"><div class="stat-n" style="color:#15803D">${signups}</div><div class="stat-l">Signups</div></div>
+      <div class="stat"><div class="stat-n" style="color:#0F766E">${logins}</div><div class="stat-l">Total logins</div></div>
+      <div class="stat"><div class="stat-n" style="color:${feedback.length>0?'#B45309':'#5A6B7B'}">${feedback.length}</div><div class="stat-l">Feedback items</div></div>
     </div>
 
     <div class="card" style="margin-bottom:16px">
@@ -1268,7 +1277,7 @@ async function renderAdmin(){
         ${funnelBar('Added a DEA registration', addedDea, signups)}
         ${funnelBar('Added a certification', addedCert, signups)}
       </div>
-      <p style="font-size:11px;color:#6b7f96;margin-top:10px">Bars show % of signups who completed each step. A big drop between two steps shows you exactly where people get stuck.</p>
+      <p style="font-size:11px;color:#5A6B7B;margin-top:10px">Bars show % of signups who completed each step. A big drop between two steps shows you exactly where people get stuck.</p>
     </div>
 
     <div class="dash-grid-2" style="margin-bottom:16px">
@@ -1291,17 +1300,17 @@ async function renderAdmin(){
       ${feedback.length===0?'<div class="empty">No feedback submitted yet</div>':feedback.map(f=>`
         <div class="cred-row" style="align-items:flex-start">
           <div class="cr-info" style="max-width:75%">
-            <h4>${f.category||'general'} · ${f.page||'unknown page'}</h4>
-            <p style="margin-top:4px;color:#3a4a5c">${f.message}</p>
-            <p style="font-size:10px;color:#6b7f96;margin-top:4px">${f.user_email||'anonymous'} · ${new Date(f.created_at).toLocaleString()}</p>
+            <h4>${esc(f.category||'general')} · ${esc(f.page||'unknown page')}</h4>
+            <p style="margin-top:4px;color:#47586A">${esc(f.message)}</p>
+            <p style="font-size:10px;color:#5A6B7B;margin-top:4px">${esc(f.user_email||'anonymous')} · ${new Date(f.created_at).toLocaleString()}</p>
           </div>
-          <span class="badge ${f.status==='new'?'b-amber':'b-green'}">${f.status}</span>
+          <span class="badge ${f.status==='new'?'b-amber':'b-green'}">${esc(f.status)}</span>
         </div>
       `).join('')}
     </div>
     `;
   } catch(err){
-    document.getElementById('pg-admin').innerHTML = `<div class="card"><p style="color:#d42b2b">Error loading admin data: ${err.message}</p></div>`;
+    document.getElementById('pg-admin').innerHTML = `<div class="card"><p style="color:#B91C1C">Error loading admin data: ${err.message}</p></div>`;
   }
 }
 
@@ -1310,11 +1319,11 @@ function funnelBar(label, count, total){
   return `
   <div>
     <div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px">
-      <span style="font-weight:600;color:#0a0f1e">${label}</span>
-      <span style="color:#6b7f96">${count} (${pct}%)</span>
+      <span style="font-weight:600;color:#0F1E2E">${label}</span>
+      <span style="color:#5A6B7B">${count} (${pct}%)</span>
     </div>
-    <div style="background:#f1f5f9;border-radius:6px;height:10px;overflow:hidden">
-      <div style="background:#3b82f6;height:100%;width:${pct}%;border-radius:6px"></div>
+    <div style="background:#EEF2F5;border-radius:6px;height:10px;overflow:hidden">
+      <div style="background:#0F766E;height:100%;width:${pct}%;border-radius:6px"></div>
     </div>
   </div>`;
 }
