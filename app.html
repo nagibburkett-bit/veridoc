@@ -572,6 +572,12 @@ window.addEventListener('DOMContentLoaded', async () => {
     setInterval(refreshAccessToken, 10 * 60 * 1000);
   } else {
     document.getElementById('auth').style.display = 'flex';
+    // Landing page sends ?mode=signup or ?mode=login (e.g. /app?mode=signup).
+    // show() already exists above — it just toggles which auth box is visible.
+    const mode = new URLSearchParams(window.location.search).get('mode');
+    if (mode === 'signup') show('signup');
+    else show('login'); // also covers a plain /app visit with no ?mode at all
+    if (mode) history.replaceState({}, '', '/app'); // tidy up the URL, no reload
   }
 });
 
