@@ -202,6 +202,85 @@ tbody tr.clickable-row:hover td{background:#E6F2F0;}
 .auth-logo,.auth-box h2,.t-logo,.ph h1,.stat-n,.modal h2,.al-r .big,.card-title{font-family:'Schibsted Grotesk',sans-serif;}
 .auth-logo,.auth-box h2,.ph h1,.modal h2{letter-spacing:-.4px;}
 .stat-n,.al-r .big{letter-spacing:-1px;}
+
+/* ── IMPORT / ONBOARDING ──────────────────────────────────────────── */
+/* Wider modal variant for the review step */
+.modal.modal-wide{max-width:620px;}
+
+/* Drop zone — the signature element */
+.dz{position:relative;border:2px dashed #CDD8E0;border-radius:12px;background:#F5F7F9;padding:34px 22px;text-align:center;cursor:pointer;transition:border-color .18s,background .18s;}
+.dz:hover{border-color:#0F766E;background:#E6F2F0;}
+.dz.drag{border-color:#0F766E;background:#E6F2F0;}
+.dz-ic{width:50px;height:50px;margin:0 auto 14px;display:grid;place-items:center;background:#fff;border-radius:14px;box-shadow:0 2px 10px rgba(15,30,46,.08);color:#0F766E;}
+.dz h3{font-family:'Schibsted Grotesk',sans-serif;font-size:16px;font-weight:700;margin-bottom:5px;color:#0F1E2E;}
+.dz .dz-sub{font-size:13px;color:#5A6B7B;margin-bottom:14px;}
+.dz-chips{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;}
+.dz-chip{font-size:11px;font-weight:600;color:#5A6B7B;background:#fff;border:1px solid #E3E9EE;padding:3px 9px;border-radius:20px;}
+
+/* Alternate input buttons */
+.imp-alts{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px;}
+.imp-alt{display:flex;align-items:center;gap:11px;background:#fff;border:1px solid #E3E9EE;border-radius:10px;padding:12px 14px;cursor:pointer;text-align:left;transition:border-color .15s,background .15s;width:100%;font-family:'Inter',sans-serif;}
+.imp-alt:hover{border-color:#0F766E;background:#F5F7F9;}
+.imp-alt .ia-ic{width:34px;height:34px;flex-shrink:0;border-radius:9px;display:grid;place-items:center;background:#E6F2F0;color:#0F766E;}
+.imp-alt .ia-t{font-size:13px;font-weight:600;color:#0F1E2E;}
+.imp-alt .ia-d{font-size:11px;color:#5A6B7B;margin-top:1px;}
+
+.imp-skip{text-align:center;margin-top:16px;}
+.imp-skip button{background:none;border:none;color:#5A6B7B;font-size:13px;font-family:'Inter',sans-serif;cursor:pointer;text-decoration:underline;text-underline-offset:3px;}
+.imp-skip button:hover{color:#0F766E;}
+
+/* Paste textarea */
+.imp-paste{width:100%;min-height:150px;resize:vertical;border:1.5px solid #E3E9EE;border-radius:8px;padding:12px;font-family:'Inter',sans-serif;font-size:13px;color:#0F1E2E;line-height:1.6;}
+.imp-paste:focus{outline:none;border-color:#0F766E;}
+
+/* Processing */
+.imp-proc{text-align:center;padding:26px 0;}
+.imp-proc .spinner{width:40px;height:40px;border-width:4px;margin-bottom:16px;}
+.imp-proc h3{font-family:'Schibsted Grotesk',sans-serif;font-size:16px;font-weight:700;margin-bottom:5px;}
+.imp-proc p{font-size:13px;color:#5A6B7B;}
+.imp-file{display:inline-flex;align-items:center;gap:7px;background:#F5F7F9;border-radius:20px;padding:5px 13px;font-size:12px;color:#5A6B7B;margin-top:12px;}
+
+/* Review groups */
+.imp-rev-sub{font-size:13px;color:#5A6B7B;margin-bottom:18px;}
+.imp-group{margin-bottom:20px;}
+.imp-glabel{display:flex;align-items:center;gap:7px;font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#5A6B7B;margin-bottom:10px;}
+.imp-gcount{background:#EEF2F5;color:#5A6B7B;border-radius:20px;padding:1px 8px;font-size:10px;font-weight:700;}
+.imp-rec{border:1px solid #E3E9EE;border-radius:10px;padding:14px;margin-bottom:9px;background:#fff;transition:border-color .15s;}
+.imp-rec.flag{border-color:#F2DCAE;background:#FEFBF4;}
+.imp-rec-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:11px;}
+.imp-rec-type{font-size:11px;font-weight:700;color:#0F766E;text-transform:uppercase;letter-spacing:.04em;}
+.imp-rec-tools{display:flex;align-items:center;gap:7px;}
+.imp-conf{font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;white-space:nowrap;text-transform:uppercase;letter-spacing:.03em;}
+.imp-conf.high{background:#E7F4EC;color:#15803D;}
+.imp-conf.low{background:#FBEEDA;color:#B45309;}
+.imp-rec-rm{background:none;border:none;cursor:pointer;color:#9AA8B5;font-size:17px;line-height:1;padding:2px 5px;border-radius:6px;}
+.imp-rec-rm:hover{color:#B91C1C;background:#F5F7F9;}
+.imp-flds{display:grid;grid-template-columns:1fr 1fr;gap:10px 12px;}
+.imp-fld.full{grid-column:1 / -1;}
+.imp-fld label{display:block;font-size:10px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:#9AA8B5;margin-bottom:4px;}
+.imp-fld input,.imp-fld select{width:100%;border:1.5px solid #E3E9EE;border-radius:7px;padding:8px 10px;font-size:13px;font-family:'Inter',sans-serif;color:#0F1E2E;background:#fff;}
+.imp-fld input:focus,.imp-fld select:focus{outline:none;border-color:#0F766E;}
+.imp-fld.warn input{border-color:#E0A82E;}
+.imp-fld-flag{font-size:10px;color:#B45309;font-weight:600;margin-top:4px;}
+
+.imp-addmore{width:100%;border:1px dashed #CDD8E0;background:none;border-radius:10px;padding:11px;cursor:pointer;color:#5A6B7B;font-size:13px;font-weight:600;font-family:'Inter',sans-serif;display:flex;align-items:center;justify-content:center;gap:6px;}
+.imp-addmore:hover{border-color:#0F766E;color:#0F766E;}
+
+/* Success */
+.imp-done{text-align:center;padding:14px 0;}
+.imp-done-ic{width:56px;height:56px;margin:0 auto 16px;border-radius:50%;background:#E7F4EC;color:#15803D;display:grid;place-items:center;}
+.imp-done h3{font-family:'Schibsted Grotesk',sans-serif;font-size:19px;font-weight:700;margin-bottom:6px;}
+.imp-done p{color:#5A6B7B;font-size:13px;margin-bottom:18px;}
+.imp-done-stats{display:flex;gap:10px;justify-content:center;margin-bottom:20px;flex-wrap:wrap;}
+.imp-dstat{background:#F5F7F9;border-radius:10px;padding:12px 20px;min-width:78px;}
+.imp-dstat .n{font-family:'Schibsted Grotesk',sans-serif;font-size:24px;font-weight:700;color:#0F1E2E;line-height:1;}
+.imp-dstat .l{font-size:11px;color:#5A6B7B;font-weight:600;margin-top:3px;}
+
+@media(max-width:700px){
+  .imp-alts{grid-template-columns:1fr;}
+  .imp-flds{grid-template-columns:1fr;}
+  .modal.modal-wide{max-width:100%;}
+}
 </style>
 </head>
 <body>
@@ -337,6 +416,103 @@ tbody tr.clickable-row:hover td{background:#E6F2F0;}
 </div>
 
 <div class="toast-wrap" id="toasts"></div>
+
+<!-- ── IMPORT / ONBOARDING MODAL ──────────────────────────────────── -->
+<div class="modal-bg" id="imp-bg" style="display:none" onclick="if(event.target===this)impClose()">
+  <div class="modal modal-wide">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:18px">
+      <div>
+        <h2 id="imp-title" style="margin-bottom:4px">Import your credentials</h2>
+        <p id="imp-tagline" style="font-size:13px;color:#5A6B7B">Upload your tracker, snap a photo of your licenses, or paste them in. We'll read the details for you.</p>
+      </div>
+      <button onclick="impClose()" id="imp-x" aria-label="Close" style="background:#EEF2F5;border:none;border-radius:8px;width:32px;height:32px;flex-shrink:0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#5A6B7B;padding:0">
+        <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+
+    <!-- STEP: choose input -->
+    <div id="imp-step-input">
+      <div class="dz" id="imp-dz">
+        <div class="dz-ic">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        </div>
+        <h3>Drop a file or click to upload</h3>
+        <div class="dz-sub">Your spreadsheet, license photos, PDFs — anything works</div>
+        <div class="dz-chips">
+          <span class="dz-chip">Excel / CSV</span>
+          <span class="dz-chip">Photo / Scan</span>
+          <span class="dz-chip">PDF</span>
+        </div>
+        <input type="file" id="imp-file" style="display:none" accept=".xlsx,.xls,.csv,.pdf,.png,.jpg,.jpeg" multiple>
+      </div>
+      <div class="imp-alts">
+        <button class="imp-alt" id="imp-btn-paste">
+          <span class="ia-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><rect x="8" y="2" width="8" height="4" rx="1" ry="1"/></svg></span>
+          <span><span class="ia-t">Paste from anywhere</span><div class="ia-d">Copy from an email or app</div></span>
+        </button>
+        <button class="imp-alt" id="imp-btn-manual">
+          <span class="ia-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span>
+          <span><span class="ia-t">Enter manually</span><div class="ia-d">Add one at a time</div></span>
+        </button>
+      </div>
+      <div class="imp-skip" id="imp-skip-row"><button onclick="impSkip()">I'll do this later</button></div>
+    </div>
+
+    <!-- STEP: paste -->
+    <div id="imp-step-paste" style="display:none">
+      <textarea class="imp-paste" id="imp-paste-area" placeholder="Paste anything here — a list from an email, a copied spreadsheet, renewal notices. For example:
+
+RN License — Ohio — RN.123456 — expires 10/31/2026
+APRN — Ohio — APRN.7890 — expires 06/30/2027
+DEA — BX1234563 — expires 03/15/2027"></textarea>
+      <div class="modal-actions">
+        <button class="btn btn-blue" onclick="impRunPaste()">Read credentials</button>
+        <button class="btn btn-ghost" onclick="impShowStep('input')">Back</button>
+      </div>
+    </div>
+
+    <!-- STEP: processing -->
+    <div id="imp-step-proc" style="display:none">
+      <div class="imp-proc">
+        <div class="spinner"></div>
+        <h3>Reading your credentials…</h3>
+        <p>This usually takes a few seconds</p>
+        <div class="imp-file" id="imp-procfile">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          <span id="imp-procfile-name">file</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- STEP: review -->
+    <div id="imp-step-review" style="display:none">
+      <div class="imp-rev-sub">Check the details and fix anything that looks off. Highlighted fields need a quick look before saving.</div>
+      <div id="imp-groups"></div>
+      <button class="imp-addmore" onclick="impShowStep('input')">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add another source
+      </button>
+      <div class="modal-actions">
+        <button class="btn btn-blue" id="imp-save-btn" onclick="impSave()">Save to my profile</button>
+        <button class="btn btn-ghost" onclick="impShowStep('input')">Start over</button>
+      </div>
+    </div>
+
+    <!-- STEP: done -->
+    <div id="imp-step-done" style="display:none">
+      <div class="imp-done">
+        <div class="imp-done-ic">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <h3 id="imp-done-title">You're all set</h3>
+        <p id="imp-done-msg">Your credentials are now tracked. We'll remind you before anything expires.</p>
+        <div class="imp-done-stats" id="imp-done-stats"></div>
+        <button class="btn btn-blue" onclick="impClose()" style="padding:11px 26px">Done</button>
+      </div>
+    </div>
+
+  </div>
+</div>
 
 <!-- PDF generation (credential summary export) -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -527,6 +703,8 @@ async function doSignup() {
       localStorage.setItem('vd_user', JSON.stringify(data.user));
       enterApp(data.user);
       track('signup', {email, role: document.getElementById('sr').value, account_type: document.getElementById('st').value});
+      // New account → offer one-tap credential import before they see an empty dashboard
+      setTimeout(()=> impOpen('onboarding'), 600);
     } else {
       err.style.background='#E7F4EC';err.style.borderColor='#15803D';err.style.color='#15803D';
       err.textContent = 'Account created! Check your email then sign in.'; err.classList.add('show');
@@ -960,7 +1138,7 @@ function renderLic(){
     return true;
   }).filter(l=>licTF==='all'||l.license_type===licTF);
   document.getElementById('pg-licenses').innerHTML=`
-  <div class="ph"><div><h1>State Licenses</h1><p>${licenses.length} licenses</p></div><button class="btn btn-blue" onclick="openModal('lic')">+ Add license</button></div>
+  <div class="ph"><div><h1>State Licenses</h1><p>${licenses.length} licenses</p></div><div style="display:flex;gap:8px"><button class="btn btn-ghost" onclick="impOpen('add')">📥 Import</button><button class="btn btn-blue" onclick="openModal('lic')">+ Add license</button></div></div>
   <div class="filters">
     <button class="fc ${licF==='all'?'on':''}" onclick="setF('lf','all',this)">All</button>
     <button class="fc ${licF==='open'?'on':''}" onclick="setF('lf','open',this)">Renewal open</button>
@@ -1327,6 +1505,408 @@ function funnelBar(label, count, total){
     </div>
   </div>`;
 }
+
+// ════════════════════════════════════════════════════════════════════════════
+// ── CREDENTIAL IMPORT / ONBOARDING ──────────────────────────────────────────
+// One flow, multiple inputs (file / paste / manual) → AI extract → review → save.
+// ════════════════════════════════════════════════════════════════════════════
+
+// ⚠️ BACKEND SWITCH ──────────────────────────────────────────────────────────
+// While this is true, extraction returns parsed sample data so the whole flow
+// works without a backend. Set to false once your Vercel serverless endpoint
+// (see IMPORT_ENDPOINT below) is live. Nothing else needs to change.
+const IMPORT_MOCK = true;
+const IMPORT_ENDPOINT = '/api/extract-credentials';
+
+let impRecords = [];      // working set shown on the review screen
+let impSheetLoaded = false;
+
+// Lazy-load SheetJS only when someone actually imports a spreadsheet
+function impLoadSheet(){
+  return new Promise((resolve, reject) => {
+    if(impSheetLoaded && window.XLSX) return resolve();
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js';
+    s.onload = () => { impSheetLoaded = true; resolve(); };
+    s.onerror = () => reject(new Error('Could not load spreadsheet reader'));
+    document.head.appendChild(s);
+  });
+}
+
+// ── Step navigation within the modal ────────────────────────────────────────
+function impShowStep(step){
+  ['input','paste','proc','review','done'].forEach(s=>{
+    const el = document.getElementById('imp-step-'+s);
+    if(el) el.style.display = (s===step) ? 'block' : 'none';
+  });
+}
+
+// ── Open / close ────────────────────────────────────────────────────────────
+// mode: 'onboarding' (first run, shows skip + welcome copy) or 'add' (from a page button)
+let impMode = 'add';
+function impOpen(mode='add'){
+  impMode = mode;
+  impRecords = [];
+  document.getElementById('imp-paste-area').value = '';
+  document.getElementById('imp-file').value = '';
+  // Onboarding gets warmer copy + a skip link; "add" is more direct and dismissible.
+  if(mode==='onboarding'){
+    document.getElementById('imp-title').textContent = "Welcome — let's bring in your credentials";
+    document.getElementById('imp-tagline').textContent = "Upload your existing tracker, snap a photo of your licenses, or paste them in. We'll read the details and set up your profile.";
+    document.getElementById('imp-skip-row').style.display = 'block';
+    document.getElementById('imp-x').style.display = 'none'; // nudge them through it, but skip is always there
+  } else {
+    document.getElementById('imp-title').textContent = "Import credentials";
+    document.getElementById('imp-tagline').textContent = "Drop a spreadsheet, license photo, or PDF and we'll read the details for you.";
+    document.getElementById('imp-skip-row').style.display = 'none';
+    document.getElementById('imp-x').style.display = 'flex';
+  }
+  impShowStep('input');
+  document.getElementById('imp-bg').style.display = 'flex';
+  track('import_opened', {mode});
+}
+function impClose(){
+  document.getElementById('imp-bg').style.display = 'none';
+}
+function impSkip(){
+  track('import_skipped', {});
+  impClose();
+  toast('No problem — import anytime from the Licenses page.');
+}
+
+// ── Input handlers ──────────────────────────────────────────────────────────
+function impInitInputs(){
+  const dz = document.getElementById('imp-dz');
+  const fileInput = document.getElementById('imp-file');
+  if(!dz || dz.dataset.wired) return; // wire once
+  dz.dataset.wired = '1';
+
+  dz.addEventListener('click', ()=> fileInput.click());
+  dz.addEventListener('dragover', e=>{ e.preventDefault(); dz.classList.add('drag'); });
+  dz.addEventListener('dragleave', ()=> dz.classList.remove('drag'));
+  dz.addEventListener('drop', e=>{
+    e.preventDefault(); dz.classList.remove('drag');
+    const f = e.dataTransfer.files[0];
+    if(f) impHandleFile(f);
+  });
+  fileInput.addEventListener('change', e=>{
+    const f = e.target.files[0];
+    if(f) impHandleFile(f);
+  });
+  document.getElementById('imp-btn-paste').addEventListener('click', ()=> impShowStep('paste'));
+  document.getElementById('imp-btn-manual').addEventListener('click', impStartManual);
+}
+
+// ── Route a dropped/selected file to the right reader ───────────────────────
+async function impHandleFile(file){
+  const name = file.name || 'file';
+  const ext = name.split('.').pop().toLowerCase();
+  document.getElementById('imp-procfile-name').textContent = name;
+  impShowStep('proc');
+  try {
+    let extracted;
+    if(ext === 'csv' || ext === 'xlsx' || ext === 'xls'){
+      const rows = await impReadSpreadsheet(file);
+      extracted = await extractCredentials({ kind:'spreadsheet', rows });
+    } else if(ext === 'pdf'){
+      const b64 = await impFileToBase64(file);
+      extracted = await extractCredentials({ kind:'pdf', data:b64, filename:name });
+    } else if(['png','jpg','jpeg'].includes(ext)){
+      const b64 = await impFileToBase64(file);
+      extracted = await extractCredentials({ kind:'image', data:b64, mediaType:`image/${ext==='jpg'?'jpeg':ext}` });
+    } else {
+      toast('Unsupported file type. Try a spreadsheet, PDF, or photo.','err');
+      impShowStep('input');
+      return;
+    }
+    impEnterReview(extracted);
+  } catch(err){
+    console.error('Import file error:', err);
+    toast(err.message || 'Could not read that file.','err');
+    impShowStep('input');
+  }
+}
+
+// Read a spreadsheet into an array of plain row objects (client-side, never uploaded raw)
+async function impReadSpreadsheet(file){
+  await impLoadSheet();
+  const buf = await file.arrayBuffer();
+  const wb = XLSX.read(buf, {type:'array'});
+  const ws = wb.Sheets[wb.SheetNames[0]];
+  return XLSX.utils.sheet_to_json(ws, {defval:''});
+}
+
+function impFileToBase64(file){
+  return new Promise((res, rej)=>{
+    const r = new FileReader();
+    r.onload = ()=> res(String(r.result).split(',')[1]);
+    r.onerror = ()=> rej(new Error('Could not read file'));
+    r.readAsDataURL(file);
+  });
+}
+
+async function impRunPaste(){
+  const txt = document.getElementById('imp-paste-area').value.trim();
+  if(!txt){ document.getElementById('imp-paste-area').focus(); return; }
+  document.getElementById('imp-procfile-name').textContent = 'Pasted text';
+  impShowStep('proc');
+  try {
+    const extracted = await extractCredentials({ kind:'text', text:txt });
+    impEnterReview(extracted);
+  } catch(err){
+    console.error('Import paste error:', err);
+    toast(err.message || 'Could not read that text.','err');
+    impShowStep('paste');
+  }
+}
+
+function impStartManual(){
+  impRecords = [ impBlankRecord('license') ];
+  impRenderReview();
+  impShowStep('review');
+}
+
+function impBlankRecord(type){
+  return { _id:'r'+Math.random().toString(36).slice(2), type, title:'', state:'', number:'', schedule:'II-V', issuer:'', issue:'', effective:'', expiration:'', confidence:'low' };
+}
+
+// ════════════════════════════════════════════════════════════════════════════
+// EXTRACTION — the one place the AI backend is called.
+// Input shapes: {kind:'spreadsheet',rows} | {kind:'text',text} |
+//               {kind:'image',data,mediaType} | {kind:'pdf',data,filename}
+// Returns: array of records in the unified shape used by the review screen.
+// ════════════════════════════════════════════════════════════════════════════
+async function extractCredentials(input){
+  if(IMPORT_MOCK){
+    await new Promise(r=>setTimeout(r, 1400)); // simulate latency
+    return impMockExtract(input);
+  }
+  // ── PRODUCTION ──
+  // POST the input to your Vercel serverless function, which calls Claude and
+  // returns ONLY a JSON array of records in the unified shape. The endpoint must
+  // enforce the exact contract documented alongside this build.
+  const res = await authFetch(IMPORT_ENDPOINT, {
+    method:'POST',
+    body: JSON.stringify(input)
+  });
+  if(!res.ok){
+    const t = await res.text().catch(()=> '');
+    throw new Error('Extraction failed. ' + (t||'Please try again.'));
+  }
+  const data = await res.json();
+  const arr = Array.isArray(data) ? data : (data.records || []);
+  // Normalize + tag a local id so the review UI can track edits/removals
+  return arr.map(r => ({
+    _id: 'r'+Math.random().toString(36).slice(2),
+    type: ['license','dea','certification'].includes(r.type) ? r.type : 'license',
+    title: r.title || '',
+    state: r.state || '',
+    number: r.number || '',
+    schedule: r.schedule || 'II-V',
+    issuer: r.issuer || '',
+    issue: r.issue || '',
+    effective: r.effective || '',
+    expiration: r.expiration || '',
+    confidence: r.confidence === 'high' ? 'high' : 'low'
+  }));
+}
+
+// Sample extraction so the flow is fully clickable before the backend exists.
+function impMockExtract(input){
+  return [
+    { _id:'r1', type:'license', title:'RN License', state:'OH', number:'RN.123456', schedule:'', issuer:'', issue:'2022-10-31', effective:'', expiration:'2026-10-31', confidence:'high' },
+    { _id:'r2', type:'license', title:'APRN License', state:'OH', number:'APRN.7890', schedule:'', issuer:'', issue:'2023-06-30', effective:'', expiration:'2027-06-30', confidence:'high' },
+    { _id:'r3', type:'dea', title:'DEA Registration', state:'OH', number:'BX1234563', schedule:'II-V', issuer:'', issue:'', effective:'', expiration:'2027-03-15', confidence:'high' },
+    { _id:'r4', type:'certification', title:'ANCC', state:'', number:'', schedule:'', issuer:'ANCC', issue:'', effective:'', expiration:'2027-08-01', confidence:'low' },
+    { _id:'r5', type:'certification', title:'BLS', state:'', number:'', schedule:'', issuer:'American Heart Association', issue:'', effective:'', expiration:'2025-01-15', confidence:'low' },
+  ];
+}
+
+// ── Review screen ───────────────────────────────────────────────────────────
+function impEnterReview(records){
+  impRecords = (records||[]).map(r => ({...r, _id: r._id || 'r'+Math.random().toString(36).slice(2)}));
+  if(impRecords.length === 0){
+    toast("We couldn't find any credentials in that. Try another file or add one manually.");
+    impShowStep('input');
+    return;
+  }
+  track('import_extracted', {count: impRecords.length});
+  impRenderReview();
+  impShowStep('review');
+}
+
+const IMP_TYPE_LABEL = { license:'Licenses', dea:'DEA Registrations', certification:'Certifications' };
+
+function impFlaggedDate(d){
+  if(!d) return false;
+  const dt = new Date(d + 'T00:00:00');
+  if(isNaN(dt)) return true;
+  const now = today();
+  const tenYears = new Date(); tenYears.setFullYear(now.getFullYear()+10);
+  return dt < now || dt > tenYears;
+}
+
+function impRenderReview(){
+  const wrap = document.getElementById('imp-groups');
+  wrap.innerHTML = '';
+  ['license','dea','certification'].forEach(type=>{
+    const items = impRecords.filter(r=>r.type===type);
+    if(!items.length) return;
+    const g = document.createElement('div');
+    g.className = 'imp-group';
+    g.innerHTML = `<div class="imp-glabel">${IMP_TYPE_LABEL[type]}<span class="imp-gcount">${items.length}</span></div>`;
+    items.forEach(rec=>{
+      const flagged = rec.confidence==='low' || impFlaggedDate(rec.expiration);
+      const card = document.createElement('div');
+      card.className = 'imp-rec' + (flagged?' flag':'');
+      card.innerHTML = impRecCardHTML(rec);
+      g.appendChild(card);
+    });
+    wrap.appendChild(g);
+  });
+  // wire edits + removals
+  wrap.querySelectorAll('[data-f]').forEach(inp=>{
+    inp.addEventListener('input', e=>{
+      const rec = impRecords.find(r=>r._id===e.target.dataset.id);
+      if(rec) rec[e.target.dataset.f] = e.target.value;
+    });
+  });
+  wrap.querySelectorAll('.imp-rec-rm').forEach(btn=>{
+    btn.addEventListener('click', e=>{
+      impRecords = impRecords.filter(r=>r._id!==e.currentTarget.dataset.id);
+      if(impRecords.length===0){ impShowStep('input'); return; }
+      impRenderReview();
+    });
+  });
+}
+
+function impRecCardHTML(rec){
+  const id = rec._id;
+  const stateOpts = ['',...STATES].map(s=>`<option${rec.state===s?' selected':''}>${s||'—'}</option>`).join('');
+  const dateWarn = impFlaggedDate(rec.expiration);
+  const confBadge = rec.confidence==='high'
+    ? '<span class="imp-conf high">Looks good</span>'
+    : '<span class="imp-conf low">Please check</span>';
+
+  let typeSpecific = '';
+  if(rec.type==='license'){
+    const ltOpts = LIC_TYPES.map(t=>`<option${rec.title===t?' selected':''}>${t}</option>`).join('');
+    typeSpecific = `
+      <div class="imp-fld"><label>Type</label><select data-id="${id}" data-f="title">${ltOpts}</select></div>
+      <div class="imp-fld"><label>State</label><select data-id="${id}" data-f="state">${stateOpts}</select></div>
+      <div class="imp-fld"><label>License number</label><input data-id="${id}" data-f="number" value="${esc(rec.number)}" placeholder="—"></div>
+      <div class="imp-fld${dateWarn?' warn':''}"><label>Expiration</label><input data-id="${id}" data-f="expiration" value="${esc(rec.expiration)}" placeholder="YYYY-MM-DD">${dateWarn?'<div class="imp-fld-flag">⚠ This date looks unusual — confirm it</div>':''}</div>`;
+  } else if(rec.type==='dea'){
+    const schedOpts = ['II-V','III-V','IV-V','V only'].map(s=>`<option${rec.schedule===s?' selected':''}>${s}</option>`).join('');
+    typeSpecific = `
+      <div class="imp-fld"><label>DEA number</label><input data-id="${id}" data-f="number" value="${esc(rec.number)}" placeholder="—"></div>
+      <div class="imp-fld"><label>State</label><select data-id="${id}" data-f="state">${stateOpts}</select></div>
+      <div class="imp-fld"><label>Schedule</label><select data-id="${id}" data-f="schedule">${schedOpts}</select></div>
+      <div class="imp-fld${dateWarn?' warn':''}"><label>Expiration</label><input data-id="${id}" data-f="expiration" value="${esc(rec.expiration)}" placeholder="YYYY-MM-DD">${dateWarn?'<div class="imp-fld-flag">⚠ This date looks unusual — confirm it</div>':''}</div>`;
+  } else {
+    const ctOpts = CERT_TYPES.map(t=>`<option${rec.title===t?' selected':''}>${t}</option>`).join('');
+    typeSpecific = `
+      <div class="imp-fld"><label>Type</label><select data-id="${id}" data-f="title">${ctOpts}</select></div>
+      <div class="imp-fld"><label>Issuing body</label><input data-id="${id}" data-f="issuer" value="${esc(rec.issuer)}" placeholder="—"></div>
+      <div class="imp-fld"><label>Cert number</label><input data-id="${id}" data-f="number" value="${esc(rec.number)}" placeholder="Optional"></div>
+      <div class="imp-fld${dateWarn?' warn':''}"><label>Expiration</label><input data-id="${id}" data-f="expiration" value="${esc(rec.expiration)}" placeholder="YYYY-MM-DD">${dateWarn?'<div class="imp-fld-flag">⚠ This date looks unusual — confirm it</div>':''}</div>`;
+  }
+
+  const typeName = rec.type==='license'?'License':rec.type==='dea'?'DEA':'Certification';
+  return `
+    <div class="imp-rec-top">
+      <span class="imp-rec-type">${typeName}</span>
+      <div class="imp-rec-tools">${confBadge}<button class="imp-rec-rm" data-id="${id}" title="Remove">&times;</button></div>
+    </div>
+    <div class="imp-flds">${typeSpecific}</div>`;
+}
+
+// ── Save: map each record to its table shape and insert via the existing helper ─
+async function impSave(){
+  const user = getUser();
+  if(!user){ toast('Please sign in again.','err'); return; }
+  const uid = user.id;
+
+  // Require an expiration on every record (mirrors the manual modal's rule)
+  const missing = impRecords.find(r=>!r.expiration || isNaN(new Date(r.expiration+'T00:00:00')));
+  if(missing){
+    toast('Every credential needs a valid expiration date (YYYY-MM-DD).','err');
+    return;
+  }
+
+  const btn = document.getElementById('imp-save-btn');
+  btn.disabled = true; btn.textContent = 'Saving…';
+
+  const counts = { license:0, dea:0, certification:0 };
+  let failed = 0;
+
+  for(const r of impRecords){
+    let table, payload;
+    if(r.type==='license'){
+      table = 'licenses';
+      payload = {
+        state: r.state || '',
+        license_type: r.title || 'NP',
+        license_number: r.number || '',
+        issue_date: r.issue || null,
+        effective_date: r.effective || null,
+        expiry_date: r.expiration,
+        notes: 'Imported',
+        user_id: uid
+      };
+    } else if(r.type==='dea'){
+      table = 'dea_registrations';
+      payload = {
+        dea_number: (r.number||'').toUpperCase(),
+        state: r.state || '',
+        schedule: r.schedule || 'II-V',
+        expiry_date: r.expiration,
+        notes: 'Imported',
+        user_id: uid
+      };
+    } else {
+      table = 'certifications';
+      payload = {
+        cert_type: r.title || 'Other',
+        cert_number: r.number || '',
+        issuer: r.issuer || '',
+        expiry_date: r.expiration,
+        notes: 'Imported',
+        user_id: uid
+      };
+    }
+    const saved = await sbInsert(table, payload);
+    if(saved){ counts[r.type]++; }
+    else { failed++; }
+  }
+
+  track('import_saved', {licenses:counts.license, dea:counts.dea, certs:counts.certification, failed});
+
+  btn.disabled = false; btn.textContent = 'Save to my profile';
+
+  // Build the success summary
+  const stats = document.getElementById('imp-done-stats');
+  stats.innerHTML = '';
+  if(counts.license) stats.innerHTML += impStatHTML(counts.license, counts.license===1?'License':'Licenses');
+  if(counts.dea) stats.innerHTML += impStatHTML(counts.dea, 'DEA');
+  if(counts.certification) stats.innerHTML += impStatHTML(counts.certification, counts.certification===1?'Certification':'Certifications');
+
+  if(failed>0){
+    document.getElementById('imp-done-title').textContent = 'Saved with some skips';
+    document.getElementById('imp-done-msg').textContent = `${failed} item${failed!==1?'s':''} couldn't be saved and ${failed!==1?'were':'was'} skipped. The rest are now tracked.`;
+  } else {
+    document.getElementById('imp-done-title').textContent = "You're all set";
+    document.getElementById('imp-done-msg').textContent = "Your credentials are now tracked. We'll remind you before anything expires.";
+  }
+
+  await loadAll(); // refresh dashboard/tables behind the modal
+  impShowStep('done');
+}
+
+function impStatHTML(n,l){ return `<div class="imp-dstat"><div class="n">${n}</div><div class="l">${l}</div></div>`; }
+
+// Wire the drop zone once the DOM is ready
+window.addEventListener('DOMContentLoaded', impInitInputs);
 </script>
 </body>
 </html>
