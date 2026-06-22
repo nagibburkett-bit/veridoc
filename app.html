@@ -139,6 +139,36 @@ tbody tr.clickable-row:hover td{background:#E6F2F0;}
 .rb2-lock{background:#EEF2F5;color:#5A6B7B;cursor:default;}
 .rc-empty{text-align:center;padding:30px 20px;color:#5A6B7B;}
 .rc-empty .i{font-size:30px;display:block;margin-bottom:8px;}
+/* RENEWAL CHECKLIST SHEET */
+.rc-sheet-bg{display:none;position:fixed;inset:0;background:rgba(15,30,46,.5);z-index:200;align-items:flex-end;justify-content:center;}
+.rc-sheet-bg.show{display:flex;}
+.rc-sheet{background:#fff;width:100%;max-width:560px;border-radius:18px 18px 0 0;max-height:90vh;overflow-y:auto;padding:0 0 20px;animation:rcSlide .28s cubic-bezier(.2,.8,.2,1);}
+@keyframes rcSlide{from{transform:translateY(40px);opacity:.6}to{transform:translateY(0);opacity:1}}
+@media(min-width:561px){.rc-sheet-bg{align-items:center;}.rc-sheet{border-radius:16px;max-height:86vh;}}
+.rcs-grip{width:40px;height:4px;background:#E3E9EE;border-radius:3px;margin:10px auto 2px;}
+.rcs-head{display:flex;align-items:center;gap:16px;padding:14px 20px 16px;border-bottom:1px solid #EDF1F4;position:relative;}
+.rcs-head-mid{flex:1;min-width:0;}
+.rcs-head-mid h3{font-size:17px;font-weight:700;color:#0F1E2E;}
+.rcs-sub{font-size:12px;color:#5A6B7B;margin-top:3px;}
+.rcs-fee{font-size:11.5px;color:#0F766E;font-weight:600;margin-top:4px;}
+.rcs-x{position:absolute;top:14px;right:16px;background:transparent;border:none;font-size:18px;color:#5A6B7B;cursor:pointer;padding:4px 8px;border-radius:6px;}
+.rcs-x:hover{background:#EEF2F5;color:#0F1E2E;}
+.rcs-verify{background:#FBEEDA;border-bottom:1px solid #F2DCAE;color:#B45309;font-size:12px;padding:11px 20px;line-height:1.5;}
+.rcs-verify a{color:#B45309;font-weight:700;}
+.rcs-note{background:#E6F2F0;border-bottom:1px solid #CDE7E3;color:#0B5E57;font-size:12px;padding:10px 20px;line-height:1.5;}
+.rcs-list{padding:8px 14px;}
+.rci{display:flex;align-items:flex-start;gap:13px;padding:13px 12px;border-radius:10px;cursor:pointer;transition:background .12s;}
+.rci:hover{background:#F5F7F9;}
+.rci.done{opacity:.62;}
+.rci-box{width:24px;height:24px;border-radius:7px;border:2px solid #CBD6DE;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;margin-top:1px;transition:all .15s;}
+.rci-box.on{background:#15803D;border-color:#15803D;}
+.rci-mid{flex:1;min-width:0;}
+.rci-label{font-size:14px;font-weight:600;color:#0F1E2E;}
+.rci-auto{font-size:9px;background:#E6F2F0;color:#0F766E;border-radius:4px;padding:1px 5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;vertical-align:middle;margin-left:4px;}
+.rci-detail{font-size:11.5px;color:#5A6B7B;margin-top:2px;line-height:1.4;}
+.rci-tag{font-size:10px;color:#5A6B7B;font-weight:600;white-space:nowrap;flex-shrink:0;background:#F0F4F6;padding:3px 8px;border-radius:6px;margin-top:1px;}
+.rcs-foot{padding:14px 20px 4px;border-top:1px solid #EDF1F4;margin-top:6px;}
+.rcs-progress-txt{font-size:12px;color:#5A6B7B;text-align:center;margin-bottom:10px;}
 .dea-warn{background:#FBEEDA;border:1px solid #F2DCAE;border-radius:8px;padding:12px 16px;margin-bottom:18px;font-size:13px;color:#B45309;}
 .al-item{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-radius:8px;margin-bottom:10px;border:1px solid;}
 .al-exp{background:#FBE6E6;border-color:#F3C9C9;}
@@ -443,6 +473,11 @@ tbody tr.clickable-row:hover td{background:#E6F2F0;}
       <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
     </div>
   </div>
+</div>
+
+<!-- ── RENEWAL CHECKLIST SHEET ──────────────────────────────────────── -->
+<div class="rc-sheet-bg" id="rc-sheet-bg" onclick="if(event.target===this)closeChecklist()">
+  <div class="rc-sheet" id="rc-sheet"></div>
 </div>
 
 <div class="toast-wrap" id="toasts"></div>
@@ -1134,26 +1169,100 @@ function renderAll(){renderDash();renderLic();renderDEA();renderCerts();renderAl
 // Progress is stored locally for now (vd_ prefix, like the rest of the app).
 // Swap getRP/setRP to a Supabase `renewal_progress` table when ready — the rest
 // of the UI doesn't change.
+const STATE_RENEWAL={
+'AL':{fee:"~$100",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'ce_gen',label:"24 CE contact hours",detail:"Complete 24 hours of approved continuing education",type:'ce',hours:24},{k:'ce_pharm',label:"12 hrs advanced pharmacology",detail:"Pharmacology hours required for prescriptive authority",type:'ce',hours:12},{k:'collab',label:"Collaborative agreement on file",detail:"Signed collaborating-physician agreement (name, NPI, contact)",type:'doc'},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'AK':{fee:"~$100",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'ce_gen',label:"30 contact hours",detail:"Complete 30 hours of approved continuing education",type:'ce',hours:30},{k:'ce_opioid',label:"2 hrs opioid / controlled-substance CE",detail:"Controlled-substance prescribing education",type:'ce',hours:2},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'AZ':{fee:"~$160",note:"Maintained primarily through national certification.",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'AR':{fee:"~$100",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'ce_gen',label:"15 hrs/yr equivalent",detail:"Complete 15 hours of approved continuing education",type:'ce',hours:15},{k:'ce_pharm',label:"5 hrs advanced pharmacology",detail:"Pharmacology hours required for prescriptive authority",type:'ce',hours:5},{k:'collab',label:"Collaborative agreement on file",detail:"Signed collaborating-physician agreement (name, NPI, contact)",type:'doc'},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'CA':{fee:"~$190",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'ce_gen',label:"30 contact hours (RN)",detail:"Complete 30 hours of approved continuing education",type:'ce',hours:30},{k:'ce_furnish',label:"Furnishing CE (if you furnish/prescribe)",detail:"Required pharmacology hours to renew furnishing number",type:'ce'},{k:'bias',label:"Implicit bias CE",detail:"One-time implicit bias training",type:'onetime'},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'CO':{fee:"~$110",note:"Tied to national certification; provisional-to-full Rx progression applies.",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'CT':{fee:"~$110",note:"Annual renewal by last day of birth month.",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'ce_opioid',label:"1 hrs opioid / controlled-substance CE",detail:"Controlled-substance prescribing education",type:'ce',hours:1},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'DE':{fee:"~$140",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'ce_gen',label:"30 CE contact hours",detail:"Complete 30 hours of approved continuing education",type:'ce',hours:30},{k:'ce_pharm',label:"10 hrs advanced pharmacology",detail:"Pharmacology hours required for prescriptive authority",type:'ce',hours:10},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'FL':{fee:"~$100",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'ce_gen',label:"30 contact hours",detail:"Complete 30 hours of approved continuing education",type:'ce',hours:30},{k:'errors',label:"2 hrs medical errors",detail:"Required prevention-of-medical-errors course",type:'ce',hours:2},{k:'dv',label:"2 hrs domestic violence",detail:"Required every third renewal",type:'ce',hours:2},{k:'ce_opioid',label:"2 hrs opioid / controlled-substance CE",detail:"Controlled-substance prescribing education",type:'ce',hours:2},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'GA':{fee:"~$120",note:"Nurse protocol agreement required.",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'ce_gen',label:"30 CE contact hours",detail:"Complete 30 hours of approved continuing education",type:'ce',hours:30},{k:'collab',label:"Collaborative agreement on file",detail:"Signed collaborating-physician agreement (name, NPI, contact)",type:'doc'},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'HI':{fee:"~$120",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'ce_gen',label:"30 CE contact hours",detail:"Complete 30 hours of approved continuing education",type:'ce',hours:30},{k:'ce_pharm',label:"8 hrs advanced pharmacology",detail:"Pharmacology hours required for prescriptive authority",type:'ce',hours:8},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'ID':{fee:"~$130",note:"Maintained through national certification.",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'IL':{fee:"~$120",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'ce_gen',label:"80 hrs APN",detail:"Complete 80 hours of approved continuing education",type:'ce',hours:80},{k:'ce_pharm',label:"20 hrs advanced pharmacology",detail:"Pharmacology hours required for prescriptive authority",type:'ce',hours:20},{k:'sh',label:"1 hr sexual harassment prevention",detail:"Required training",type:'ce',hours:1},{k:'bias',label:"1 hr implicit bias",detail:"Required training",type:'ce',hours:1},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'IN':{fee:"~$50",note:"Maintained through national certification.",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'IA':{fee:"~$100",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'ce_gen',label:"30 hrs incl. abuse training",detail:"Complete 30 hours of approved continuing education",type:'ce',hours:30},{k:'abuse',label:"Mandatory abuse reporting CE",detail:"Child & dependent-adult abuse identification",type:'ce'},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'KS':{fee:"~$100",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'ce_gen',label:"30 CE contact hours",detail:"Complete 30 hours of approved continuing education",type:'ce',hours:30},{k:'ce_pharm',label:"5 hrs advanced pharmacology",detail:"Pharmacology hours required for prescriptive authority",type:'ce',hours:5},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'KY':{fee:"~$100",note:"Controlled-substance HB1 requirements apply.",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'ce_gen',label:"14 contact hours",detail:"Complete 14 hours of approved continuing education",type:'ce',hours:14},{k:'ce_opioid',label:"1.5 hrs opioid / controlled-substance CE",detail:"Controlled-substance prescribing education",type:'ce',hours:1.5},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'LA':{fee:"~$100",note:"Annual renewal.",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'ce_gen',label:"6 hrs (annual)",detail:"Complete 6 hours of approved continuing education",type:'ce',hours:6},{k:'ce_pharm',label:"3 hrs advanced pharmacology",detail:"Pharmacology hours required for prescriptive authority",type:'ce',hours:3},{k:'collab',label:"Collaborative agreement on file",detail:"Signed collaborating-physician agreement (name, NPI, contact)",type:'doc'},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'ME':{fee:"~$75",note:"Maintained through national certification.",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'MD':{fee:"~$130",note:"Maintained through national certification.",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'MA':{fee:"~$120",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'ce_gen',label:"15 hrs",detail:"Complete 15 hours of approved continuing education",type:'ce',hours:15},{k:'ce_opioid',label:"2 hrs opioid / controlled-substance CE",detail:"Controlled-substance prescribing education",type:'ce',hours:2},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'MI':{fee:"~$130",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'ce_gen',label:"25 CE contact hours",detail:"Complete 25 hours of approved continuing education",type:'ce',hours:25},{k:'pain',label:"1 hr pain & symptom management",detail:"Required",type:'ce',hours:1},{k:'bias',label:"Implicit bias training",detail:"Required",type:'ce'},{k:'ht',label:"Human trafficking CE",detail:"One-time",type:'onetime'},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'MN':{fee:"~$110",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'ce_gen',label:"24 CE contact hours",detail:"Complete 24 hours of approved continuing education",type:'ce',hours:24},{k:'ce_pharm',label:"12 hrs advanced pharmacology",detail:"Pharmacology hours required for prescriptive authority",type:'ce',hours:12},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'MS':{fee:"~$100",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'ce_gen',label:"40 CE contact hours",detail:"Complete 40 hours of approved continuing education",type:'ce',hours:40},{k:'ce_pharm',label:"12 hrs advanced pharmacology",detail:"Pharmacology hours required for prescriptive authority",type:'ce',hours:12},{k:'collab',label:"Collaborative agreement on file",detail:"Signed collaborating-physician agreement (name, NPI, contact)",type:'doc'},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'MO':{fee:"~$50",note:"Collaborative practice arrangement required. Very short renewal window — act fast.",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'collab',label:"Collaborative agreement on file",detail:"Signed collaborating-physician agreement (name, NPI, contact)",type:'doc'},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'MT':{fee:"~$100",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'ce_gen',label:"24 CE contact hours",detail:"Complete 24 hours of approved continuing education",type:'ce',hours:24},{k:'ce_pharm',label:"12 hrs advanced pharmacology",detail:"Pharmacology hours required for prescriptive authority",type:'ce',hours:12},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'NE':{fee:"~$120",note:"Maintained through national certification.",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'NV':{fee:"~$160",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'ce_gen',label:"30 CE contact hours",detail:"Complete 30 hours of approved continuing education",type:'ce',hours:30},{k:'bio',label:"Bioterrorism CE",detail:"One-time requirement",type:'onetime'},{k:'suicide',label:"Suicide prevention CE",detail:"One-time requirement",type:'onetime'},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'NH':{fee:"~$110",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'ce_gen',label:"30 CE contact hours",detail:"Complete 30 hours of approved continuing education",type:'ce',hours:30},{k:'ce_pharm',label:"5 hrs advanced pharmacology",detail:"Pharmacology hours required for prescriptive authority",type:'ce',hours:5},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'NJ':{fee:"~$120",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'ce_gen',label:"30 CE contact hours",detail:"Complete 30 hours of approved continuing education",type:'ce',hours:30},{k:'ce_pharm',label:"6 hrs advanced pharmacology",detail:"Pharmacology hours required for prescriptive authority",type:'ce',hours:6},{k:'ce_opioid',label:"1 hrs opioid / controlled-substance CE",detail:"Controlled-substance prescribing education",type:'ce',hours:1},{k:'bias',label:"Implicit bias / cultural competence",detail:"Required training",type:'ce'},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'NM':{fee:"~$120",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'ce_gen',label:"15 hrs (Rx)",detail:"Complete 15 hours of approved continuing education",type:'ce',hours:15},{k:'ce_pharm',label:"15 hrs advanced pharmacology",detail:"Pharmacology hours required for prescriptive authority",type:'ce',hours:15},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'NY':{fee:"~$120",note:"3-year (triennial) cycle.",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'infection',label:"Infection control (every 4 yrs)",detail:"Required course",type:'onetime'},{k:'childabuse',label:"Child abuse identification",detail:"One-time at initial; verify",type:'onetime'},{k:'ce_opioid',label:"3 hrs opioid / controlled-substance CE",detail:"Controlled-substance prescribing education",type:'ce',hours:3},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'NC':{fee:"~$100",note:"Annual approval-to-practice + collaborative practice agreement.",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'collab',label:"Collaborative agreement on file",detail:"Signed collaborating-physician agreement (name, NPI, contact)",type:'doc'},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'ND':{fee:"~$120",note:"Maintained through national certification.",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'OH':{fee:"$135 early / $185 late",note:"Renews odd years, Jul 1–Oct 31. Also requires 24 RN hours.",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'ce_gen',label:"24 APRN contact hours",detail:"Complete 24 hours of approved continuing education",type:'ce',hours:24},{k:'ce_pharm',label:"12 hrs advanced pharmacology",detail:"Pharmacology hours required for prescriptive authority",type:'ce',hours:12},{k:'catA',label:"1 hr Category A (Ohio law & rules)",detail:"Ohio Nurse Practice Act course",type:'ce',hours:1},{k:'ce_opioid',label:"8 hrs opioid / controlled-substance CE",detail:"One-time requirement for DEA/prescribers",type:'onetime',hours:8},{k:'collab',label:"Collaborative agreement on file",detail:"Signed collaborating-physician agreement (name, NPI, contact)",type:'doc'},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'OK':{fee:"~$100",note:"Maintained through national certification.",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'OR':{fee:"~$150",note:"Primarily national-cert driven.",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'pain',label:"Pain management CE",detail:"One-time requirement",type:'onetime'},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'PA':{fee:"~$100",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'ce_gen',label:"30 CE contact hours",detail:"Complete 30 hours of approved continuing education",type:'ce',hours:30},{k:'ce_pharm',label:"16 hrs advanced pharmacology",detail:"Pharmacology hours required for prescriptive authority",type:'ce',hours:16},{k:'childabuse',label:"2 hrs child abuse recognition",detail:"Required",type:'ce',hours:2},{k:'ce_opioid',label:"2 hrs opioid / controlled-substance CE",detail:"Controlled-substance prescribing education",type:'ce',hours:2},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'RI':{fee:"~$130",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'ce_gen',label:"30 CE contact hours",detail:"Complete 30 hours of approved continuing education",type:'ce',hours:30},{k:'ce_pharm',label:"10 hrs advanced pharmacology",detail:"Pharmacology hours required for prescriptive authority",type:'ce',hours:10},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'SC':{fee:"~$100",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'ce_gen',label:"40 hrs or national cert",detail:"Complete 40 hours of approved continuing education",type:'ce',hours:40},{k:'ce_pharm',label:"20 hrs advanced pharmacology",detail:"Pharmacology hours required for prescriptive authority",type:'ce',hours:20},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'SD':{fee:"~$130",note:"Transition-to-practice collaborative agreement may apply.",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'collab',label:"Collaborative agreement on file",detail:"Signed collaborating-physician agreement (name, NPI, contact)",type:'doc'},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'TN':{fee:"~$110",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'ce_gen',label:"10 hrs (per cert cycle)",detail:"Complete 10 hours of approved continuing education",type:'ce',hours:10},{k:'ce_pharm',label:"10 hrs advanced pharmacology",detail:"Pharmacology hours required for prescriptive authority",type:'ce',hours:10},{k:'ce_opioid',label:"2 hrs opioid / controlled-substance CE",detail:"Controlled-substance prescribing education",type:'ce',hours:2},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'TX':{fee:"~$95",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'ce_gen',label:"20 contact hours",detail:"Complete 20 hours of approved continuing education",type:'ce',hours:20},{k:'juris',label:"Nursing jurisprudence exam",detail:"One-time requirement",type:'onetime'},{k:'ht',label:"Human trafficking CE",detail:"One-time requirement",type:'onetime'},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'UT':{fee:"~$100",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'ce_gen',label:"30 hrs or 400 practice hrs",detail:"Complete 30 hours of approved continuing education",type:'ce',hours:30},{k:'ce_pharm',label:"15 hrs advanced pharmacology",detail:"Pharmacology hours required for prescriptive authority",type:'ce',hours:15},{k:'ce_opioid',label:"3.5 hrs opioid / controlled-substance CE",detail:"Controlled-substance prescribing education",type:'ce',hours:3.5},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'VT':{fee:"~$120",note:"Maintained through national certification.",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'VA':{fee:"~$110",note:"Primarily national-cert driven; autonomy hours tracked separately.",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'ce_opioid',label:"2 hrs opioid / controlled-substance CE",detail:"Controlled-substance prescribing education",type:'ce',hours:2},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'WA':{fee:"~$120",note:"Annual renewal; 531 practice hours over cycle.",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'ce_gen',label:"30 hrs/cycle",detail:"Complete 30 hours of approved continuing education",type:'ce',hours:30},{k:'suicide',label:"Suicide prevention CE",detail:"One-time requirement",type:'onetime'},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'WV':{fee:"~$100",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'ce_gen',label:"24 CE contact hours",detail:"Complete 24 hours of approved continuing education",type:'ce',hours:24},{k:'ce_pharm',label:"8 hrs advanced pharmacology",detail:"Pharmacology hours required for prescriptive authority",type:'ce',hours:8},{k:'diversion',label:"Drug diversion training",detail:"Required",type:'ce'},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'WI':{fee:"~$100",note:"Primarily national-cert driven; opioid guideline CE.",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'ce_opioid',label:"2 hrs opioid / controlled-substance CE",detail:"Controlled-substance prescribing education",type:'ce',hours:2},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'WY':{fee:"~$130",note:"Maintained through national certification.",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+'DC':{fee:"~$130",verified:false,items:[{k:'license',label:"Current license on file",detail:"Active license uploaded to Veridoc",type:'doc'},{k:'natcert',label:"National certification current",detail:"AANP or ANCC certification valid through renewal",type:'doc'},{k:'ce_gen',label:"23 contact hours",detail:"Complete 23 hours of approved continuing education",type:'ce',hours:23},{k:'lgbtq',label:"LGBTQ cultural competency CE",detail:"2 hrs required",type:'ce',hours:2},{k:'phpriority',label:"Public health priority CE",detail:"Required topic",type:'ce'},{k:'ce_opioid',label:"2 hrs opioid / controlled-substance CE",detail:"Controlled-substance prescribing education",type:'ce',hours:2},{k:'confirm',label:"Confirm renewal info & attest",detail:"Review personal info and complete attestation in the portal",type:'action'}]},
+};
+
+// Fallback for any state without a detailed entry yet
+const DEF_RENEWAL={fee:'Verify with board',note:'Requirements not yet verified for this state — confirm with the licensing board.',verified:false,items:[
+  {k:'license',label:'Current license on file',detail:'Active license uploaded to Veridoc',type:'doc'},
+  {k:'natcert',label:'National certification current',detail:'AANP or ANCC certification valid through renewal',type:'doc'},
+  {k:'ce_gen',label:'Continuing education complete',detail:'Complete CE hours required by your state board',type:'ce'},
+  {k:'confirm',label:'Confirm renewal info & attest',detail:'Review info and complete attestation in the portal',type:'action'}
+]};
+function stateReq(code){return STATE_RENEWAL[code]||DEF_RENEWAL;}
+
 const RP_KEY='vd_renewal_progress';
 function getRP(){try{return JSON.parse(localStorage.getItem(RP_KEY)||'{}');}catch{return{};}}
 function setRP(id,patch){const all=getRP();all[id]={...(all[id]||{}),...patch};localStorage.setItem(RP_KEY,JSON.stringify(all));renderDash();}
 
 // Readiness % from real data on hand. CE + info-confirmed are user-driven steps
 // (no CE table yet), so they live in renewal progress until the CE tracker ships.
-function readiness(l){
-  const checks=[];
-  checks.push({label:'License on file',done:true});
-  const hasCert=certs.some(c=>daysUntil(c.expiry_date)>0);
-  checks.push({label:'National certification current',done:hasCert});
-  if(['NP','PA','APRN','MD','DO'].includes(l.license_type)){
-    const hasDEA=dea.some(d=>daysUntil(d.expiry_date)>0);
-    checks.push({label:'DEA current',done:hasDEA});
-  }
+// Doc-type checklist items we can satisfy automatically from data already in Veridoc.
+function autoDone(l, item){
+  if(item.k==='license') return true; // the license itself is on file
+  if(item.k==='natcert') return certs.some(c=>['ANCC','AANP','NCCPA'].includes(c.cert_type)&&daysUntil(c.expiry_date)>0);
+  if(item.k==='collab') return false; // no collaborator record type yet — user confirms manually
+  return false;
+}
+
+// Build the live checklist for a license from its state's requirements.
+function checklistFor(l){
+  const req=stateReq(l.state);
   const rp=getRP()[l.id]||{};
-  checks.push({label:'CE hours complete',done:!!rp.ce_done});
-  checks.push({label:'Renewal info confirmed',done:!!rp.info_done});
-  const done=checks.filter(c=>c.done).length;
-  return{pct:Math.round(done/checks.length*100),done,total:checks.length,checks,started:!!rp.started};
+  const checked=rp.checked||{};
+  return req.items.map(item=>{
+    const auto=autoDone(l,item);
+    const done = auto || !!checked[item.k];
+    return {...item, done, auto};
+  });
+}
+
+function readiness(l){
+  const list=checklistFor(l);
+  const done=list.filter(c=>c.done).length;
+  const rp=getRP()[l.id]||{};
+  return {pct:list.length?Math.round(done/list.length*100):100, done, total:list.length, checks:list, started:!!rp.started};
 }
 
 function rcRing(pct){
@@ -1220,20 +1329,77 @@ function renewalCenter(){
 function rcStart(id){
   setRP(id,{started:true});
   track('renewal_started',{license_id:id});
-  const l=licenses.find(x=>x.id===id);
-  alert(`Renewal started for ${l.state} ${l.license_type}.\n\nNext: complete CE hours and confirm your renewal info. Your progress is saved — you can pick up where you left off anytime.`);
+  openChecklist(id);
 }
-function rcContinue(id){
-  // demo stand-in: advance the next incomplete step so progress visibly moves.
-  const rp=getRP()[id]||{};
-  if(!rp.ce_done){setRP(id,{ce_done:true});alert('CE hours marked complete. One step left: confirm your renewal info.');}
-  else if(!rp.info_done){setRP(id,{info_done:true});alert('Renewal info confirmed. You\'re renewal-ready — tap Finish to head to the board portal.');}
-  else rcFinish(id);
+function rcContinue(id){ track('renewal_continued',{license_id:id}); openChecklist(id); }
+function rcFinish(id){ openChecklist(id); }
+
+// ── RENEWAL CHECKLIST SHEET ─────────────────────────────────────────────────
+function openChecklist(id){
+  const l=licenses.find(x=>x.id===id); if(!l)return;
+  renderChecklist(id);
+  document.getElementById('rc-sheet-bg').classList.add('show');
 }
-function rcFinish(id){
-  const l=licenses.find(x=>x.id===id);
-  track('renewal_finish_clicked',{license_id:id});
-  window.open(rule(l.state).url,'_blank');
+function closeChecklist(){ document.getElementById('rc-sheet-bg').classList.remove('show'); }
+
+function toggleCheck(id,key){
+  const all=getRP();
+  const rp=all[id]||{};
+  rp.checked=rp.checked||{};
+  rp.checked[key]=!rp.checked[key];
+  all[id]=rp; localStorage.setItem(RP_KEY,JSON.stringify(all));
+  track('renewal_item_toggled',{license_id:id,item:key,checked:rp.checked[key]});
+  renderChecklist(id);   // refresh the sheet (ring + items)
+  renderDash();          // refresh the dashboard card behind it
+}
+
+const RC_TYPE_META={
+  doc:{icon:'📄',tag:'Document'}, ce:{icon:'🎓',tag:'CE hours'},
+  onetime:{icon:'⭐',tag:'One-time'}, action:{icon:'✅',tag:'Action'}
+};
+
+function renderChecklist(id){
+  const l=licenses.find(x=>x.id===id); if(!l)return;
+  const req=stateReq(l.state);
+  const list=checklistFor(l);
+  const rd=readiness(l);
+  const r=rule(l.state);
+  const expd=daysUntil(l.expiry_date);
+
+  const rows=list.map(it=>{
+    const m=RC_TYPE_META[it.type]||RC_TYPE_META.action;
+    const locked=it.auto; // auto-satisfied items aren't manually toggleable
+    return `<div class="rci ${it.done?'done':''}" ${locked?'':`onclick="toggleCheck('${id}','${it.k}')"`}>
+      <div class="rci-box ${it.done?'on':''}">${it.done?'✓':''}</div>
+      <div class="rci-mid">
+        <div class="rci-label">${it.label}${locked?' <span class="rci-auto">auto</span>':''}</div>
+        <div class="rci-detail">${it.detail}</div>
+      </div>
+      <div class="rci-tag">${m.icon} ${m.tag}</div>
+    </div>`;
+  }).join('');
+
+  const ready=rd.pct===100;
+  document.getElementById('rc-sheet').innerHTML=`
+    <div class="rcs-grip"></div>
+    <div class="rcs-head">
+      ${rcRing(rd.pct)}
+      <div class="rcs-head-mid">
+        <h3>${l.state} ${l.license_type} renewal</h3>
+        <div class="rcs-sub"><span class="mono">${l.license_number}</span> · ${expd<0?Math.abs(expd)+' days overdue':'expires '+fmt(l.expiry_date)}</div>
+        <div class="rcs-fee">Fee: ${req.fee||'Verify with board'} · ${r.w}-day window</div>
+      </div>
+      <button class="rcs-x" onclick="closeChecklist()">✕</button>
+    </div>
+    ${req.verified===false?`<div class="rcs-verify">⚠️ These requirements reflect the standard structure for ${l.state}. Confirm exact hours, fees, and rules with the <a href="${r.url}" target="_blank">${l.state} board</a> before submitting.</div>`:''}
+    ${req.note?`<div class="rcs-note">ℹ️ ${req.note}</div>`:''}
+    <div class="rcs-list">${rows}</div>
+    <div class="rcs-foot">
+      ${ready
+        ? `<button class="rb2 rb2-done" style="width:100%;justify-content:center;padding:13px" onclick="closeChecklist();window.open('${r.url}','_blank');track('renewal_finish_clicked',{license_id:'${id}'})">✓ All set — go to ${l.state} portal →</button>`
+        : `<div class="rcs-progress-txt">${rd.done} of ${rd.total} complete — check off items as you finish them</div>
+           <button class="rb2 rb2-start" style="width:100%;justify-content:center;padding:13px" onclick="window.open('${r.url}','_blank')">Open ${l.state} portal anyway →</button>`}
+    </div>`;
 }
 
 function renderDash(){
