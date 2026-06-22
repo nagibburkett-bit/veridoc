@@ -114,6 +114,31 @@ tbody tr.clickable-row:hover td{background:#E6F2F0;}
 .rb-lock{border-color:#E3E9EE;color:#5A6B7B;background:#EEF2F5;cursor:default;}
 .rb-exp{border-color:#B91C1C;color:#B91C1C;background:#FBE6E6;}
 .rn{font-size:10px;color:#5A6B7B;}
+/* RENEWAL CENTER */
+.rc-card{background:#fff;border:1px solid #E3E9EE;border-radius:12px;padding:20px;margin-bottom:16px;}
+.rc-head{display:flex;justify-content:space-between;align-items:center;}
+.rc-head .card-title{font-size:14px;font-weight:600;color:#0F1E2E;display:flex;align-items:center;gap:7px;margin:0;}
+.rc-head .sub{font-size:11px;color:#5A6B7B;font-weight:500;}
+.rc-list{margin-top:14px;display:flex;flex-direction:column;gap:10px;}
+.rl{display:flex;align-items:center;gap:16px;padding:14px;border:1px solid #EDF1F4;border-radius:10px;transition:border-color .12s,box-shadow .12s;background:#fff;}
+.rl:hover{border-color:#A7D5CF;box-shadow:0 3px 12px rgba(15,118,110,.10);}
+.rl-ring{position:relative;width:62px;height:62px;flex-shrink:0;}
+.rl-ring svg{transform:rotate(-90deg);}
+.rl-ring .n{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Schibsted Grotesk',sans-serif;font-size:16px;font-weight:800;color:#0F1E2E;}
+.rl-mid{flex:1;min-width:0;}
+.rl-mid h4{font-size:14px;font-weight:600;color:#0F1E2E;display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+.rl-mid .meta{font-size:11.5px;color:#5A6B7B;margin-top:3px;}
+.rl-mid .gap{font-size:11.5px;margin-top:5px;font-weight:500;}
+.rl-mid .gap.short{color:#B45309;}
+.rl-mid .gap.ready{color:#15803D;}
+.rl-act{flex-shrink:0;}
+.rb2{display:inline-flex;align-items:center;gap:6px;padding:9px 16px;border-radius:8px;font-size:12.5px;font-weight:700;border:none;cursor:pointer;text-decoration:none;white-space:nowrap;}
+.rb2-start{background:#0F766E;color:#fff;}.rb2-start:hover{background:#0B5E57;}
+.rb2-cont{background:#FBEEDA;color:#B45309;border:1px solid #F2DCAE;}.rb2-cont:hover{background:#F8E4C4;}
+.rb2-done{background:#E7F4EC;color:#15803D;border:1px solid #BBE3C9;}.rb2-done:hover{opacity:.85;}
+.rb2-lock{background:#EEF2F5;color:#5A6B7B;cursor:default;}
+.rc-empty{text-align:center;padding:30px 20px;color:#5A6B7B;}
+.rc-empty .i{font-size:30px;display:block;margin-bottom:8px;}
 .dea-warn{background:#FBEEDA;border:1px solid #F2DCAE;border-radius:8px;padding:12px 16px;margin-bottom:18px;font-size:13px;color:#B45309;}
 .al-item{display:flex;justify-content:space-between;align-items:center;padding:14px 18px;border-radius:8px;margin-bottom:10px;border:1px solid;}
 .al-exp{background:#FBE6E6;border-color:#F3C9C9;}
@@ -196,6 +221,11 @@ tbody tr.clickable-row:hover td{background:#E6F2F0;}
   .auth-right{padding:20px;}
   .card{padding:16px;}
   .ph h1{font-size:20px;}
+  .rc-card{padding:16px;}
+  .rl{flex-wrap:wrap;gap:12px;padding:13px;}
+  .rl-mid{flex:1 1 calc(100% - 74px);}
+  .rl-act{flex:1 1 100%;}
+  .rb2{width:100%;justify-content:center;padding:11px;}
 }
 
 /* THEME: display type — Schibsted Grotesk, matching the landing page */
@@ -1100,6 +1130,112 @@ async function deleteAccount(){
 
 function renderAll(){renderDash();renderLic();renderDEA();renderCerts();renderAlerts();renderSettings();}
 
+// ── RENEWAL CENTER ─────────────────────────────────────────────────────────────
+// Progress is stored locally for now (vd_ prefix, like the rest of the app).
+// Swap getRP/setRP to a Supabase `renewal_progress` table when ready — the rest
+// of the UI doesn't change.
+const RP_KEY='vd_renewal_progress';
+function getRP(){try{return JSON.parse(localStorage.getItem(RP_KEY)||'{}');}catch{return{};}}
+function setRP(id,patch){const all=getRP();all[id]={...(all[id]||{}),...patch};localStorage.setItem(RP_KEY,JSON.stringify(all));renderDash();}
+
+// Readiness % from real data on hand. CE + info-confirmed are user-driven steps
+// (no CE table yet), so they live in renewal progress until the CE tracker ships.
+function readiness(l){
+  const checks=[];
+  checks.push({label:'License on file',done:true});
+  const hasCert=certs.some(c=>daysUntil(c.expiry_date)>0);
+  checks.push({label:'National certification current',done:hasCert});
+  if(['NP','PA','APRN','MD','DO'].includes(l.license_type)){
+    const hasDEA=dea.some(d=>daysUntil(d.expiry_date)>0);
+    checks.push({label:'DEA current',done:hasDEA});
+  }
+  const rp=getRP()[l.id]||{};
+  checks.push({label:'CE hours complete',done:!!rp.ce_done});
+  checks.push({label:'Renewal info confirmed',done:!!rp.info_done});
+  const done=checks.filter(c=>c.done).length;
+  return{pct:Math.round(done/checks.length*100),done,total:checks.length,checks,started:!!rp.started};
+}
+
+function rcRing(pct){
+  const r=26,c=2*Math.PI*r,off=c*(1-pct/100);
+  const col=pct>=80?'#15803D':pct>=50?'#0F766E':pct>=25?'#B45309':'#B91C1C';
+  return `<div class="rl-ring"><svg width="62" height="62" viewBox="0 0 62 62">
+    <circle cx="31" cy="31" r="${r}" fill="none" stroke="#E3E9EE" stroke-width="6"/>
+    <circle cx="31" cy="31" r="${r}" fill="none" stroke="${col}" stroke-width="6" stroke-linecap="round"
+      stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"/>
+  </svg><div class="n">${pct}%</div></div>`;
+}
+
+function rcAction(l,rd,rs){
+  if(rs==='soon'||rs==='lock'){
+    const n=daysUntil(l.expiry_date),r=rule(l.state);
+    return `<span class="rb2 rb2-lock">Opens in ${Math.max(0,n-r.w)}d</span>`;
+  }
+  if(rd.pct===100) return `<button class="rb2 rb2-done" onclick="event.stopPropagation();rcFinish('${l.id}')">✓ Ready · finish →</button>`;
+  if(rd.started) return `<button class="rb2 rb2-cont" onclick="event.stopPropagation();rcContinue('${l.id}')">Continue renewal →</button>`;
+  return `<button class="rb2 rb2-start" onclick="event.stopPropagation();rcStart('${l.id}')">Start renewal →</button>`;
+}
+
+function renewalCenter(){
+  const items=licenses.map(l=>({l,rs:getRS(l),rd:readiness(l)}))
+    .filter(x=>x.rs!=='lock'&&x.rs!=='soon')   // only show actionable: open or expired
+    .sort((a,b)=>daysUntil(a.l.expiry_date)-daysUntil(b.l.expiry_date));
+  const actionCt=items.length;
+
+  let body;
+  if(items.length===0){
+    body=`<div class="rc-empty"><span class="i">🔒</span>No renewal windows open yet.<br>
+      <span style="font-size:12px">A progress tracker appears here the moment one opens.</span></div>`;
+  } else {
+    body=`<div class="rc-list">${items.map(({l,rs,rd})=>{
+      const expd=daysUntil(l.expiry_date);
+      const gap=rd.pct===100
+        ? `<div class="gap ready">✓ Everything the board needs is ready</div>`
+        : `<div class="gap short">${rd.total-rd.done} item${rd.total-rd.done!==1?'s':''} left · ${rd.checks.filter(c=>!c.done).map(c=>c.label).join(', ')}</div>`;
+      const statusBadge=rs==='exp'
+        ? '<span class="badge b-red">Expired</span>'
+        : expd<=30 ? '<span class="badge b-amber">Closes soon</span>'
+        : '<span class="badge b-green">Window open</span>';
+      return `<div class="rl">
+        ${rcRing(rd.pct)}
+        <div class="rl-mid">
+          <h4><span class="chip-state">${l.state}</span><span class="chip-type">${l.license_type}</span>${statusBadge}</h4>
+          <div class="meta"><span class="mono">${l.license_number}</span> · ${expd<0?Math.abs(expd)+' days overdue':'expires '+fmt(l.expiry_date)+' · '+expd+'d left'}</div>
+          ${gap}
+        </div>
+        <div class="rl-act">${rcAction(l,rd,rs)}</div>
+      </div>`;
+    }).join('')}</div>`;
+  }
+
+  return `<div class="rc-card">
+    <div class="rc-head">
+      <div class="card-title">🔄 Renewal Center</div>
+      <div class="sub">${actionCt} renewal${actionCt!==1?'s':''} need${actionCt===1?'s':''} action</div>
+    </div>
+    ${body}
+  </div>`;
+}
+
+function rcStart(id){
+  setRP(id,{started:true});
+  track('renewal_started',{license_id:id});
+  const l=licenses.find(x=>x.id===id);
+  alert(`Renewal started for ${l.state} ${l.license_type}.\n\nNext: complete CE hours and confirm your renewal info. Your progress is saved — you can pick up where you left off anytime.`);
+}
+function rcContinue(id){
+  // demo stand-in: advance the next incomplete step so progress visibly moves.
+  const rp=getRP()[id]||{};
+  if(!rp.ce_done){setRP(id,{ce_done:true});alert('CE hours marked complete. One step left: confirm your renewal info.');}
+  else if(!rp.info_done){setRP(id,{info_done:true});alert('Renewal info confirmed. You\'re renewal-ready — tap Finish to head to the board portal.');}
+  else rcFinish(id);
+}
+function rcFinish(id){
+  const l=licenses.find(x=>x.id===id);
+  track('renewal_finish_clicked',{license_id:id});
+  window.open(rule(l.state).url,'_blank');
+}
+
 function renderDash(){
   const urgent=allUrgent();
   const all=[...licenses,...dea,...certs];
@@ -1118,14 +1254,15 @@ function renderDash(){
     <div class="stat clickable" onclick="go('alerts')"><div class="stat-n" style="color:${warn>0?'#B45309':'#15803D'}">${warn}</div><div class="stat-l">Expiring 90d</div></div>
     <div class="stat clickable" onclick="go('alerts')"><div class="stat-n" style="color:${exp>0?'#B91C1C':'#15803D'}">${exp}</div><div class="stat-l">Expired</div></div>
   </div>
+  ${renewalCenter()}
   <div class="dash-grid-2">
     <div class="card">
       <div class="card-title">🚨 Needs attention <span>${urgent.length} items</span></div>
       ${urgent.length===0?'<div class="empty"><span class="empty-icon">✅</span>All credentials current</div>':urgent.slice(0,6).map(u=>`<div class="cred-row clickable" onclick="openModal('${u._k}','${u.id}')"><div class="cr-info"><h4>${u._label}</h4><p>${u._sub}</p></div><div class="cr-right">${dChip(u._exp)}${sBadge(u._s)}</div></div>`).join('')}
     </div>
     <div class="card">
-      <div class="card-title">🔓 Renewals open <span>${rOpen} available</span></div>
-      ${rOpen===0?'<div class="empty"><span class="empty-icon">🔒</span>No windows open yet</div>':licenses.filter(l=>getRS(l)==='open').map(l=>`<div class="cred-row clickable" onclick="openModal('lic','${l.id}')"><div class="cr-info"><h4>${l.state} ${l.license_type} — ${l.license_number}</h4><p>Expires ${fmt(l.expiry_date)}</p></div><div class="cr-right"><a href="${rule(l.state).url}" target="_blank" onclick="event.stopPropagation()" class="rb rb-open" style="font-size:11px">Renew</a></div></div>`).join('')}
+      <div class="card-title">📅 Coming up <span>next windows</span></div>
+      ${(()=>{const up=licenses.filter(l=>{const s=getRS(l);return s==='soon'||s==='lock';}).sort((a,b)=>daysUntil(a.expiry_date)-daysUntil(b.expiry_date)).slice(0,6);return up.length===0?'<div class="empty"><span class="empty-icon">✅</span>Nothing on the horizon</div>':up.map(l=>{const n=daysUntil(l.expiry_date),r=rule(l.state),opens=Math.max(0,n-r.w);return `<div class="cred-row clickable" onclick="openModal('lic','${l.id}')"><div class="cr-info"><h4>${l.state} ${l.license_type} — ${l.license_number}</h4><p>Expires ${fmt(l.expiry_date)}</p></div><div class="cr-right"><span class="rb rb-lock" style="font-size:11px">Opens in ${opens}d</span></div></div>`;}).join('');})()}
     </div>
   </div>`;
 }
