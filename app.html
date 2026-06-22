@@ -259,6 +259,20 @@ tbody tr.clickable-row:hover td{background:#E6F2F0;}
 .btn-del{background:#fff;color:#B91C1C;border:1px solid #F3C9C9;}
 .btn-del:hover{background:#FBE6E6;}
 .dv-notes{font-size:13px;color:#47586A;line-height:1.6;background:#F5F7F9;border-radius:8px;padding:12px 14px;}
+/* INLINE RENEWAL CHECKLIST IN DETAIL VIEW */
+.dv-renewal{padding:20px 24px;background:#FAFBFC;border-top:1px solid #EDF1F4;}
+.dv-renewal-head{display:flex;align-items:center;gap:16px;margin-bottom:8px;}
+.dv-renewal-head .rl-ring{width:56px;height:56px;flex-shrink:0;}
+.dv-renewal-head-txt{flex:1;min-width:0;}
+.dv-renewbox-inline{display:flex;align-items:center;gap:10px;}
+.dv-renewbox-inline .ico{font-size:20px;flex-shrink:0;}
+.dv-renewbox-inline .txt b{font-size:14px;color:#0F1E2E;display:block;}
+.dv-renewbox-inline .txt span{font-size:11.5px;color:#5A6B7B;}
+.dv-renewal-meta{font-size:11.5px;color:#5A6B7B;font-weight:500;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid #EDF1F4;}
+.dv-checklist{display:flex;flex-direction:column;gap:2px;margin-bottom:14px;}
+.dv-checklist .rci{padding:11px 0;border-bottom:1px solid #F0F4F6;}
+.dv-checklist .rci:last-child{border-bottom:none;}
+.dv-renewal-actions{display:flex;flex-direction:column;gap:0;}
 /* CE TRACKER */
 .ce-pill{display:inline-block;background:#fff;border:1px solid #CDE7E3;color:#0B5E57;border-radius:20px;padding:3px 11px;font-size:11.5px;}
 .ce-pill b{font-weight:700;}
@@ -1548,8 +1562,15 @@ async function saveUpload(){
   });
   track('document_uploaded',{type:document.getElementById('up-type').value, proof:!!upProofMeta});
   const wasProof=!!upProofMeta;
-  closeUpload(); renderDocs(); renderDash();
+  const reopenId=upProofMeta&&upProofMeta.reopen_detail;
+  const reopenKind=(upProofMeta&&upProofMeta.reopen_kind)||'lic';
+  closeUpload(); closeLicenseDetail(); renderDocs(); renderDash(); renderLic(); renderDEA(); renderCerts();
   toast(wasProof?'Proof uploaded — requirement complete ✓':'Document saved to your vault','ok');
+  if(reopenId){   // return to the credential detail with its checklist/docs updated
+    if(reopenKind==='dea') openDEADetail(reopenId);
+    else if(reopenKind==='cert') openCertDetail(reopenId);
+    else openLicenseDetail(reopenId);
+  }
 }
 function viewDoc(id){const url=vaultGetUrl(id);if(!url){toast('File not found','err');return;}const w=window.open();if(w)w.document.write(`<iframe src="${url}" style="border:0;width:100%;height:100%;position:fixed;inset:0"></iframe>`);}
 function downloadDoc(id){const url=vaultGetUrl(id);const rec=vaultList().find(d=>d.id===id);if(!url||!rec)return;const a=document.createElement('a');a.href=url;a.download=rec.file_name;a.click();}
@@ -1855,8 +1876,11 @@ function uploadProofFor(licenseId, itemKey){
   const l=licenses.find(x=>x.id===licenseId); if(!l)return;
   const item=checklistFor(l).find(i=>i.k===itemKey); if(!item)return;
   const dt=docTypeForItem(item);
+  // remember whether the license detail was open, so we can reopen it after upload
+  const detailOpen=document.getElementById('lic-detail-bg').style.display==='flex';
   closeChecklist();
-  openUpload(dt, {license_id:licenseId, proves_item:itemKey, proof_label:item.label});
+  closeLicenseDetail();
+  openUpload(dt, {license_id:licenseId, proves_item:itemKey, proof_label:item.label, reopen_detail:detailOpen?licenseId:null, reopen_kind:'lic'});
 }
 
 const RC_TYPE_META={
@@ -1864,33 +1888,30 @@ const RC_TYPE_META={
   onetime:{icon:'⭐',tag:'One-time'}, action:{icon:'✅',tag:'Confirmation'}
 };
 
-function renderChecklist(id){
-  const l=licenses.find(x=>x.id===id); if(!l)return;
-  const req=stateReq(l.state);
+// Builds the evidence-driven checklist rows for a license.
+// `ctx` is 'sheet' or 'detail' — controls what closes before an upload/log action,
+// so the right view re-renders afterward.
+function checklistRowsHTML(l, ctx){
+  const id=l.id;
   const list=checklistFor(l);
-  const rd=readiness(l);
-  const r=rule(l.state);
-  const expd=daysUntil(l.expiry_date);
-
-  const rows=list.map(it=>{
+  const closer = ctx==='detail' ? 'closeLicenseDetail()' : 'closeChecklist()';
+  return list.map(it=>{
     const m=RC_TYPE_META[it.type]||RC_TYPE_META.action;
     const ceCat=CE_CATEGORIES.find(c=>c.itemKey===it.k);
     let actionLine='';
     if(ceCat && it.hours){
-      // CE items show live hour progress from the tracker
       const logged=ceHours(ceCat.val, l.id);
       const pctH=Math.min(100, Math.round(logged/it.hours*100));
       const met=logged>=it.hours;
       actionLine=`<div class="rci-ce">
         <div class="rci-ce-track"><div class="rci-ce-fill ${met?'met':''}" style="width:${pctH}%"></div></div>
-        <div class="rci-ce-txt">${logged} of ${it.hours} hrs logged${met?' ✓':` · <a onclick="event.stopPropagation();closeChecklist();go('ce');openCE()" style="color:#0F766E;font-weight:600;cursor:pointer">log CE →</a>`}</div>
+        <div class="rci-ce-txt">${logged} of ${it.hours} hrs logged${met?' ✓':` · <a onclick="event.stopPropagation();${closer};go('ce');openCE()" style="color:#0F766E;font-weight:600;cursor:pointer">log CE →</a>`}</div>
       </div>`;
     } else if(!it.done){
-      // every non-CE item is satisfied by evidence — offer the upload/add action
       if(it.k==='license'){
-        actionLine=`<div class="rci-action"><a onclick="event.stopPropagation()" style="color:#94A3AE">License is on file</a></div>`;
+        actionLine=`<div class="rci-action"><span style="color:#94A3AE">License is on file</span></div>`;
       } else if(it.k==='natcert'){
-        actionLine=`<div class="rci-action"><a onclick="event.stopPropagation();closeChecklist();openModal('cert')" style="color:#0F766E;font-weight:600;cursor:pointer">+ Add certification</a> or <a onclick="event.stopPropagation();uploadProofFor('${id}','${it.k}')" style="color:#0F766E;font-weight:600;cursor:pointer">upload proof →</a></div>`;
+        actionLine=`<div class="rci-action"><a onclick="event.stopPropagation();${closer};openModal('cert')" style="color:#0F766E;font-weight:600;cursor:pointer">+ Add certification</a> or <a onclick="event.stopPropagation();uploadProofFor('${id}','${it.k}')" style="color:#0F766E;font-weight:600;cursor:pointer">upload proof →</a></div>`;
       } else {
         actionLine=`<div class="rci-action"><a onclick="event.stopPropagation();uploadProofFor('${id}','${it.k}')" style="color:#0F766E;font-weight:600;cursor:pointer">⬆ Upload ${esc((docTypeForItem(it)||'document').toLowerCase())} →</a></div>`;
       }
@@ -1906,6 +1927,15 @@ function renderChecklist(id){
       <div class="rci-tag ${it.done?'rci-tag-done':''}">${it.done?'✓ '+tagText:m.icon+' '+m.tag}</div>
     </div>`;
   }).join('');
+}
+
+function renderChecklist(id){
+  const l=licenses.find(x=>x.id===id); if(!l)return;
+  const req=stateReq(l.state);
+  const rd=readiness(l);
+  const r=rule(l.state);
+  const expd=daysUntil(l.expiry_date);
+  const rows=checklistRowsHTML(l, 'sheet');
 
   const ready=rd.pct===100;
   document.getElementById('rc-sheet').innerHTML=`
@@ -2038,13 +2068,18 @@ function shadeHex(hex){const nn=parseInt(hex.slice(1),16);let r=Math.max(0,(nn>>
 function openLicenseDetail(id){
   const l=licenses.find(x=>x.id===id); if(!l)return;
   const m=licStatusMeta(getLS(l)), n=daysUntil(l.expiry_date), rs=getRS(l), r=rule(l.state), rd=readiness(l);
+  const req=stateReq(l.state);
   // documents linked to this license OR matching its state license
   const docs=vaultList().filter(d=>d.linked_id===id || (d.doc_type==='License' && !d.linked_id));
-  let rIco,rTitle,rSub,rBtn='';
-  if(rs==='exp'){rIco='⚠️';rTitle='Renewal overdue';rSub='Your window has passed — reinstatement may be required.';rBtn=`<button class="btn btn-blue" style="padding:8px 14px" onclick="closeLicenseDetail();openChecklist('${id}')">Renew →</button>`;}
-  else if(rs==='open'){rIco='🔓';rTitle='Renewal window is open';rSub=`You can renew now · closes in ${n} days.`;rBtn=`<button class="btn btn-blue" style="padding:8px 14px" onclick="closeLicenseDetail();openChecklist('${id}')">Renew →</button>`;}
+  // renewal window status line
+  let rIco,rTitle,rSub;
+  if(rs==='exp'){rIco='⚠️';rTitle='Renewal overdue';rSub='Your window has passed — reinstatement may be required.';}
+  else if(rs==='open'){rIco='🔓';rTitle='Renewal window is open';rSub=`You can renew now · closes in ${n} days.`;}
   else if(rs==='soon'){rIco='🔜';rTitle='Window opens soon';rSub=`Opens in ${Math.max(0,n-r.w)} days (${r.w}-day rule before expiry).`;}
   else {rIco='🔒';rTitle='Not open yet';rSub=`Renewal window opens ${Math.max(0,n-r.w)} days from now.`;}
+
+  const checklistRows=checklistRowsHTML(l, 'detail');
+  const ready=rd.pct===100;
 
   document.getElementById('lic-detail').innerHTML=`
   <div class="dv">
@@ -2072,21 +2107,35 @@ function openLicenseDetail(id){
       </div>
     </div>
     <div class="dv-section">
-      <div class="dv-sec-label">Renewal</div>
-      <div class="dv-renewbox">
-        <span class="ico">${rIco}</span>
-        <div class="txt"><b>${rTitle}</b><span>${rSub}</span></div>
-        ${rBtn}
-      </div>
-    </div>
-    <div class="dv-section">
       <div class="dv-sec-label" style="display:flex;justify-content:space-between;align-items:center">Attached documents (${docs.length})
-        <button onclick="closeLicenseDetail();openUpload('License',{license_id:'${id}'})" style="background:#E6F2F0;color:#0F766E;border:none;border-radius:7px;padding:5px 11px;font-size:11px;font-weight:700;cursor:pointer">⬆ Upload</button>
+        <button onclick="openUpload('License',{license_id:'${id}',reopen_detail:'${id}',reopen_kind:'lic'})" style="background:#E6F2F0;color:#0F766E;border:none;border-radius:7px;padding:5px 11px;font-size:11px;font-weight:700;cursor:pointer">⬆ Upload</button>
       </div>
       ${docs.length?docs.map(d=>`<div class="dv-doc"><span class="di">${fileIcon(d.mime)}</span><div style="flex:1;min-width:0"><b style="font-weight:600">${esc(d.file_name)}</b></div><span style="font-size:11px;color:#5A6B7B">${esc(d.doc_type)}</span></div>`).join('')
         :`<div class="dv-empty-doc">No documents attached yet — upload your license, certification, or collaborating physician agreement.</div>`}
     </div>
     ${l.notes?`<div class="dv-section"><div class="dv-sec-label">Notes</div><div class="dv-notes">${esc(l.notes)}</div></div>`:''}
+
+    <!-- INLINE RENEWAL CHECKLIST -->
+    <div class="dv-renewal">
+      <div class="dv-renewal-head">
+        ${rcRing(rd.pct)}
+        <div class="dv-renewal-head-txt">
+          <div class="dv-sec-label" style="margin-bottom:4px">Renewal checklist</div>
+          <div class="dv-renewbox-inline"><span class="ico">${rIco}</span><div class="txt"><b>${rTitle}</b><span>${rSub}</span></div></div>
+        </div>
+      </div>
+      <div class="dv-renewal-meta">Fee: ${req.fee||'Verify with board'} · ${r.w}-day window · ${rd.done} of ${rd.total} requirements met</div>
+      ${req.verified===false?`<div class="rcs-verify" style="margin:0 0 12px;border-radius:9px;border:1px solid #F2DCAE">⚠️ These requirements reflect the standard structure for ${l.state}. Confirm exact hours, fees, and rules with the <a href="${r.url}" target="_blank">${l.state} board</a> before submitting.</div>`:''}
+      ${req.note?`<div class="rcs-note" style="margin:0 0 12px;border-radius:9px;border:1px solid #CDE7E3">ℹ️ ${req.note}</div>`:''}
+      <div class="dv-checklist">${checklistRows}</div>
+      <div class="dv-renewal-actions">
+        ${ready
+          ? `<button class="rb2 rb2-done" style="width:100%;justify-content:center;padding:13px" onclick="window.open('${r.url}','_blank');track('renewal_finish_clicked',{license_id:'${id}'})">✓ All set — go to ${stateName(l.state)} portal →</button>`
+          : `<button class="rb2 rb2-start" style="width:100%;justify-content:center;padding:13px" onclick="window.open('${r.url}','_blank')">Open ${stateName(l.state)} renewal portal →</button>`}
+        <button class="rb2 rcs-packet-btn" onclick="renewalPacketPDF('${id}')">📄 Download renewal packet</button>
+      </div>
+    </div>
+
     <div class="dv-foot">
       <button class="btn btn-del" onclick="closeLicenseDetail();del('licenses','${id}')">🗑 Delete</button>
       <button class="btn btn-blue" onclick="closeLicenseDetail();openModal('lic','${id}')">✏️ Edit license</button>
@@ -2174,7 +2223,7 @@ function openDEADetail(id){
     </div>
     <div class="dv-section">
       <div class="dv-sec-label" style="display:flex;justify-content:space-between;align-items:center">Attached documents (${docs.length})
-        <button onclick="closeLicenseDetail();openUpload('DEA registration',{license_id:'${id}'})" style="background:#E6F2F0;color:#0F766E;border:none;border-radius:7px;padding:5px 11px;font-size:11px;font-weight:700;cursor:pointer">⬆ Upload</button>
+        <button onclick="openUpload('DEA registration',{license_id:'${id}',reopen_detail:'${id}',reopen_kind:'dea'})" style="background:#E6F2F0;color:#0F766E;border:none;border-radius:7px;padding:5px 11px;font-size:11px;font-weight:700;cursor:pointer">⬆ Upload</button>
       </div>
       ${docs.length?docs.map(x=>`<div class="dv-doc"><span class="di">${fileIcon(x.mime)}</span><div style="flex:1;min-width:0"><b style="font-weight:600">${esc(x.file_name)}</b></div><span style="font-size:11px;color:#5A6B7B">${esc(x.doc_type)}</span></div>`).join('')
         :`<div class="dv-empty-doc">No DEA certificate uploaded yet.</div>`}
@@ -2256,7 +2305,7 @@ function openCertDetail(id){
     </div>
     <div class="dv-section">
       <div class="dv-sec-label" style="display:flex;justify-content:space-between;align-items:center">Attached documents (${docs.length})
-        <button onclick="closeLicenseDetail();openUpload('National certification',{license_id:'${id}'})" style="background:#E6F2F0;color:#0F766E;border:none;border-radius:7px;padding:5px 11px;font-size:11px;font-weight:700;cursor:pointer">⬆ Upload</button>
+        <button onclick="openUpload('National certification',{license_id:'${id}',reopen_detail:'${id}',reopen_kind:'cert'})" style="background:#E6F2F0;color:#0F766E;border:none;border-radius:7px;padding:5px 11px;font-size:11px;font-weight:700;cursor:pointer">⬆ Upload</button>
       </div>
       ${docs.length?docs.map(x=>`<div class="dv-doc"><span class="di">${fileIcon(x.mime)}</span><div style="flex:1;min-width:0"><b style="font-weight:600">${esc(x.file_name)}</b></div><span style="font-size:11px;color:#5A6B7B">${esc(x.doc_type)}</span></div>`).join('')
         :`<div class="dv-empty-doc">No certificate card uploaded yet.</div>`}
