@@ -193,6 +193,15 @@ tbody tr.clickable-row:hover td{background:#E6F2F0;}
 .up-ic{font-size:30px;display:block;margin-bottom:8px;}
 .up-d-title{font-size:14px;font-weight:600;color:#0F1E2E;word-break:break-all;}
 .up-d-sub{font-size:11.5px;color:#5A6B7B;margin-top:3px;}
+/* ADD MENU */
+.add-menu-head{font-size:10px;font-weight:700;color:#5A6B7B;text-transform:uppercase;letter-spacing:.07em;padding:8px 12px 6px;}
+.add-menu-item{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:transparent;border:none;border-radius:9px;padding:10px 12px;cursor:pointer;transition:background .12s;}
+.add-menu-item:hover{background:#F0F8F7;}
+.add-menu-item .ami-ic{width:34px;height:34px;border-radius:8px;background:#E6F2F0;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.add-menu-item div{display:flex;flex-direction:column;min-width:0;}
+.add-menu-item b{font-size:13.5px;font-weight:600;color:#0F1E2E;}
+.add-menu-item span{font-size:11px;color:#5A6B7B;}
+#add-fab:hover{background:#0B5E57;}
 /* CE TRACKER */
 .ce-pill{display:inline-block;background:#fff;border:1px solid #CDE7E3;color:#0B5E57;border-radius:20px;padding:3px 11px;font-size:11.5px;}
 .ce-pill b{font-weight:700;}
@@ -271,8 +280,8 @@ tbody tr.clickable-row:hover td{background:#E6F2F0;}
   .modal-bg{align-items:flex-end;padding:0;}
   .dea-warn,.dea-box{font-size:12px;}
   .card-title{flex-wrap:wrap;gap:6px;}
-  #feedback-fab{padding:10px 14px;font-size:0;bottom:16px;right:16px;}
-  #feedback-fab::after{content:'💬';font-size:20px;}
+  #add-fab.ready{display:flex !important;bottom:16px;right:16px;width:52px;height:52px;}
+  .dash-add-btn{display:none;}
   .filters{overflow-x:auto;flex-wrap:nowrap;padding-bottom:4px;-webkit-overflow-scrolling:touch;}
   .fc{flex-shrink:0;}
 }
@@ -466,33 +475,18 @@ tbody tr.clickable-row:hover td{background:#E6F2F0;}
 </div>
 
 <!-- FEEDBACK BUTTON (floating, always visible) -->
-<button id="feedback-fab" onclick="openFeedbackModal()" style="display:none;position:fixed;bottom:24px;right:24px;z-index:150;background:#0F766E;color:#fff;border:none;border-radius:50px;padding:12px 20px;font-size:13px;font-weight:600;cursor:pointer;box-shadow:0 4px 16px rgba(15,118,110,.35);align-items:center;gap:6px">
-  💬 Feedback
-</button>
+<!-- ADD MENU (+ button) — floating FAB on mobile, also triggered from dashboard header on desktop -->
+<button id="add-fab" onclick="toggleAddMenu(event)" aria-label="Add credential" style="display:none;position:fixed;bottom:24px;right:24px;z-index:150;background:#0F766E;color:#fff;border:none;border-radius:50px;width:56px;height:56px;font-size:28px;line-height:1;cursor:pointer;box-shadow:0 4px 16px rgba(15,118,110,.4);align-items:center;justify-content:center">+</button>
 
-<!-- FEEDBACK MODAL -->
-<div class="modal-bg" id="feedback-modal-bg" style="display:none" onclick="if(event.target===this)closeFeedbackModal()">
-  <div class="modal">
-    <h2>Report an issue or share feedback</h2>
-    <p style="font-size:13px;color:#5A6B7B;margin-bottom:16px">Tell us what's confusing, broken, or what you'd love to see. This goes straight to the founder.</p>
-    <div class="fg"><label>Category</label>
-      <select id="fb-category">
-        <option value="confusing">Something is confusing</option>
-        <option value="bug">Something is broken</option>
-        <option value="missing">Missing a feature I need</option>
-        <option value="praise">Just wanted to say something nice</option>
-        <option value="other">Other</option>
-      </select>
-    </div>
-    <div class="fg"><label>Your message *</label>
-      <textarea id="fb-message" rows="4" placeholder="What happened? What were you trying to do?" style="width:100%;padding:10px 13px;border:1.5px solid #E3E9EE;border-radius:8px;font-size:13px;resize:vertical;font-family:inherit"></textarea>
-    </div>
-    <div id="fb-err" style="font-size:12px;color:#B91C1C;display:none;margin-bottom:8px"></div>
-    <div class="modal-actions">
-      <button class="btn btn-blue" onclick="submitFeedback()">Send feedback</button>
-      <button class="btn btn-ghost" onclick="closeFeedbackModal()">Cancel</button>
-    </div>
-  </div>
+<!-- ADD MENU POPUP -->
+<div id="add-menu-bg" style="display:none;position:fixed;inset:0;z-index:160" onclick="closeAddMenu()"></div>
+<div id="add-menu" style="display:none;position:fixed;z-index:170;background:#fff;border:1px solid #E3E9EE;border-radius:14px;box-shadow:0 12px 32px rgba(15,30,46,.18);padding:8px;min-width:220px">
+  <div class="add-menu-head">Add to Veridoc</div>
+  <button class="add-menu-item" onclick="addNew('lic')"><span class="ami-ic">🗺</span><div><b>State license</b><span>NP, PA, RN, APRN…</span></div></button>
+  <button class="add-menu-item" onclick="addNew('dea')"><span class="ami-ic">💊</span><div><b>DEA registration</b><span>Controlled-substance registration</span></div></button>
+  <button class="add-menu-item" onclick="addNew('cert')"><span class="ami-ic">🎓</span><div><b>Certification</b><span>ANCC, AANP, BLS, ACLS…</span></div></button>
+  <button class="add-menu-item" onclick="addNew('ce')"><span class="ami-ic">📚</span><div><b>CE / CME activity</b><span>Log continuing education hours</span></div></button>
+  <button class="add-menu-item" onclick="addNew('doc')"><span class="ami-ic">📁</span><div><b>Document</b><span>Upload a file to your vault</span></div></button>
 </div>
 
 <!-- MODAL -->
@@ -874,7 +868,7 @@ function enterApp(user) {
   document.getElementById('t-name').textContent = `${first} ${last}`.trim();
   document.getElementById('auth').style.display = 'none';
   document.getElementById('app').classList.add('on');
-  document.getElementById('feedback-fab').style.display = 'flex';
+  document.getElementById('add-fab').classList.add('ready');
   if (ADMIN_EMAILS.includes(user.email)) {
     document.getElementById('nav-admin').style.display = 'block';
   }
@@ -1847,7 +1841,7 @@ function renderDash(){
   document.getElementById('al-ct').style.display=urgent.length?'inline':'none';
   document.getElementById('al-ct').textContent=urgent.length;
   document.getElementById('pg-dashboard').innerHTML=`
-  <div class="ph"><div><h1>Dashboard</h1><p>${all.length} credentials · ${exp} expired · ${rOpen} renewal${rOpen!==1?'s':''} open</p></div><button class="btn btn-ghost" onclick="exportCredentialsPDF()">📄 Share with employer</button></div>
+  <div class="ph"><div><h1>Dashboard</h1><p>${all.length} credentials · ${exp} expired · ${rOpen} renewal${rOpen!==1?'s':''} open</p></div><div style="display:flex;gap:8px"><button class="btn btn-ghost" onclick="exportCredentialsPDF()">📄 Share with employer</button><button class="btn btn-blue dash-add-btn" onclick="toggleAddMenu(event)">+ Add</button></div></div>
   <div class="stats">
     <div class="stat clickable" onclick="go('licenses')"><div class="stat-n" style="color:#0F766E">${licenses.length}</div><div class="stat-l">Licenses</div></div>
     <div class="stat clickable" onclick="go('dea')"><div class="stat-n" style="color:#0F766E">${dea.length}</div><div class="stat-l">DEA</div></div>
@@ -2104,41 +2098,41 @@ document.addEventListener('keydown',e=>{
 });
 
 // ── FEEDBACK WIDGET ────────────────────────────────────────────────────────
-function openFeedbackModal(){
-  document.getElementById('fb-message').value='';
-  document.getElementById('fb-err').style.display='none';
-  document.getElementById('feedback-modal-bg').style.display='flex';
-  track('feedback_opened', {page: currentPage});
-}
-function closeFeedbackModal(){
-  document.getElementById('feedback-modal-bg').style.display='none';
-}
-async function submitFeedback(){
-  const msg = document.getElementById('fb-message').value.trim();
-  const category = document.getElementById('fb-category').value;
-  const errEl = document.getElementById('fb-err');
-  if(!msg){ errEl.textContent='Please enter a message.'; errEl.style.display='block'; return; }
-  const user = getUser();
-  const token = getToken();
-  try{
-    const res = await fetch(`${SURL}/rest/v1/user_feedback`, {
-      method:'POST',
-      headers:{'apikey':SKEY,'Authorization':`Bearer ${token}`,'Content-Type':'application/json','Prefer':'return=minimal'},
-      body: JSON.stringify({
-        user_id: user?.id || null,
-        user_email: user?.email || null,
-        page: currentPage,
-        message: msg,
-        category,
-      })
-    });
-    if(!res.ok){ errEl.textContent='Something went wrong sending feedback. Try again.'; errEl.style.display='block'; return; }
-    track('feedback_submitted', {category, page: currentPage});
-    closeFeedbackModal();
-    toast('Thanks! Your feedback was sent. 🙏','ok');
-  } catch(e){
-    errEl.textContent='Network error. Try again.'; errEl.style.display='block';
+// ── ADD MENU ────────────────────────────────────────────────────────────────
+function toggleAddMenu(e){
+  if(e) e.stopPropagation();
+  const menu=document.getElementById('add-menu');
+  if(menu.style.display==='block'){ closeAddMenu(); return; }
+  // position the menu near whatever triggered it
+  const menuBg=document.getElementById('add-menu-bg');
+  menuBg.style.display='block';
+  menu.style.display='block';
+  const trigger=e&&e.currentTarget;
+  if(trigger){
+    const r=trigger.getBoundingClientRect();
+    const mw=menu.offsetWidth, mh=menu.offsetHeight;
+    // prefer opening above-left of the trigger (works for both header button and FAB)
+    let top=r.bottom+8, left=r.left;
+    if(left+mw>window.innerWidth-12) left=window.innerWidth-mw-12;     // keep on screen
+    if(top+mh>window.innerHeight-12) top=r.top-mh-8;                    // flip above if no room below
+    if(top<12) top=12;
+    menu.style.top=top+'px';
+    menu.style.left=Math.max(12,left)+'px';
   }
+  track('add_menu_opened',{page:currentPage});
+}
+function closeAddMenu(){
+  document.getElementById('add-menu').style.display='none';
+  document.getElementById('add-menu-bg').style.display='none';
+}
+function addNew(type){
+  closeAddMenu();
+  if(type==='lic') openModal('lic');
+  else if(type==='dea') openModal('dea');
+  else if(type==='cert') openModal('cert');
+  else if(type==='ce') openCE();
+  else if(type==='doc') openUpload();
+  track('add_started',{type});
 }
 
 // ── ADMIN DASHBOARD ────────────────────────────────────────────────────────
