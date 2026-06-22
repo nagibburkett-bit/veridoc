@@ -202,6 +202,62 @@ tbody tr.clickable-row:hover td{background:#E6F2F0;}
 .add-menu-item b{font-size:13.5px;font-weight:600;color:#0F1E2E;}
 .add-menu-item span{font-size:11px;color:#5A6B7B;}
 #add-fab:hover{background:#0B5E57;}
+/* LICENSE CARDS */
+.lic-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:14px;}
+.lic-card{background:#fff;border:1px solid #E3E9EE;border-radius:14px;padding:0;cursor:pointer;transition:border-color .14s,box-shadow .14s,transform .08s;overflow:hidden;}
+.lic-card:hover{border-color:#A7D5CF;box-shadow:0 6px 20px rgba(15,118,110,.12);transform:translateY(-2px);}
+.lic-accent{height:4px;width:100%;}
+.lic-body{padding:16px 18px 14px;}
+.lic-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:14px;}
+.lic-id{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px;}
+.lic-statename{font-family:'Schibsted Grotesk',sans-serif;font-size:19px;font-weight:700;color:#0F1E2E;line-height:1;}
+.lic-num{font-size:12px;color:#5A6B7B;margin-top:2px;}
+.lic-ring{position:relative;width:54px;height:54px;flex-shrink:0;}
+.lic-ring svg{transform:rotate(-90deg);}
+.lic-ring .n{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Schibsted Grotesk',sans-serif;font-size:14px;font-weight:800;color:#0F1E2E;}
+.lic-dates{display:flex;gap:24px;padding:12px 0;border-top:1px solid #EDF1F4;margin-bottom:12px;}
+.lic-date .dl{font-size:9.5px;font-weight:700;color:#94A3AE;text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px;}
+.lic-date .dv{font-size:13px;font-weight:600;color:#0F1E2E;}
+.lic-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;}
+.lic-countdown{font-size:12px;font-weight:600;}
+.lic-renew-btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:8px;font-size:12px;font-weight:700;border:1px solid;text-decoration:none;}
+.lic-rb-open{border-color:#15803D;color:#15803D;background:#E7F4EC;}
+.lic-rb-open:hover{opacity:.82;}
+.lic-rb-urg{border-color:#B45309;color:#B45309;background:#FBEEDA;}
+.lic-rb-urg:hover{opacity:.82;}
+.lic-rb-lock{border-color:#E3E9EE;color:#94A3AE;background:#F5F7F9;cursor:default;}
+.lic-rb-exp{border-color:#B91C1C;color:#B91C1C;background:#FBE6E6;}
+.lic-rb-exp:hover{opacity:.82;}
+/* LICENSE DETAIL MODAL */
+.dv{background:#fff;border-radius:16px;width:100%;max-width:520px;max-height:88vh;overflow-y:auto;}
+.dv-hero{padding:22px 24px 18px;color:#fff;position:relative;}
+.dv-hero h2{font-family:'Schibsted Grotesk',sans-serif;font-size:24px;font-weight:800;margin-bottom:6px;color:#fff;}
+.dv-hero .dv-sub{font-size:13px;opacity:.88;}
+.dv-x{position:absolute;top:18px;right:18px;background:rgba(255,255,255,.18);border:none;border-radius:8px;width:30px;height:30px;color:#fff;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;}
+.dv-x:hover{background:rgba(255,255,255,.3);}
+.dv-statusrow{display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap;}
+.dv-status-chip{background:rgba(255,255,255,.2);color:#fff;border-radius:20px;padding:4px 12px;font-size:11px;font-weight:700;}
+.dv-section{padding:18px 24px;border-bottom:1px solid #EDF1F4;}
+.dv-section:last-child{border-bottom:none;}
+.dv-sec-label{font-size:10px;font-weight:700;color:#94A3AE;text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px;}
+.dv-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.dv-field .fl{font-size:10px;font-weight:700;color:#94A3AE;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px;}
+.dv-field .fv{font-size:14px;font-weight:600;color:#0F1E2E;}
+.dv-field .fv.mono{font-family:'JetBrains Mono',monospace;font-size:13px;}
+.dv-renewbox{background:#F5F7F9;border-radius:10px;padding:14px 16px;display:flex;align-items:center;gap:14px;}
+.dv-renewbox .ico{font-size:22px;flex-shrink:0;}
+.dv-renewbox .txt{flex:1;min-width:0;}
+.dv-renewbox .txt b{font-size:13px;color:#0F1E2E;display:block;}
+.dv-renewbox .txt span{font-size:11.5px;color:#5A6B7B;}
+.dv-doc{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #F0F4F6;font-size:13px;}
+.dv-doc:last-child{border-bottom:none;}
+.dv-doc .di{width:30px;height:30px;border-radius:7px;background:#E6F2F0;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
+.dv-empty-doc{font-size:12.5px;color:#94A3AE;font-style:italic;}
+.dv-foot{padding:16px 24px;display:flex;gap:10px;background:#FAFBFC;}
+.dv-foot .btn{flex:1;justify-content:center;padding:12px;}
+.btn-del{background:#fff;color:#B91C1C;border:1px solid #F3C9C9;}
+.btn-del:hover{background:#FBE6E6;}
+.dv-notes{font-size:13px;color:#47586A;line-height:1.6;background:#F5F7F9;border-radius:8px;padding:12px 14px;}
 /* CE TRACKER */
 .ce-pill{display:inline-block;background:#fff;border:1px solid #CDE7E3;color:#0B5E57;border-radius:20px;padding:3px 11px;font-size:11.5px;}
 .ce-pill b{font-weight:700;}
@@ -294,6 +350,7 @@ tbody tr.clickable-row:hover td{background:#E6F2F0;}
   .card{padding:16px;}
   .ph h1{font-size:20px;}
   .rc-card{padding:16px;}
+  .lic-grid{grid-template-columns:1fr;}
   .rl{flex-wrap:wrap;gap:12px;padding:13px;}
   .rl-mid{flex:1 1 calc(100% - 74px);}
   .rl-act{flex:1 1 100%;}
@@ -487,6 +544,11 @@ tbody tr.clickable-row:hover td{background:#E6F2F0;}
   <button class="add-menu-item" onclick="addNew('cert')"><span class="ami-ic">🎓</span><div><b>Certification</b><span>ANCC, AANP, BLS, ACLS…</span></div></button>
   <button class="add-menu-item" onclick="addNew('ce')"><span class="ami-ic">📚</span><div><b>CE / CME activity</b><span>Log continuing education hours</span></div></button>
   <button class="add-menu-item" onclick="addNew('doc')"><span class="ami-ic">📁</span><div><b>Document</b><span>Upload a file to your vault</span></div></button>
+</div>
+
+<!-- ── LICENSE DETAIL MODAL ─────────────────────────────────────────── -->
+<div class="modal-bg" id="lic-detail-bg" style="display:none" onclick="if(event.target===this)closeLicenseDetail()">
+  <div id="lic-detail"></div>
 </div>
 
 <!-- MODAL -->
@@ -1869,7 +1931,7 @@ function renderLic(){
     return true;
   }).filter(l=>licTF==='all'||l.license_type===licTF);
   document.getElementById('pg-licenses').innerHTML=`
-  <div class="ph"><div><h1>State Licenses</h1><p>${licenses.length} licenses</p></div><div style="display:flex;gap:8px"><button class="btn btn-ghost" onclick="impOpen('add')">📥 Import</button><button class="btn btn-blue" onclick="openModal('lic')">+ Add license</button></div></div>
+  <div class="ph"><div><h1>State Licenses</h1><p>${licenses.length} license${licenses.length!==1?'s':''} tracked</p></div><div style="display:flex;gap:8px"><button class="btn btn-ghost" onclick="impOpen('add')">📥 Import</button><button class="btn btn-blue" onclick="openModal('lic')">+ Add license</button></div></div>
   <div class="filters">
     <button class="fc ${licF==='all'?'on':''}" onclick="setF('lf','all',this)">All</button>
     <button class="fc ${licF==='open'?'on':''}" onclick="setF('lf','open',this)">Renewal open</button>
@@ -1881,22 +1943,117 @@ function renderLic(){
     <button class="fc ${licTF==='PA'?'on':''}" onclick="setF('lt','PA',this)">PA</button>
     <button class="fc ${licTF==='RN'?'on':''}" onclick="setF('lt','RN',this)">RN</button>
   </div>
-  <div class="tbl-wrap"><table>
-    <colgroup><col style="width:65px"><col style="width:65px"><col style="width:130px"><col style="width:95px"><col style="width:95px"><col style="width:95px"><col style="width:105px"><col style="width:145px"><col style="width:70px"></colgroup>
-    <thead><tr><th>State</th><th>Type</th><th>License #</th><th>Issue date</th><th>Effective</th><th>Expiration</th><th>Status</th><th>Renewal</th><th></th></tr></thead>
-    <tbody>${rows.length===0?'<tr><td colspan="9" style="text-align:center;padding:32px;color:#5A6B7B">No licenses match filter</td></tr>':rows.map(l=>`<tr class="clickable-row" onclick="openModal('lic','${l.id}')">
-      <td><span class="chip-state">${l.state}</span></td>
-      <td><span class="chip-type">${l.license_type}</span></td>
-      <td><span class="mono">${l.license_number}</span></td>
-      <td style="color:#5A6B7B;font-size:11px">${fmt(l.issue_date)}</td>
-      <td style="color:#5A6B7B;font-size:11px">${fmt(l.effective_date)}</td>
-      <td style="font-weight:600;font-size:12px">${fmt(l.expiry_date)}</td>
-      <td>${sBadge(getLS(l))}</td>
-      <td>${renewCell(l)}</td>
-      <td><div class="ac"><button class="ib" onclick="event.stopPropagation();openModal('lic','${l.id}')">✏️</button><button class="ib del" onclick="event.stopPropagation();del('licenses','${l.id}')">🗑</button></div></td>
-    </tr>`).join('')}</tbody>
-  </table></div>`;
+  ${rows.length===0?`<div class="card"><div class="vault-empty"><span class="i">🗺</span><h3>No licenses match this filter</h3><p>Try a different filter, or add a license to get started.</p></div></div>`
+  :`<div class="lic-grid">${rows.map(l=>{
+    const m=licStatusMeta(getLS(l)), n=daysUntil(l.expiry_date), rd=readiness(l);
+    return `<div class="lic-card" onclick="openLicenseDetail('${l.id}')">
+      <div class="lic-accent" style="background:${m.c}"></div>
+      <div class="lic-body">
+        <div class="lic-top">
+          <div>
+            <div class="lic-id"><span class="lic-statename">${stateName(l.state)}</span><span class="chip-type">${esc(l.license_type)}</span></div>
+            <div class="lic-num mono">${esc(l.license_number)}</div>
+            <div style="margin-top:8px"><span class="badge ${m.badge}">${m.label}</span></div>
+          </div>
+          ${licRing(rd.pct)}
+        </div>
+        <div class="lic-dates">
+          <div class="lic-date"><div class="dl">Issued</div><div class="dv">${fmt(l.issue_date)}</div></div>
+          <div class="lic-date"><div class="dl">Expires</div><div class="dv">${fmt(l.expiry_date)}</div></div>
+        </div>
+        <div class="lic-foot">
+          <span class="lic-countdown" style="color:${m.c}">${n<0?Math.abs(n)+' days overdue':n+' days left'}</span>
+          ${licRenewBtn(l)}
+        </div>
+      </div>
+    </div>`;
+  }).join('')}</div>`}`;
 }
+
+const STATE_NAMES={AL:'Alabama',AK:'Alaska',AZ:'Arizona',AR:'Arkansas',CA:'California',CO:'Colorado',CT:'Connecticut',DE:'Delaware',FL:'Florida',GA:'Georgia',HI:'Hawaii',ID:'Idaho',IL:'Illinois',IN:'Indiana',IA:'Iowa',KS:'Kansas',KY:'Kentucky',LA:'Louisiana',ME:'Maine',MD:'Maryland',MA:'Massachusetts',MI:'Michigan',MN:'Minnesota',MS:'Mississippi',MO:'Missouri',MT:'Montana',NE:'Nebraska',NV:'Nevada',NH:'New Hampshire',NJ:'New Jersey',NM:'New Mexico',NY:'New York',NC:'North Carolina',ND:'North Dakota',OH:'Ohio',OK:'Oklahoma',OR:'Oregon',PA:'Pennsylvania',RI:'Rhode Island',SC:'South Carolina',SD:'South Dakota',TN:'Tennessee',TX:'Texas',UT:'Utah',VT:'Vermont',VA:'Virginia',WA:'Washington',WV:'West Virginia',WI:'Wisconsin',WY:'Wyoming',DC:'Washington DC'};
+function stateName(s){return STATE_NAMES[s]||s;}
+function licStatusMeta(s){
+  if(s==='exp')return{c:'#B91C1C',label:'Expired',badge:'b-red'};
+  if(s==='expr')return{c:'#B45309',label:'Expiring soon',badge:'b-amber'};
+  if(s==='warn')return{c:'#B45309',label:'Due within 90d',badge:'b-amber'};
+  return{c:'#15803D',label:'Active',badge:'b-green'};
+}
+function licRing(pct){
+  const r=23,c=2*Math.PI*r,off=c*(1-pct/100);
+  const col=pct>=80?'#15803D':pct>=50?'#0F766E':pct>=25?'#B45309':'#B91C1C';
+  return `<div class="lic-ring"><svg width="54" height="54" viewBox="0 0 54 54">
+    <circle cx="27" cy="27" r="${r}" fill="none" stroke="#E3E9EE" stroke-width="5"/>
+    <circle cx="27" cy="27" r="${r}" fill="none" stroke="${col}" stroke-width="5" stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}"/>
+  </svg><div class="n">${pct}%</div></div>`;
+}
+function licRenewBtn(l){
+  const rs=getRS(l),n=daysUntil(l.expiry_date),r=rule(l.state);
+  if(rs==='exp')return `<span class="lic-renew-btn lic-rb-exp">Renew now</span>`;
+  if(rs==='open')return `<span class="lic-renew-btn ${n<=30?'lic-rb-urg':'lic-rb-open'}">Renew now →</span>`;
+  if(rs==='soon')return `<span class="lic-renew-btn lic-rb-lock">Opens in ${Math.max(0,n-r.w)}d</span>`;
+  return `<span class="lic-renew-btn lic-rb-lock">Not open yet</span>`;
+}
+
+// ── LICENSE DETAIL (view-first, with edit) ──────────────────────────────────
+function shadeHex(hex){const nn=parseInt(hex.slice(1),16);let r=Math.max(0,(nn>>16)-32),g=Math.max(0,((nn>>8)&255)-32),b=Math.max(0,(nn&255)-32);return '#'+((r<<16)|(g<<8)|b).toString(16).padStart(6,'0');}
+function openLicenseDetail(id){
+  const l=licenses.find(x=>x.id===id); if(!l)return;
+  const m=licStatusMeta(getLS(l)), n=daysUntil(l.expiry_date), rs=getRS(l), r=rule(l.state), rd=readiness(l);
+  // documents linked to this license OR matching its state license
+  const docs=vaultList().filter(d=>d.linked_id===id || (d.doc_type==='License' && !d.linked_id));
+  let rIco,rTitle,rSub,rBtn='';
+  if(rs==='exp'){rIco='⚠️';rTitle='Renewal overdue';rSub='Your window has passed — reinstatement may be required.';rBtn=`<button class="btn btn-blue" style="padding:8px 14px" onclick="closeLicenseDetail();openChecklist('${id}')">Renew →</button>`;}
+  else if(rs==='open'){rIco='🔓';rTitle='Renewal window is open';rSub=`You can renew now · closes in ${n} days.`;rBtn=`<button class="btn btn-blue" style="padding:8px 14px" onclick="closeLicenseDetail();openChecklist('${id}')">Renew →</button>`;}
+  else if(rs==='soon'){rIco='🔜';rTitle='Window opens soon';rSub=`Opens in ${Math.max(0,n-r.w)} days (${r.w}-day rule before expiry).`;}
+  else {rIco='🔒';rTitle='Not open yet';rSub=`Renewal window opens ${Math.max(0,n-r.w)} days from now.`;}
+
+  document.getElementById('lic-detail').innerHTML=`
+  <div class="dv">
+    <div class="dv-hero" style="background:linear-gradient(135deg,${m.c},${shadeHex(m.c)})">
+      <button class="dv-x" onclick="closeLicenseDetail()">✕</button>
+      <h2>${stateName(l.state)} ${esc(l.license_type)}</h2>
+      <div class="dv-sub mono">${esc(l.license_number)}</div>
+      <div class="dv-statusrow">
+        <span class="dv-status-chip">${m.label}</span>
+        <span class="dv-status-chip">${n<0?Math.abs(n)+'d overdue':n+'d left'}</span>
+        <span class="dv-status-chip">${rd.pct}% renewal-ready</span>
+      </div>
+    </div>
+    <div class="dv-section">
+      <div class="dv-sec-label">License details</div>
+      <div class="dv-grid">
+        <div class="dv-field"><div class="fl">State</div><div class="fv">${stateName(l.state)} (${esc(l.state)})</div></div>
+        <div class="dv-field"><div class="fl">Type</div><div class="fv">${esc(l.license_type)}</div></div>
+        <div class="dv-field"><div class="fl">License number</div><div class="fv mono">${esc(l.license_number)}</div></div>
+        <div class="dv-field"><div class="fl">Status</div><div class="fv" style="color:${m.c}">${m.label}</div></div>
+        <div class="dv-field"><div class="fl">Issue date</div><div class="fv">${fmt(l.issue_date)}</div></div>
+        <div class="dv-field"><div class="fl">Effective date</div><div class="fv">${fmt(l.effective_date)}</div></div>
+        <div class="dv-field"><div class="fl">Expiration</div><div class="fv">${fmt(l.expiry_date)}</div></div>
+        <div class="dv-field"><div class="fl">Days remaining</div><div class="fv" style="color:${m.c}">${n<0?Math.abs(n)+' overdue':n+' days'}</div></div>
+      </div>
+    </div>
+    <div class="dv-section">
+      <div class="dv-sec-label">Renewal</div>
+      <div class="dv-renewbox">
+        <span class="ico">${rIco}</span>
+        <div class="txt"><b>${rTitle}</b><span>${rSub}</span></div>
+        ${rBtn}
+      </div>
+    </div>
+    <div class="dv-section">
+      <div class="dv-sec-label">Attached documents (${docs.length})</div>
+      ${docs.length?docs.map(d=>`<div class="dv-doc"><span class="di">${fileIcon(d.mime)}</span><div style="flex:1;min-width:0"><b style="font-weight:600">${esc(d.file_name)}</b></div><span style="font-size:11px;color:#5A6B7B">${esc(d.doc_type)}</span></div>`).join('')
+        :`<div class="dv-empty-doc">No documents attached yet. <a onclick="closeLicenseDetail();openUpload('License')" style="color:#0F766E;font-weight:600;cursor:pointer">Upload one →</a></div>`}
+    </div>
+    ${l.notes?`<div class="dv-section"><div class="dv-sec-label">Notes</div><div class="dv-notes">${esc(l.notes)}</div></div>`:''}
+    <div class="dv-foot">
+      <button class="btn btn-del" onclick="closeLicenseDetail();del('licenses','${id}')">🗑 Delete</button>
+      <button class="btn btn-blue" onclick="closeLicenseDetail();openModal('lic','${id}')">✏️ Edit license</button>
+    </div>
+  </div>`;
+  document.getElementById('lic-detail-bg').style.display='flex';
+}
+function closeLicenseDetail(){document.getElementById('lic-detail-bg').style.display='none';}
 
 function renderDEA(){
   const rows=dea.filter(d=>{
