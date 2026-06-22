@@ -156,17 +156,19 @@ tbody tr.clickable-row:hover td{background:#E6F2F0;}
 .rcs-verify{background:#FBEEDA;border-bottom:1px solid #F2DCAE;color:#B45309;font-size:12px;padding:11px 20px;line-height:1.5;}
 .rcs-verify a{color:#B45309;font-weight:700;}
 .rcs-note{background:#E6F2F0;border-bottom:1px solid #CDE7E3;color:#0B5E57;font-size:12px;padding:10px 20px;line-height:1.5;}
-.rcs-list{padding:8px 14px;}
-.rci{display:flex;align-items:flex-start;gap:13px;padding:13px 12px;border-radius:10px;cursor:pointer;transition:background .12s;}
+.rci{display:flex;align-items:flex-start;gap:13px;padding:13px 12px;border-radius:10px;transition:background .12s;}
 .rci:hover{background:#F5F7F9;}
-.rci.done{opacity:.62;}
+.rci.done{opacity:.7;}
 .rci-box{width:24px;height:24px;border-radius:7px;border:2px solid #CBD6DE;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;margin-top:1px;transition:all .15s;}
 .rci-box.on{background:#15803D;border-color:#15803D;}
 .rci-mid{flex:1;min-width:0;}
 .rci-label{font-size:14px;font-weight:600;color:#0F1E2E;}
-.rci-auto{font-size:9px;background:#E6F2F0;color:#0F766E;border-radius:4px;padding:1px 5px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;vertical-align:middle;margin-left:4px;}
 .rci-detail{font-size:11.5px;color:#5A6B7B;margin-top:2px;line-height:1.4;}
-.rci-tag{font-size:10px;color:#5A6B7B;font-weight:600;white-space:nowrap;flex-shrink:0;background:#F0F4F6;padding:3px 8px;border-radius:6px;margin-top:1px;}
+.rci-right{flex-shrink:0;display:flex;align-items:center;margin-top:1px;}
+.rci-btn{font-size:11.5px;font-weight:700;color:#0F766E;background:#E6F2F0;border:1px solid #CDE7E3;border-radius:8px;padding:6px 11px;cursor:pointer;white-space:nowrap;text-decoration:none;display:inline-block;transition:background .12s;}
+.rci-btn:hover{background:#D4EAE7;border-color:#0F766E;}
+.rci-pending{font-size:11px;color:#94A3AE;font-weight:600;white-space:nowrap;}
+.rci-tag{font-size:10px;color:#5A6B7B;font-weight:600;white-space:nowrap;flex-shrink:0;background:#F0F4F6;padding:3px 8px;border-radius:6px;}
 .rcs-foot{padding:14px 20px 4px;border-top:1px solid #EDF1F4;margin-top:6px;}
 .rcs-progress-txt{font-size:12px;color:#5A6B7B;text-align:center;margin-bottom:10px;}
 .rcs-packet-btn{width:100%;justify-content:center;padding:12px;margin-top:10px;background:#fff;color:#0F766E;border:1px solid #CDE7E3;}
@@ -273,11 +275,17 @@ tbody tr.clickable-row:hover td{background:#E6F2F0;}
 .dv-checklist .rci{padding:11px 0;border-bottom:1px solid #F0F4F6;}
 .dv-checklist .rci:last-child{border-bottom:none;}
 .dv-renewal-actions{display:flex;flex-direction:column;gap:0;}
+.dv-renewal-toggle{cursor:pointer;border-radius:10px;padding:6px;margin:-6px -6px 2px;transition:background .12s;}
+.dv-renewal-toggle:hover{background:#F0F4F6;}
+.dv-chevron{margin-left:auto;font-size:16px;color:#94A3AE;transition:transform .2s;align-self:center;}
+.dv-chevron.up{transform:rotate(180deg);}
+#dv-checklist-collapse{overflow:hidden;transition:max-height .28s ease,opacity .2s ease,margin .2s ease;max-height:3000px;opacity:1;}
+#dv-checklist-collapse.collapsed{max-height:0;opacity:0;margin:0;}
+.rci-ce{margin-top:7px;max-width:280px;}
 /* CE TRACKER */
 .ce-pill{display:inline-block;background:#fff;border:1px solid #CDE7E3;color:#0B5E57;border-radius:20px;padding:3px 11px;font-size:11.5px;}
 .ce-pill b{font-weight:700;}
 /* CE hour progress inside checklist rows */
-.rci-ce{margin-top:7px;}
 .rci-ce-track{height:6px;background:#E3E9EE;border-radius:4px;overflow:hidden;}
 .rci-ce-fill{height:100%;background:#B45309;border-radius:4px;transition:width .5s cubic-bezier(.2,.8,.2,1);}
 .rci-ce-fill.met{background:#15803D;}
@@ -1828,7 +1836,7 @@ function renewalCenter(){
       const expd=daysUntil(l.expiry_date);
       const gap=rd.pct===100
         ? `<div class="gap ready">✓ Everything the board needs is ready</div>`
-        : `<div class="gap short">${rd.total-rd.done} item${rd.total-rd.done!==1?'s':''} left · ${rd.checks.filter(c=>!c.done).map(c=>c.label).join(', ')}</div>`;
+        : '';
       const statusBadge=rs==='exp'
         ? '<span class="badge b-red">Expired</span>'
         : expd<=30 ? '<span class="badge b-amber">Closes soon</span>'
@@ -1896,35 +1904,39 @@ function checklistRowsHTML(l, ctx){
   const list=checklistFor(l);
   const closer = ctx==='detail' ? 'closeLicenseDetail()' : 'closeChecklist()';
   return list.map(it=>{
-    const m=RC_TYPE_META[it.type]||RC_TYPE_META.action;
     const ceCat=CE_CATEGORIES.find(c=>c.itemKey===it.k);
-    let actionLine='';
+    let progressLine='';   // stays in the middle column (status, not an action)
+    let rightAction='';    // goes on the right side of the row
+
     if(ceCat && it.hours){
       const logged=ceHours(ceCat.val, l.id);
       const pctH=Math.min(100, Math.round(logged/it.hours*100));
       const met=logged>=it.hours;
-      actionLine=`<div class="rci-ce">
+      progressLine=`<div class="rci-ce">
         <div class="rci-ce-track"><div class="rci-ce-fill ${met?'met':''}" style="width:${pctH}%"></div></div>
-        <div class="rci-ce-txt">${logged} of ${it.hours} hrs logged${met?' ✓':` · <a onclick="event.stopPropagation();${closer};go('ce');openCE()" style="color:#0F766E;font-weight:600;cursor:pointer">log CE →</a>`}</div>
+        <div class="rci-ce-txt">${logged} of ${it.hours} hrs logged${met?' ✓':''}</div>
       </div>`;
+      if(!met) rightAction=`<a class="rci-btn" onclick="event.stopPropagation();${closer};go('ce');openCE()">Log CE →</a>`;
     } else if(!it.done){
       if(it.k==='license'){
-        actionLine=`<div class="rci-action"><span style="color:#94A3AE">License is on file</span></div>`;
+        rightAction=`<span class="rci-pending">On file</span>`;
       } else if(it.k==='natcert'){
-        actionLine=`<div class="rci-action"><a onclick="event.stopPropagation();${closer};openModal('cert')" style="color:#0F766E;font-weight:600;cursor:pointer">+ Add certification</a> or <a onclick="event.stopPropagation();uploadProofFor('${id}','${it.k}')" style="color:#0F766E;font-weight:600;cursor:pointer">upload proof →</a></div>`;
+        rightAction=`<a class="rci-btn" onclick="event.stopPropagation();uploadProofFor('${id}','${it.k}')">Upload →</a>`;
       } else {
-        actionLine=`<div class="rci-action"><a onclick="event.stopPropagation();uploadProofFor('${id}','${it.k}')" style="color:#0F766E;font-weight:600;cursor:pointer">⬆ Upload ${esc((docTypeForItem(it)||'document').toLowerCase())} →</a></div>`;
+        rightAction=`<a class="rci-btn" onclick="event.stopPropagation();uploadProofFor('${id}','${it.k}')">⬆ Upload ${esc((docTypeForItem(it)||'document').toLowerCase())} →</a>`;
       }
     }
-    const tagText = it.done ? 'on file' : (m.tag);
+    const right = it.done
+      ? `<span class="rci-tag rci-tag-done">✓ on file</span>`
+      : (rightAction || '');
     return `<div class="rci ${it.done?'done':''}">
       <div class="rci-box ${it.done?'on':''}">${it.done?'✓':''}</div>
       <div class="rci-mid">
         <div class="rci-label">${esc(it.label)}</div>
         <div class="rci-detail">${esc(it.detail)}</div>
-        ${actionLine}
+        ${progressLine}
       </div>
-      <div class="rci-tag ${it.done?'rci-tag-done':''}">${it.done?'✓ '+tagText:m.icon+' '+m.tag}</div>
+      <div class="rci-right">${right}</div>
     </div>`;
   }).join('');
 }
@@ -2117,17 +2129,20 @@ function openLicenseDetail(id){
 
     <!-- INLINE RENEWAL CHECKLIST -->
     <div class="dv-renewal">
-      <div class="dv-renewal-head">
+      <div class="dv-renewal-head dv-renewal-toggle" onclick="toggleChecklistCollapse()">
         ${rcRing(rd.pct)}
         <div class="dv-renewal-head-txt">
           <div class="dv-sec-label" style="margin-bottom:4px">Renewal checklist</div>
           <div class="dv-renewbox-inline"><span class="ico">${rIco}</span><div class="txt"><b>${rTitle}</b><span>${rSub}</span></div></div>
         </div>
+        <span class="dv-chevron ${checklistCollapsed?'':'up'}" id="dv-chevron">▾</span>
       </div>
       <div class="dv-renewal-meta">Fee: ${req.fee||'Verify with board'} · ${r.w}-day window · ${rd.done} of ${rd.total} requirements met</div>
-      ${req.verified===false?`<div class="rcs-verify" style="margin:0 0 12px;border-radius:9px;border:1px solid #F2DCAE">⚠️ These requirements reflect the standard structure for ${l.state}. Confirm exact hours, fees, and rules with the <a href="${r.url}" target="_blank">${l.state} board</a> before submitting.</div>`:''}
-      ${req.note?`<div class="rcs-note" style="margin:0 0 12px;border-radius:9px;border:1px solid #CDE7E3">ℹ️ ${req.note}</div>`:''}
-      <div class="dv-checklist">${checklistRows}</div>
+      <div id="dv-checklist-collapse" class="${checklistCollapsed?'collapsed':''}">
+        ${req.verified===false?`<div class="rcs-verify" style="margin:0 0 12px;border-radius:9px;border:1px solid #F2DCAE">⚠️ These requirements reflect the standard structure for ${l.state}. Confirm exact hours, fees, and rules with the <a href="${r.url}" target="_blank">${l.state} board</a> before submitting.</div>`:''}
+        ${req.note?`<div class="rcs-note" style="margin:0 0 12px;border-radius:9px;border:1px solid #CDE7E3">ℹ️ ${req.note}</div>`:''}
+        <div class="dv-checklist">${checklistRows}</div>
+      </div>
       <div class="dv-renewal-actions">
         ${ready
           ? `<button class="rb2 rb2-done" style="width:100%;justify-content:center;padding:13px" onclick="window.open('${r.url}','_blank');track('renewal_finish_clicked',{license_id:'${id}'})">✓ All set — go to ${stateName(l.state)} portal →</button>`
@@ -2144,6 +2159,14 @@ function openLicenseDetail(id){
   document.getElementById('lic-detail-bg').style.display='flex';
 }
 function closeLicenseDetail(){document.getElementById('lic-detail-bg').style.display='none';}
+let checklistCollapsed=false;
+function toggleChecklistCollapse(){
+  checklistCollapsed=!checklistCollapsed;
+  const box=document.getElementById('dv-checklist-collapse');
+  const chev=document.getElementById('dv-chevron');
+  if(box) box.classList.toggle('collapsed', checklistCollapsed);
+  if(chev) chev.classList.toggle('up', !checklistCollapsed);
+}
 
 function renderDEA(){
   const rows=dea.filter(d=>{
