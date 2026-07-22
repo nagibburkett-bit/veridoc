@@ -171,8 +171,6 @@ tbody tr.clickable-row:hover td{background:#E6F2F0;}
 .rci-tag{font-size:10px;color:#5A6B7B;font-weight:600;white-space:nowrap;flex-shrink:0;background:#F0F4F6;padding:3px 8px;border-radius:6px;}
 .rcs-foot{padding:14px 20px 4px;border-top:1px solid #EDF1F4;margin-top:6px;}
 .rcs-progress-txt{font-size:12px;color:#5A6B7B;text-align:center;margin-bottom:10px;}
-.rcs-packet-btn{width:100%;justify-content:center;padding:12px;margin-top:10px;background:#fff;color:#0F766E;border:1px solid #CDE7E3;}
-.rcs-packet-btn:hover{background:#F0F8F7;border-color:#0F766E;}
 /* DOCUMENT VAULT */
 .vault-note{background:#E6F2F0;border:1px solid #CDE7E3;color:#0B5E57;font-size:12.5px;padding:11px 16px;border-radius:10px;margin-bottom:18px;line-height:1.5;}
 .vault-empty{text-align:center;padding:34px 20px;color:#5A6B7B;}
@@ -1270,142 +1268,6 @@ function exportCredentialsPDF(){
   toast('Credential summary downloaded 📄','ok');
 }
 
-// ── RENEWAL PACKET EXPORT ───────────────────────────────────────────────────
-// One organized packet for a single license's renewal: cover sheet, readiness,
-// CE breakdown by category, documents on file, and the board hand-off.
-function renewalPacketPDF(licenseId){
-  if(!window.jspdf || !window.jspdf.jsPDF){ toast('PDF tool is still loading — try again in a second.','err'); return; }
-  const l=licenses.find(x=>x.id===licenseId); if(!l){toast('License not found','err');return;}
-  const { jsPDF }=window.jspdf;
-  const user=getUser(); const meta=user?.user_metadata||{};
-  const name=`${meta.first_name||''} ${meta.last_name||''}`.trim()||(user?.email||'provider').split('@')[0];
-  const email=user?.email||'';
-  const req=stateReq(l.state); const r=rule(l.state); const rd=readiness(l);
-  const expd=daysUntil(l.expiry_date);
-  const today=new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
-
-  const doc=new jsPDF({unit:'pt',format:'letter'});
-  const pageW=doc.internal.pageSize.getWidth(), pageH=doc.internal.pageSize.getHeight(), M=48;
-  let y;
-
-  // Header band
-  doc.setFillColor(15,30,46); doc.rect(0,0,pageW,84,'F');
-  doc.setFont('helvetica','bold'); doc.setFontSize(22); doc.setTextColor(255,255,255);
-  doc.text('Veridoc', M, 42);
-  doc.setTextColor(15,118,110); doc.text('.', M+doc.getTextWidth('Veridoc'), 42);
-  doc.setFont('helvetica','normal'); doc.setFontSize(11); doc.setTextColor(255,255,255);
-  doc.text(`${l.state} ${l.license_type} Renewal Packet`, M, 64);
-  doc.setFontSize(9); doc.setTextColor(170,182,200);
-  doc.text(`Generated ${today}`, pageW-M, 42, {align:'right'});
-  doc.text(`${rd.pct}% renewal-ready`, pageW-M, 56, {align:'right'});
-
-  // Cover block — provider + the renewal at a glance
-  y=116;
-  doc.setFont('helvetica','bold'); doc.setFontSize(16); doc.setTextColor(15,30,46);
-  doc.text(name, M, y); y+=18;
-  doc.setFont('helvetica','normal'); doc.setFontSize(10); doc.setTextColor(90,107,123);
-  if(email){doc.text(email, M, y); y+=14;}
-  y+=10;
-
-  // Renewal facts box
-  doc.setFillColor(245,247,249); doc.roundedRect(M, y, pageW-2*M, 92, 6, 6, 'F');
-  const colX=[M+16, M+(pageW-2*M)/2+8];
-  // two columns, stacked label/value
-  const factPair=(col,row,label,val)=>{
-    const fx=colX[col], fy=y+20+row*34;
-    doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(120,135,150);
-    doc.text(label.toUpperCase(), fx, fy);
-    doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(15,30,46);
-    doc.text(String(val), fx, fy+14);
-  };
-  factPair(0,0,'License number', l.license_number);
-  factPair(1,0,'Expiration', fmt(l.expiry_date)+(expd>=0?` (${expd}d left)`:' (overdue)'));
-  factPair(0,1,'Renewal fee', req.fee||'Verify with board');
-  factPair(1,1,'Renewal window', `${r.w} days before expiry`);
-  y+=92+24;
-
-  // Readiness line
-  doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(15,30,46);
-  doc.text('Renewal readiness', M, y); y+=6;
-  // progress bar
-  const barW=pageW-2*M, barY=y+8;
-  doc.setFillColor(227,233,238); doc.roundedRect(M, barY, barW, 10, 5, 5, 'F');
-  const fillC=rd.pct>=80?[21,128,61]:rd.pct>=50?[15,118,110]:[180,83,9];
-  doc.setFillColor(...fillC); doc.roundedRect(M, barY, Math.max(10,barW*rd.pct/100), 10, 5, 5, 'F');
-  y=barY+24;
-  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(90,107,123);
-  doc.text(`${rd.done} of ${rd.total} requirements complete`, M, y); y+=24;
-
-  // Table styling (matches credential export)
-  const tableStyle=startY=>({startY, margin:{left:M,right:M}, theme:'grid',
-    styles:{font:'helvetica',overflow:'linebreak'},
-    headStyles:{fillColor:[245,247,249],textColor:[90,107,123],fontStyle:'bold',fontSize:8,lineColor:[227,233,238],lineWidth:0.5},
-    bodyStyles:{fontSize:9,textColor:[71,88,106],lineColor:[237,241,244],lineWidth:0.5,cellPadding:5},
-    alternateRowStyles:{fillColor:[250,252,254]}});
-  function section(title, head, body, startGap){
-    if(startGap)y+=4;
-    if(y>pageH-150){doc.addPage();y=56;}
-    doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.setTextColor(15,30,46);
-    doc.text(title, M, y);
-    if(body.length===0){
-      doc.setFont('helvetica','italic'); doc.setFontSize(9); doc.setTextColor(150,160,175);
-      doc.text('None on file.', M, y+16); y+=38; return;
-    }
-    doc.autoTable({head:[head], body, ...tableStyle(y+8)});
-    y=doc.lastAutoTable.finalY+24;
-  }
-
-  // Requirements checklist
-  section('Renewal requirements',
-    ['Requirement','Type','Status'],
-    rd.checks.map(c=>{
-      const ceCat=CE_CATEGORIES.find(cc=>cc.itemKey===c.k);
-      let status=c.done?'Complete':'Incomplete';
-      if(ceCat && c.hours){const lg=ceHours(ceCat.val,l.id);status=`${lg} of ${c.hours} hrs`+(lg>=c.hours?' (met)':'');}
-      return [c.label, ({doc:'Document',ce:'CE hours',onetime:'One-time',action:'Action'}[c.type]||'Action'), status];
-    }));
-
-  // CE breakdown by category
-  const ceRows=CE_CATEGORIES.filter(c=>ceHours(c.val,l.id)>0||ceHours(c.val)>0)
-    .map(c=>{
-      const acts=ceList().filter(a=>a.category===c.val && (!a.license_id||a.license_id===l.id));
-      const hrs=acts.reduce((s,a)=>s+(parseFloat(a.hours)||0),0);
-      return hrs>0?[c.label, hrs+' hrs', acts.length+' activit'+(acts.length!==1?'ies':'y')]:null;
-    }).filter(Boolean);
-  section('Continuing education logged', ['Category','Hours','Activities'], ceRows, true);
-
-  // Documents on file (for this license or unlinked)
-  const docRows=vaultList().filter(d=>!d.linked_id||d.linked_id===l.id)
-    .map(d=>[d.file_name, d.doc_type, d.expiry_date?'Expires '+fmt(d.expiry_date):'—']);
-  section('Documents attached', ['File','Type','Notes'], docRows, true);
-
-  // Hand-off box
-  if(y>pageH-140){doc.addPage();y=56;}
-  doc.setFillColor(230,242,240); doc.roundedRect(M, y, pageW-2*M, 76, 6, 6, 'F');
-  doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(11,94,87);
-  doc.text('Next step: submit at the state board', M+16, y+24);
-  doc.setFont('helvetica','normal'); doc.setFontSize(9); doc.setTextColor(15,80,75);
-  doc.text(`Renew your ${l.state} ${l.license_type} license at:`, M+16, y+42);
-  doc.setFont('helvetica','bold'); doc.setTextColor(15,118,110);
-  doc.text(r.url, M+16, y+56);
-  y+=76+20;
-
-  // Footer
-  const pages=doc.internal.getNumberOfPages();
-  for(let i=1;i<=pages;i++){
-    doc.setPage(i);
-    doc.setDrawColor(227,233,238); doc.setLineWidth(0.5);
-    doc.line(M, pageH-46, pageW-M, pageH-46);
-    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(150,160,175);
-    doc.text('Generated by Veridoc · Requirements are a guide — confirm with the board before submitting.', M, pageH-30);
-    doc.text(`Page ${i} of ${pages}`, pageW-M, pageH-30, {align:'right'});
-  }
-
-  const safe=name.replace(/[^a-z0-9]+/gi,'_').replace(/^_+|_+$/g,'');
-  doc.save(`Veridoc_${l.state}_${l.license_type}_Renewal_${safe||'Packet'}.pdf`);
-  track('renewal_packet_exported',{state:l.state,type:l.license_type,readiness:rd.pct});
-  toast('Renewal packet downloaded 📄','ok');
-}
 
 async function deleteAllData(){
   if(!confirm('This will permanently delete ALL your licenses, DEA registrations, and certifications.\n\nThis cannot be undone. Continue?')) return;
@@ -1502,9 +1364,9 @@ function renderDocs(){
   const totalSize=all.reduce((s,d)=>s+(d.size||0),0);
   document.getElementById('pg-documents').innerHTML=`
   <div class="ph"><div><h1>Documents</h1><p>${all.length} file${all.length!==1?'s':''} stored · ${humanSize(totalSize)} · ready to attach to any renewal</p></div>
-    <button class="btn btn-blue" onclick="openUpload()">⬆ Upload document</button></div>
-  <div class="vault-note">🔒 Files are stored privately and used to build your renewal packet. <strong>This preview keeps files in your browser</strong> — connect Supabase Storage to sync across devices.</div>
-  ${all.length===0?`<div class="card"><div class="vault-empty"><span class="i">📁</span><h3>No documents yet</h3><p>Upload your license, national certification, and CE certificates so renewal is just a few clicks.</p><button class="btn btn-blue" onclick="openUpload()" style="margin-top:14px">⬆ Upload your first document</button></div></div>`
+    <button class="btn btn-blue" onclick="openUpload()">⬆ Upload</button></div>
+  <div class="vault-note">🔒 Files are stored privately. <strong>This preview keeps files in your browser</strong> — connect Supabase Storage to sync across devices.</div>
+  ${all.length===0?`<div class="card"><div class="vault-empty"><span class="i">📁</span><h3>No documents yet</h3><p>Upload your license, national certification, and CE certificates so renewal is just a few clicks.</p><button class="btn btn-blue" onclick="openUpload()" style="margin-top:14px">⬆ Upload</button></div></div>`
   : byType.map(g=>`
     <div class="card">
       <div class="card-title">${g.t} <span>${g.docs.length} file${g.docs.length!==1?'s':''}</span></div>
@@ -1917,14 +1779,14 @@ function checklistRowsHTML(l, ctx){
         <div class="rci-ce-track"><div class="rci-ce-fill ${met?'met':''}" style="width:${pctH}%"></div></div>
         <div class="rci-ce-txt">${logged} of ${it.hours} hrs logged${met?' ✓':''}</div>
       </div>`;
-      if(!met) rightAction=`<a class="rci-btn" onclick="event.stopPropagation();${closer};go('ce');openCE()">Log CE →</a>`;
+      if(!met) rightAction=`<a class="rci-btn" onclick="event.stopPropagation();${closer};openCE()">Log CE →</a>`;
     } else if(!it.done){
       if(it.k==='license'){
         rightAction=`<span class="rci-pending">On file</span>`;
       } else if(it.k==='natcert'){
         rightAction=`<a class="rci-btn" onclick="event.stopPropagation();uploadProofFor('${id}','${it.k}')">Upload →</a>`;
       } else {
-        rightAction=`<a class="rci-btn" onclick="event.stopPropagation();uploadProofFor('${id}','${it.k}')">⬆ Upload ${esc((docTypeForItem(it)||'document').toLowerCase())} →</a>`;
+        rightAction=`<a class="rci-btn" onclick="event.stopPropagation();uploadProofFor('${id}','${it.k}')">Upload →</a>`;
       }
     }
     const right = it.done
@@ -1970,7 +1832,6 @@ function renderChecklist(id){
         ? `<button class="rb2 rb2-done" style="width:100%;justify-content:center;padding:13px" onclick="closeChecklist();window.open('${r.url}','_blank');track('renewal_finish_clicked',{license_id:'${id}'})">✓ All set — go to ${l.state} portal →</button>`
         : `<div class="rcs-progress-txt">${rd.done} of ${rd.total} complete — upload or log each item to check it off</div>
            <button class="rb2 rb2-start" style="width:100%;justify-content:center;padding:13px" onclick="window.open('${r.url}','_blank')">Open ${l.state} portal anyway →</button>`}
-      <button class="rb2 rcs-packet-btn" onclick="renewalPacketPDF('${id}')">📄 Download renewal packet</button>
     </div>`;
 }
 
@@ -2136,8 +1997,8 @@ function openLicenseDetail(id){
         </div>
         <span class="dv-chevron ${checklistCollapsed?'':'up'}" id="dv-chevron">▾</span>
       </div>
-      <div class="dv-renewal-meta">Fee: ${req.fee||'Verify with board'} · ${r.w}-day window · ${rd.done} of ${rd.total} requirements met</div>
       <div id="dv-checklist-collapse" class="${checklistCollapsed?'collapsed':''}">
+        <div class="dv-renewal-meta">Fee: ${req.fee||'Verify with board'} · ${r.w}-day window · ${rd.done} of ${rd.total} requirements met</div>
         ${req.verified===false?`<div class="rcs-verify" style="margin:0 0 12px;border-radius:9px;border:1px solid #F2DCAE">⚠️ These requirements reflect the standard structure for ${l.state}. Confirm exact hours, fees, and rules with the <a href="${r.url}" target="_blank">${l.state} board</a> before submitting.</div>`:''}
         ${req.note?`<div class="rcs-note" style="margin:0 0 12px;border-radius:9px;border:1px solid #CDE7E3">ℹ️ ${req.note}</div>`:''}
         <div class="dv-checklist">${checklistRows}</div>
@@ -2146,7 +2007,6 @@ function openLicenseDetail(id){
         ${ready
           ? `<button class="rb2 rb2-done" style="width:100%;justify-content:center;padding:13px" onclick="window.open('${r.url}','_blank');track('renewal_finish_clicked',{license_id:'${id}'})">✓ All set — go to ${stateName(l.state)} portal →</button>`
           : `<button class="rb2 rb2-start" style="width:100%;justify-content:center;padding:13px" onclick="window.open('${r.url}','_blank')">Open ${stateName(l.state)} renewal portal →</button>`}
-        <button class="rb2 rcs-packet-btn" onclick="renewalPacketPDF('${id}')">📄 Download renewal packet</button>
       </div>
     </div>
 
