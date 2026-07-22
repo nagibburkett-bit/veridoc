@@ -1540,6 +1540,7 @@ function openUpload(prefillType, proofMeta){
       <div class="up-d-title" id="up-d-title">Drop a file or click to choose</div>
       <div class="up-d-sub">PDF, image, or Word · up to ~4MB in this preview</div>
     </div>
+    <div style="font-size:12px;color:#5A6B7B;margin:-6px 0 16px;line-height:1.5">You can attach a license, national certification, CE certificate, or collaborating physician agreement.</div>
     <div class="fg"><label>Document type</label><select id="up-type">${opts}</select></div>
     <div class="fg"><label>Link to a license (optional)</label><select id="up-link">${licOpts}</select></div>
     <div class="fr2"><div class="fg"><label>Issue date (optional)</label><input type="date" id="up-issue"></div>
@@ -2079,6 +2080,7 @@ function licRenewBtn(l){
 function shadeHex(hex){const nn=parseInt(hex.slice(1),16);let r=Math.max(0,(nn>>16)-32),g=Math.max(0,((nn>>8)&255)-32),b=Math.max(0,(nn&255)-32);return '#'+((r<<16)|(g<<8)|b).toString(16).padStart(6,'0');}
 function openLicenseDetail(id){
   const l=licenses.find(x=>x.id===id); if(!l)return;
+  checklistCollapsed=true; // always start collapsed when a license is opened
   const m=licStatusMeta(getLS(l)), n=daysUntil(l.expiry_date), rs=getRS(l), r=rule(l.state), rd=readiness(l);
   const req=stateReq(l.state);
   // documents linked to this license OR matching its state license
@@ -2108,6 +2110,8 @@ function openLicenseDetail(id){
       <div class="dv-sec-label">License details</div>
       <div class="dv-grid">
         <div class="dv-field"><div class="fl">Expiration</div><div class="fv" style="color:${m.c};font-weight:700">${fmt(l.expiry_date)}</div></div>
+        <div class="dv-field"><div class="fl">Days remaining</div><div class="fv" style="color:${m.c}">${n<0?Math.abs(n)+' overdue':n+' days'}</div></div>
+        <div class="dv-field"><div class="fl">License number</div><div class="fv mono">${esc(l.license_number)}</div></div>
         <div class="dv-field"><div class="fl">State</div><div class="fv">${stateName(l.state)} (${esc(l.state)})</div></div>
         <div class="dv-field"><div class="fl">Issue date</div><div class="fv">${fmt(l.issue_date)}</div></div>
         <div class="dv-field"><div class="fl">Effective date</div><div class="fv">${fmt(l.effective_date)}</div></div>
@@ -2118,7 +2122,7 @@ function openLicenseDetail(id){
         <button onclick="openUpload('License',{license_id:'${id}',reopen_detail:'${id}',reopen_kind:'lic'})" style="background:#E6F2F0;color:#0F766E;border:none;border-radius:7px;padding:5px 11px;font-size:11px;font-weight:700;cursor:pointer">⬆ Upload</button>
       </div>
       ${docs.length?docs.map(d=>`<div class="dv-doc"><span class="di">${fileIcon(d.mime)}</span><div style="flex:1;min-width:0"><b style="font-weight:600">${esc(d.file_name)}</b></div><span style="font-size:11px;color:#5A6B7B">${esc(d.doc_type)}</span></div>`).join('')
-        :`<div class="dv-empty-doc">No documents attached yet — upload your license, certification, or collaborating physician agreement.</div>`}
+        :`<div class="dv-empty-doc">No documents attached.</div>`}
     </div>
     ${l.notes?`<div class="dv-section"><div class="dv-sec-label">Notes</div><div class="dv-notes">${esc(l.notes)}</div></div>`:''}
 
