@@ -2102,20 +2102,15 @@ function openLicenseDetail(id){
       <div class="dv-statusrow">
         <span class="dv-status-chip">${m.label}</span>
         <span class="dv-status-chip">${n<0?Math.abs(n)+'d overdue':n+'d left'}</span>
-        <span class="dv-status-chip">${rd.pct}% renewal-ready</span>
       </div>
     </div>
     <div class="dv-section">
       <div class="dv-sec-label">License details</div>
       <div class="dv-grid">
+        <div class="dv-field"><div class="fl">Expiration</div><div class="fv" style="color:${m.c};font-weight:700">${fmt(l.expiry_date)}</div></div>
         <div class="dv-field"><div class="fl">State</div><div class="fv">${stateName(l.state)} (${esc(l.state)})</div></div>
-        <div class="dv-field"><div class="fl">Type</div><div class="fv">${esc(l.license_type)}</div></div>
-        <div class="dv-field"><div class="fl">License number</div><div class="fv mono">${esc(l.license_number)}</div></div>
-        <div class="dv-field"><div class="fl">Status</div><div class="fv" style="color:${m.c}">${m.label}</div></div>
         <div class="dv-field"><div class="fl">Issue date</div><div class="fv">${fmt(l.issue_date)}</div></div>
         <div class="dv-field"><div class="fl">Effective date</div><div class="fv">${fmt(l.effective_date)}</div></div>
-        <div class="dv-field"><div class="fl">Expiration</div><div class="fv">${fmt(l.expiry_date)}</div></div>
-        <div class="dv-field"><div class="fl">Days remaining</div><div class="fv" style="color:${m.c}">${n<0?Math.abs(n)+' overdue':n+' days'}</div></div>
       </div>
     </div>
     <div class="dv-section">
